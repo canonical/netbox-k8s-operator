@@ -14,5 +14,5 @@ terraform/tests/.terraform
 
 
 # Ignore netbox files
-netbox/
+# netbox/
 !netbox/rockcraft.yaml
