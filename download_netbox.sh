@@ -1,4 +1,7 @@
 #!/bin/bash
+# Copyright 2025 Canonical Ltd.
+# See LICENSE file for licensing details.
+
 # This script downloads and extracts the NetBox source code.
 NETBOX_VERSION="4.3.6"
 wget https://github.com/netbox-community/netbox/archive/refs/tags/v${NETBOX_VERSION}.tar.gz

@@ -1,3 +1,6 @@
+# Copyright 2025 Canonical Ltd.
+# See LICENSE file for licensing details.
+
 #########################
 #                       #
 #   Required settings   #
@@ -6,7 +9,6 @@
 
 import json
 import os
-
 
 # see https://github.com/netbox-community/netbox/issues/15427
 if 'DJANGO_AWS_ENDPOINT_URL' in os.environ:
