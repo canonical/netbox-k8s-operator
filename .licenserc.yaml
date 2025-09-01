@@ -36,6 +36,6 @@ header:
     - 'zap_rules.tsv'
     - 'netbox/**'
     - 'patches/**'
-    - '.cron.d/**'
+    - 'cron.d/**'
     - 'lib/**'
   comment: on-failure
