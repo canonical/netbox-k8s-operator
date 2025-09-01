@@ -12,6 +12,7 @@ header:
     - '**'
   paths-ignore:
     - '.github/**'
+    - '**/.gitkeep'
     - '**/*.json'
     - '**/*.md'
     - '**/*.txt'
@@ -24,4 +25,6 @@ header:
     - 'pyproject.toml'
     - 'zap_rules.tsv'
     - '**/*.md.j2'
+    - 'netbox/**'
+    - 'patches/**'
   comment: on-failure

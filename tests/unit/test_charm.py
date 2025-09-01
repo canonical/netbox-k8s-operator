@@ -6,16 +6,10 @@
 import pathlib
 
 from ops import testing
-from ops.testing import Harness
 
 from charm import NetboxCharm
 
 PROJECT_ROOT = pathlib.Path(__file__).parent.parent.parent
-
-
-def test_empty(harness: Harness):
-    """Placeholder test."""
-    assert True
 
 
 EXPECTED_ENV = {
