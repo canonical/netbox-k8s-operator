@@ -8,8 +8,6 @@ jobs:
     uses: canonical/operator-workflows/.github/workflows/test.yaml@main
     secrets: inherit
     with:
-      charm-directory: "charm"
-      shellcheck-working-directory: "./charm"
       vale-style-check: true
       self-hosted-runner: true
       self-hosted-runner-label: self-hosted-linux-amd64-noble-medium

@@ -1,0 +1,34 @@
+// Limit the width of object edit forms
+form.object-edit {
+  margin: auto;
+  max-width: 800px;
+}
+
+// Use <h3> style for field group headings
+.field-group {
+  h2 {
+    @extend h3;
+  }
+}
+
+// Set bond font & append an asterisk to labels for required fields
+.col-form-label.required {
+  font-weight: bold;
+  &:after {
+    position: absolute;
+    display: inline-block;
+    margin-left: 0;
+    font-family: 'Material Design Icons';
+    font-size: 8px;
+    content: '\f06C4';
+  }
+}
+
+// Set red border on form fields inside a row with .has-errors
+.has-errors {
+  input,
+  select,
+  textarea {
+    border: 1px solid $red;
+  }
+}

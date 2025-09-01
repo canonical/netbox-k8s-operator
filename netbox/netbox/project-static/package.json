@@ -1,0 +1,58 @@
+{
+  "name": "netbox",
+  "version": "4.3.0",
+  "main": "dist/netbox.js",
+  "license": "Apache-2.0",
+  "private": true,
+  "workspaces": [
+    "netbox-graphiql"
+  ],
+  "scripts": {
+    "bundle": "node bundle.js",
+    "bundle:styles": "node bundle.js --styles",
+    "bundle:scripts": "node bundle.js --scripts",
+    "format": "yarn format:scripts && yarn format:styles",
+    "format:scripts": "prettier -w src/**/*.ts",
+    "format:styles": "prettier -w styles/**/*.scss",
+    "validate": "yarn validate:types && yarn validate:lint",
+    "validate:lint": "eslint -c .eslintrc ./src/**/*.ts",
+    "validate:types": "tsc --noEmit",
+    "validate:formatting": "yarn validate:formatting:scripts && yarn validate:formatting:styles",
+    "validate:formatting:styles": "prettier -c styles/**/*.scss",
+    "validate:formatting:scripts": "prettier -c src/**/*.ts"
+  },
+  "dependencies": {
+    "@mdi/font": "7.4.47",
+    "@tabler/core": "1.4.0",
+    "bootstrap": "5.3.7",
+    "clipboard": "2.0.11",
+    "flatpickr": "4.6.13",
+    "gridstack": "12.2.2",
+    "htmx.org": "2.0.6",
+    "query-string": "9.2.2",
+    "sass": "1.89.2",
+    "tom-select": "2.4.3",
+    "typeface-inter": "3.18.1",
+    "typeface-roboto-mono": "1.1.13"
+  },
+  "devDependencies": {
+    "@types/bootstrap": "5.2.10",
+    "@types/cookie": "^0.6.0",
+    "@types/node": "^22.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.37.0",
+    "@typescript-eslint/parser": "^8.37.0",
+    "esbuild": "^0.25.6",
+    "esbuild-sass-plugin": "^3.3.1",
+    "eslint": "<9.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-import-resolver-typescript": "^3.6.3",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.1",
+    "prettier": "^3.3.3",
+    "typescript": "<5.5"
+  },
+  "resolutions": {
+    "@types/bootstrap/**/@popperjs/core": "^2.11.6"
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+}
