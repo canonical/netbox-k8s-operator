@@ -34,7 +34,6 @@ header:
     - 'trivy.yaml'
     - 'pyproject.toml'
     - 'zap_rules.tsv'
-    - 'netbox/**'
     - 'patches/**'
     - 'cron.d/**'
     - 'lib/**'
