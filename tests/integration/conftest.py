@@ -67,15 +67,11 @@ def saml_helper_fixture(
     """Fixture for SamlHelper."""
     model_name = juju.status().model.name
     try:
-        saml_helper = SamlK8sTestHelper.deploy_saml_idp(
-            model_name, kube_config="/var/snap/microk8s/current/credentials/client.config"
-        )
+        saml_helper = SamlK8sTestHelper.deploy_saml_idp(model_name)
     except kubernetes.client.ApiException as e:
         if e.reason == "Conflict" and "already exists" in str(e):
             logger.info("SAML IDP already deployed")
-            saml_helper = SamlK8sTestHelper(
-                model_name, kube_config="/var/snap/microk8s/current/credentials/client.config"
-            )
+            saml_helper = SamlK8sTestHelper(model_name)
         else:
             raise
     return saml_helper
