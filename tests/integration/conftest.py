@@ -432,15 +432,15 @@ def netbox_app_fixture(
             logger.info("Relation already exists")
         else:
             raise
-    # juju.wait(
-    #     lambda status: jubilant.all_active(
-    #         status,
-    #         s3_integrator_app.name,
-    #         postgresql_app.name,
-    #         redis_app.name,
-    #         netbox_barebones.name,
-    #     ),
-    #     timeout=15 * 60,
-    # )
+    juju.wait(
+        lambda status: jubilant.all_active(
+            status,
+            s3_integrator_app.name,
+            postgresql_app.name,
+            redis_app.name,
+            netbox_barebones.name,
+        ),
+        timeout=15 * 60,
+    )
 
     return App(netbox_barebones.name)
