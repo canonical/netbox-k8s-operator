@@ -18,13 +18,15 @@ from tests.integration.types import App
 
 logger = logging.getLogger(__name__)
 
+# Pylint thinks there are too many local variables, but that's not true.
+# pylint: disable=too-many-locals
 
-@pytest.mark.usefixtures("netbox_app")
+
+@pytest.mark.usefixtures("s3_integrator_app")
 def test_netbox_storage(
     netbox_app: App,
     s3_netbox_configuration: dict,
     minio_app: App,
-    s3_integrator_app: App,
     s3_netbox_credentials: dict,
     juju: jubilant.Juju,
 ) -> None:
@@ -37,7 +39,7 @@ def test_netbox_storage(
     status = juju.status()
     minio_addr = status.apps[minio_app.name].units[minio_app.name + "/0"].address
 
-    boto_s3_client = Minio(
+    minio_client = Minio(
         f"{minio_addr}:9000",
         access_key=s3_netbox_credentials["access-key"],
         secret_key=s3_netbox_credentials["secret-key"],
@@ -54,7 +56,7 @@ def test_netbox_storage(
     # Save the current number of objects in the S3 bucket.
     bucket_name = s3_netbox_configuration["bucket"]
     boto_res = list(
-        boto_s3_client.list_objects(bucket_name=bucket_name)
+        minio_client.list_objects(bucket_name=bucket_name)
     )  # .list_objects_v2(Bucket=bucket_name)
     previous_keycount = len(boto_res) if boto_res else 0
 
@@ -99,8 +101,7 @@ def test_netbox_storage(
     assert res.status_code == 201
 
     # check that there is a new file in S3.
-    bucket_name = s3_netbox_configuration["bucket"]
     key_count = len(
-        list(boto_s3_client.list_objects(bucket_name=bucket_name))
+        list(minio_client.list_objects(bucket_name=bucket_name))
     )  # .list_objects_v2(Bucket=bucket_name)
     assert key_count == previous_keycount + 1

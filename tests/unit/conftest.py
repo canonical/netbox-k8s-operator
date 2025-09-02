@@ -14,12 +14,20 @@ PROJECT_ROOT = pathlib.Path(__file__).parent.parent.parent
 
 
 def peer_relation() -> PeerRelation:
-    """Peer relation fixture."""
+    """Peer relation fixture.
+
+    Returns:
+        Relation: Peer relation object.
+    """
     return PeerRelation("secret-storage", local_app_data={"django_secret_key": "test"})
 
 
 def postgresql_relation() -> Relation:
-    """Postgresql relation fixture."""
+    """Postgresql relation fixture.
+
+    Returns:
+        Relation: Postgresql relation object.
+    """
     return Relation(
         endpoint="postgresql",
         interface="postgresql_client",
@@ -33,21 +41,27 @@ def postgresql_relation() -> Relation:
 
 
 def redis_relation() -> Relation:
-    """Redis relation fixture."""
+    """Redis relation fixture.
+
+    Returns:
+        Relation: Redis relation object.
+    """
     return Relation(
         endpoint="redis",
         interface="redis",
         remote_app_name="redis-k8s",
         limit=1,
-        remote_app_data={
-            "leader-host": "redis-k8s-0.redis-k8s-endpoints.test-model.svc.cluster.local"
-        },
+        remote_app_data={"leader-host": "redis-hostname"},
         remote_units_data={0: {"hostname": "redis-hostname", "port": "6379"}},
     )
 
 
 def s3_relation() -> Relation:
-    """S3 relation fixture."""
+    """S3 relation fixture.
+
+    Returns:
+        Relation: S3 relation object.
+    """
     return Relation(
         endpoint="s3",
         interface="s3",
@@ -68,10 +82,10 @@ def s3_relation() -> Relation:
 
 
 @pytest.fixture(scope="function", name="base_state")
-def django_base_state_fixture():
+def django_base_state_fixture() -> dict:
     """State with container and config file set."""
     os.chdir(PROJECT_ROOT)
-    yield {
+    return {
         "relations": [
             peer_relation(),
             postgresql_relation(),
@@ -82,11 +96,7 @@ def django_base_state_fixture():
             testing.Container(
                 name="django-app",
                 can_connect=True,
-                mounts={
-                    "data": testing.Mount(
-                        location="/django/gunicorn.conf.py", source="conf"
-                    )
-                },
+                mounts={"data": testing.Mount(location="/django/gunicorn.conf.py", source="conf")},
                 execs={
                     testing.Exec(
                         command_prefix=["/bin/python3"],
@@ -98,11 +108,12 @@ def django_base_state_fixture():
                         "django": {
                             "startup": "enabled",
                             "override": "replace",
-                            "command": "/bin/python3 -m gunicorn -c /django/gunicorn.conf.py django_app.wsgi:application -k [ sync ]",
+                            "command": "/bin/python3 -m gunicorn -c /django/gunicorn.conf.py "
+                            "django_app.wsgi:application -k [ sync ]",
                         }
                     }
                 },
-            )
+            )  # type: ignore
         },
         "model": testing.Model(name="test-model"),
     }

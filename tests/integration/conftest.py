@@ -9,9 +9,11 @@ from collections.abc import Generator
 from typing import cast
 
 import jubilant
+import kubernetes
 import pytest
 from minio import Minio
 from pytest import Config
+from requests import HTTPError
 from saml_test_helper import SamlK8sTestHelper
 
 from tests.conftest import NETBOX_IMAGE_PARAM
@@ -21,48 +23,22 @@ logger = logging.getLogger(__name__)
 
 # caused by pytest fixtures, mark does not work in fixtures
 # pylint: disable=too-many-arguments, unused-argument
+# pylint things `juju`` is redefined, but it's a fixture
+# pylint: disable=redefined-outer-name
 
-
-@pytest.fixture(scope="module", name="saml_app_name")
-def saml_app_name_fixture() -> str:
-    """Return the name of the saml-integrator application deployed for tests."""
-    return "saml-integrator"
-
-
-@pytest.fixture(scope="module", name="nginx_app_name")
-def nginx_app_name_fixture() -> str:
-    """Return the name of the nginx-ingress-integrator application deployed for tests."""
-    return "nginx-ingress-integrator"
-
-
-@pytest.fixture(scope="module", name="postgresql_app_name")
-def postgresql_app_name_fixture() -> str:
-    """Return the name of the postgresql application deployed for tests."""
-    return "postgresql-k8s"
-
-
-@pytest.fixture(scope="module", name="s3_integrator_app_name")
-def s3_integrator_app_name_fixture() -> str:
-    """Return the name of the s3-integrator application deployed for tests."""
-    return "s3-integrator"
-
-
-@pytest.fixture(scope="module", name="netbox_app_name")
-def netbox_app_name_fixture() -> str:
-    """Return the name of the netbox application deployed for tests."""
-    return "netbox"
+MINIO_APP_NAME = "minio"
+NETBOX_APP_NAME = "netbox"
+NGINX_APP_NAME = "nginx-ingress-integrator"
+POSTGRESQL_APP_NAME = "postgresql-k8s"
+REDIS_APP_NAME = "redis-k8s"
+SAML_APP_NAME = "saml-integrator"
+S3_INTEGRATOR_APP_NAME = "s3-integrator"
 
 
 @pytest.fixture(scope="module", name="netbox_hostname")
 def netbox_hostname_fixture() -> str:
     """Return the name of the netbox hostname used for tests."""
     return "netbox.internal"
-
-
-@pytest.fixture(scope="module", name="redis_app_name")
-def redis_app_name_fixture() -> str:
-    """Return the name of the redis application deployed for tests."""
-    return "redis-k8s"
 
 
 @pytest.fixture(scope="module", name="netbox_app_image")
@@ -90,24 +66,34 @@ def saml_helper_fixture(
 ) -> SamlK8sTestHelper:
     """Fixture for SamlHelper."""
     model_name = juju.status().model.name
-    saml_helper = SamlK8sTestHelper.deploy_saml_idp(model_name)
+    try:
+        saml_helper = SamlK8sTestHelper.deploy_saml_idp(
+            model_name, kube_config="/var/snap/microk8s/current/credentials/client.config"
+        )
+    except kubernetes.client.ApiException as e:
+        if e.reason == "Conflict" and "already exists" in str(e):
+            logger.info("SAML IDP already deployed")
+            saml_helper = SamlK8sTestHelper(
+                model_name, kube_config="/var/snap/microk8s/current/credentials/client.config"
+            )
+        else:
+            raise
     return saml_helper
 
 
 @pytest.fixture(scope="module", name="saml_app")
 def saml_app_fixture(
     juju: jubilant.Juju,
-    saml_app_name: str,
 ) -> App:
     """Deploy saml."""
-    if juju.status().apps.get(saml_app_name):
-        logger.info(f"{saml_app_name} already deployed")
-        return App(saml_app_name)
+    if juju.status().apps.get(SAML_APP_NAME):
+        logger.info("%s already deployed", SAML_APP_NAME)
+        return App(SAML_APP_NAME)
     juju.deploy(
-        saml_app_name,
+        SAML_APP_NAME,
         channel="latest/edge",
     )
-    return App(saml_app_name)
+    return App(SAML_APP_NAME)
 
 
 @pytest.fixture(scope="module", name="netbox_saml_integration")
@@ -128,14 +114,9 @@ def netbox_saml_integration_fixture(
         },
     )
     model_name = juju.status().model.name
-    try:
-        saml_helper.prepare_pod(model_name, f"{saml_app.name}-0")
-        saml_helper.prepare_pod(model_name, f"{netbox_app.name}-0")
-    except Exception as e:
-        if "already exists" in str(e):
-            logger.info("Pod already prepared")
-        else:
-            raise
+    saml_helper.prepare_pod(model_name, f"{saml_app.name}-0")
+    saml_helper.prepare_pod(model_name, f"{netbox_app.name}-0")
+
     juju.config(
         saml_app.name,
         {
@@ -153,7 +134,7 @@ def netbox_saml_integration_fixture(
     )
     try:
         juju.integrate(saml_app.name, netbox_app.name)
-    except Exception as e:
+    except jubilant.CLIError as e:
         if "already exists" in str(e):
             logger.info("Relation already exists")
         else:
@@ -179,10 +160,8 @@ def netbox_saml_integration_fixture(
     </md:EntityDescriptor>
     """
     try:
-        saml_helper.register_service_provider(
-            name=netbox_hostname, metadata=metadata_xml
-        )
-    except Exception as e:
+        saml_helper.register_service_provider(name=netbox_hostname, metadata=metadata_xml)
+    except HTTPError as e:
         if "already exists" in str(e):
             logger.info("Service provider already registered")
         else:
@@ -254,44 +233,38 @@ def juju(request: pytest.FixtureRequest) -> Generator[jubilant.Juju, None, None]
         return
 
 
-@pytest.fixture(scope="module", name="minio_app_name")
-def minio_app_name_fixture() -> str:
-    return "minio"
-
-
 @pytest.fixture(scope="module", name="minio_app")
-def minio_app_fixture(juju: jubilant.Juju, minio_app_name, s3_netbox_credentials):
+def minio_app_fixture(juju: jubilant.Juju, s3_netbox_credentials):
     """Deploy and set up minio and s3-integrator needed for s3-like storage backend
     in the HA charms.
     """
-    if juju.status().apps.get(minio_app_name):
-        logger.info(f"{minio_app_name} already deployed")
-        return App(minio_app_name)
+    if juju.status().apps.get(MINIO_APP_NAME):
+        logger.info("%s already deployed", MINIO_APP_NAME)
+        return App(MINIO_APP_NAME)
 
     config = s3_netbox_credentials
     juju.deploy(
-        minio_app_name,
+        MINIO_APP_NAME,
         channel="edge",
         config=config,
         trust=True,
     )
 
-    juju.wait(lambda status: status.apps[minio_app_name].is_active, timeout=60 * 30)
-    return App(minio_app_name)
+    juju.wait(lambda status: status.apps[MINIO_APP_NAME].is_active, timeout=60 * 30)
+    return App(MINIO_APP_NAME)
 
 
 @pytest.fixture(scope="module", name="nginx_app")
 def nginx_app_fixture(
     juju: jubilant.Juju,
-    nginx_app_name: str,
 ) -> App:
     """Deploy nginx."""
-    if juju.status().apps.get(nginx_app_name):
-        logger.info(f"{nginx_app_name} already deployed")
-        return App(nginx_app_name)
+    if juju.status().apps.get(NGINX_APP_NAME):
+        logger.info("%s already deployed", NGINX_APP_NAME)
+        return App(NGINX_APP_NAME)
 
-    juju.deploy(nginx_app_name, channel="latest/edge", revision=99, trust=True)
-    return App(nginx_app_name)
+    juju.deploy(NGINX_APP_NAME, channel="latest/edge", revision=99, trust=True)
+    return App(NGINX_APP_NAME)
 
 
 @pytest.fixture(scope="module", name="netbox_nginx_integration")
@@ -331,19 +304,19 @@ def netbox_nginx_integration_fixture(
 def s3_integrator_app_fixture(
     juju: jubilant.Juju,
     minio_app: App,
-    s3_integrator_app_name: str,
     s3_netbox_configuration: dict,
     s3_netbox_credentials: dict,
 ) -> App:
-    if juju.status().apps.get(s3_integrator_app_name):
-        logger.info(f"{s3_integrator_app_name} already deployed")
-        return App(s3_integrator_app_name)
+    """Deploy and set up s3-integrator"""
+    if juju.status().apps.get(S3_INTEGRATOR_APP_NAME):
+        logger.info("%s already deployed", S3_INTEGRATOR_APP_NAME)
+        return App(S3_INTEGRATOR_APP_NAME)
     juju.deploy(
-        s3_integrator_app_name,
+        S3_INTEGRATOR_APP_NAME,
         channel="edge",
     )
     juju.wait(
-        lambda status: jubilant.all_blocked(status, s3_integrator_app_name),
+        lambda status: jubilant.all_blocked(status, S3_INTEGRATOR_APP_NAME),
         timeout=120,
     )
     status = juju.status()
@@ -368,64 +341,55 @@ def s3_integrator_app_fixture(
         s3_netbox_configuration,
     )
 
-    task = juju.run(
-        f"{s3_integrator_app_name}/0", "sync-s3-credentials", s3_netbox_credentials
-    )
+    task = juju.run(f"{S3_INTEGRATOR_APP_NAME}/0", "sync-s3-credentials", s3_netbox_credentials)
     assert task.status == "completed"
-    return App(s3_integrator_app_name)
+    return App(S3_INTEGRATOR_APP_NAME)
 
 
 @pytest.fixture(scope="module", name="postgresql_app")
 def postgresql_app_fixture(
     juju: jubilant.Juju,
-    postgresql_app_name: str,
 ):
     """Deploy and set up postgresql charm needed for the 12-factor charm."""
-    if juju.status().apps.get(postgresql_app_name):
-        logger.info(f"{postgresql_app_name} already deployed")
-        return App(postgresql_app_name)
+    if juju.status().apps.get(POSTGRESQL_APP_NAME):
+        logger.info("%s already deployed", POSTGRESQL_APP_NAME)
+        return App(POSTGRESQL_APP_NAME)
 
     juju.deploy(
-        postgresql_app_name,
+        POSTGRESQL_APP_NAME,
         channel="14/stable",
         base="ubuntu@22.04",
         trust=True,
     )
-    return App(postgresql_app_name)
+    return App(POSTGRESQL_APP_NAME)
 
 
 @pytest.fixture(scope="module", name="redis_app")
 def redis_app_fixture(
     juju: jubilant.Juju,
-    redis_app_name: str,
 ):
     """Deploy and set up postgresql charm needed for the 12-factor charm."""
-    if juju.status().apps.get(redis_app_name):
-        logger.info(f"{redis_app_name} already deployed")
-        return App(redis_app_name)
+    if juju.status().apps.get(REDIS_APP_NAME):
+        logger.info("%s already deployed", REDIS_APP_NAME)
+        return App(REDIS_APP_NAME)
 
     juju.deploy(
-        redis_app_name,
+        REDIS_APP_NAME,
         channel="edge",
     )
-    return App(redis_app_name)
+    return App(REDIS_APP_NAME)
 
 
-@pytest.fixture(scope="module", name="netbox_app")
-def netbox_app_fixture(
+@pytest.fixture(scope="module", name="netbox_barebones")
+def netbox_barebones_fixture(
     juju: jubilant.Juju,
     netbox_charm: str,
     netbox_app_image: str,
-    netbox_app_name: str,
-    redis_app: App,
-    postgresql_app: App,
-    s3_integrator_app: App,
-    # netbox_nginx_integration: App,
 ) -> App:
-    """Deploy netbox app."""
+    """Deploy netbox app without any relations."""
     status = juju.status()
-    if netbox_app_name in status.apps:
-        return App(netbox_app_name)
+    if NETBOX_APP_NAME in status.apps:
+        return App(NETBOX_APP_NAME)
 
     resources = {
         "django-app-image": netbox_app_image,
@@ -438,27 +402,45 @@ def netbox_app_fixture(
             "django-allowed-hosts": "*",
         },
     )
-    juju.integrate(
-        f"{netbox_app_name}:s3",
-        f"{s3_integrator_app.name}",
-    )
-    juju.integrate(
-        f"{netbox_app_name}:postgresql",
-        f"{postgresql_app.name}",
-    )
-    juju.integrate(
-        f"{netbox_app_name}:redis",
-        f"{redis_app.name}",
-    )
-    juju.wait(
-        lambda status: jubilant.all_active(
-            status,
-            s3_integrator_app.name,
-            postgresql_app.name,
-            redis_app.name,
-            netbox_app_name,
-        ),
-        timeout=15 * 60,
-    )
+    return App(NETBOX_APP_NAME)
 
-    return App(netbox_app_name)
+
+@pytest.fixture(scope="module", name="netbox_app")
+def netbox_app_fixture(
+    juju: jubilant.Juju,
+    netbox_barebones: App,
+    redis_app: App,
+    postgresql_app: App,
+    s3_integrator_app: App,
+) -> App:
+    """Deploy netbox app."""
+    try:
+        juju.integrate(
+            f"{netbox_barebones.name}:s3",
+            f"{s3_integrator_app.name}",
+        )
+        juju.integrate(
+            f"{netbox_barebones.name}:postgresql",
+            f"{postgresql_app.name}",
+        )
+        juju.integrate(
+            f"{netbox_barebones.name}:redis",
+            f"{redis_app.name}",
+        )
+    except jubilant.CLIError as e:
+        if "already exists" in str(e):
+            logger.info("Relation already exists")
+        else:
+            raise
+    # juju.wait(
+    #     lambda status: jubilant.all_active(
+    #         status,
+    #         s3_integrator_app.name,
+    #         postgresql_app.name,
+    #         redis_app.name,
+    #         netbox_barebones.name,
+    #     ),
+    #     timeout=15 * 60,
+    # )
+
+    return App(netbox_barebones.name)

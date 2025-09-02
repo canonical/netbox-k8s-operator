@@ -19,7 +19,8 @@ EXPECTED_ENV = {
     "DJANGO_PEER_FQDNS": "netbox-0.netbox-endpoints.test-model.svc.cluster.local",
     "DJANGO_SECRET_KEY": "test",
     "DJANGO_SAML_USERNAME": "name",
-    "POSTGRESQL_DB_CONNECT_STRING": "postgresql://test-username:test-password@test-postgresql:5432/django-k8s",
+    "POSTGRESQL_DB_CONNECT_STRING": "postgresql://test-username:test-password@"
+    "test-postgresql:5432/django-k8s",
     "POSTGRESQL_DB_FRAGMENT": "",
     "POSTGRESQL_DB_NETLOC": "test-username:test-password@test-postgresql:5432",
     "POSTGRESQL_DB_PATH": "/django-k8s",
@@ -31,10 +32,10 @@ EXPECTED_ENV = {
     "POSTGRESQL_DB_PASSWORD": "test-password",
     "POSTGRESQL_DB_USERNAME": "test-username",
     "POSTGRESQL_DB_NAME": "django-k8s",
-    "REDIS_DB_CONNECT_STRING": "redis://redis-k8s-0.redis-k8s-endpoints.test-model.svc.cluster.local:6379",
+    "REDIS_DB_CONNECT_STRING": "redis://redis-hostname:6379",
     "REDIS_DB_FRAGMENT": "",
-    "REDIS_DB_HOSTNAME": "redis-k8s-0.redis-k8s-endpoints.test-model.svc.cluster.local",
-    "REDIS_DB_NETLOC": "redis-k8s-0.redis-k8s-endpoints.test-model.svc.cluster.local:6379",
+    "REDIS_DB_HOSTNAME": "redis-hostname",
+    "REDIS_DB_NETLOC": "redis-hostname:6379",
     "REDIS_DB_PARAMS": "",
     "REDIS_DB_PATH": "",
     "REDIS_DB_PORT": "6379",
@@ -70,5 +71,8 @@ def test_netbox_config(base_state: dict) -> None:
         "environment": EXPECTED_ENV,
         "startup": "enabled",
         "override": "replace",
-        "command": "/bin/python3 -m gunicorn -c /django/gunicorn.conf.py django_app.wsgi:application -k [ sync ]",
+        "command": (
+            "/bin/python3 -m gunicorn -c /django/gunicorn.conf.py django_app.wsgi:application "
+            "-k [ sync ]"
+        ),
     }

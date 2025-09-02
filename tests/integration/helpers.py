@@ -46,9 +46,7 @@ async def assert_return_true_with_retry(
         await asyncio.sleep(delay)
 
 
-def get_new_admin_token(
-    juju: jubilant.Juju, netbox_app: App, netbox_base_url: str
-) -> str:
+def get_new_admin_token(juju: jubilant.Juju, netbox_app: App, netbox_base_url: str) -> str:
     """Create an admin token for Netbox.
 
     Args:

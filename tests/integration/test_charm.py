@@ -75,8 +75,7 @@ def test_netbox_check_cronjobs(
     assert: The cron task syncdatasource should update the status of the datasource
         to completed.
     """
-    status = juju.status()
-    unit_ip = status.apps[netbox_app.name].units[netbox_app.name + "/0"].address
+    unit_ip = juju.status().apps[netbox_app.name].units[netbox_app.name + "/0"].address
     base_url = f"http://{unit_ip}:8000"
     token = get_new_admin_token(juju, netbox_app, base_url)
     headers = {

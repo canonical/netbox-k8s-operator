@@ -13,6 +13,9 @@ import paas_charm.django
 
 logger = logging.getLogger(__name__)
 
+# Pylint does not like the way we use super() here.
+# pylint: disable=useless-parent-delegation
+
 
 class NetboxCharm(paas_charm.django.Charm):
     """Django Charm service."""
