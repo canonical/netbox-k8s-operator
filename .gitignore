@@ -9,5 +9,5 @@ __pycache__/
 .vscode/
 
 !netbox-k8s/rockcraft.yaml
-netbox-k8s/*
+# netbox-k8s/*
 *.tar.gz*
