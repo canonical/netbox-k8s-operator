@@ -19,6 +19,5 @@ jobs:
       trivy-image-config: "trivy.yaml"
       juju-channel: 3.5/stable
       channel: 1.31-strict/stable
-      charm-directory: "charm"
       pre-build-script: |
         -c './download_netbox.sh'

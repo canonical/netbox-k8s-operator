@@ -1,3 +1,0 @@
-paths-ignore:
-  # Ignore compiled JS
-  - netbox/project-static/dist

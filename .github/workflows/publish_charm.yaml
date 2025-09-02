@@ -12,3 +12,5 @@ jobs:
     secrets: inherit
     with:
       channel: latest/edge
+      charmcraft-channel: "latest/edge"
+      resource-mapping: '{"netbox": "django-app-image"}'
