@@ -10,3 +10,4 @@ __pycache__/
 
 !netbox/rockcraft.yaml
 netbox/*
+*.tar.gz
