@@ -13,4 +13,4 @@ jobs:
     with:
       channel: latest/edge
       charmcraft-channel: "latest/edge"
-      resource-mapping: '{"netbox-k8s": "django-app-image"}'
+      resource-mapping: '{"netbox": "django-app-image"}'

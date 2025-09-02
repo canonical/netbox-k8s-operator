@@ -5,7 +5,7 @@
 
 from pytest import Parser
 
-NETBOX_IMAGE_PARAM = "--netbox-k8s-image"
+NETBOX_IMAGE_PARAM = "--netbox-image"
 
 
 def pytest_addoption(parser: Parser) -> None:

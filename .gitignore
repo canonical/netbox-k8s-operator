@@ -8,6 +8,6 @@ __pycache__/
 .idea
 .vscode/
 
-!netbox-k8s/rockcraft.yaml
+!netbox/rockcraft.yaml
 netbox-k8s/*
 *.tar.gz*

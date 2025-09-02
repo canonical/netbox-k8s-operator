@@ -1,7 +1,7 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-name: netbox-k8s
+name: netbox
 # see https://documentation.ubuntu.com/rockcraft/en/1.13.0/explanation/bases/
 # for more information about bases and using 'bare' bases for chiselled rocks
 base: ubuntu@22.04 # the base environment for this Django application
