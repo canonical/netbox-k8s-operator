@@ -13,7 +13,7 @@ from ops.testing import PeerRelation, Relation
 PROJECT_ROOT = pathlib.Path(__file__).parent.parent.parent
 
 
-def peer_relation() -> Relation:
+def peer_relation() -> PeerRelation:
     """Peer relation fixture."""
     return PeerRelation("secret-storage", local_app_data={"django_secret_key": "test"})
 
