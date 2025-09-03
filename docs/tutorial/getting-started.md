@@ -34,7 +34,7 @@ juju add-model netbox-tutorial
 Deploy the NetBox charm, with all its mandatory requirements (PostgreSQL, Redis and S3).
 
 ```
-juju deploy netbox
+juju deploy netbox-k8s
 ```
 
 At this point NetBox should be blocked as there is no S3 integration for
@@ -43,7 +43,7 @@ storage, Redis or PostgreSQL.
 Set the allowed hosts. In this example every host is allowed. For a production environment
 only the used hosts should be allowed.
 ```
-juju config netbox django-allowed-hosts='*'
+juju config netbox-k8s django-allowed-hosts='*'
 ```
 
 ### Redis
@@ -55,7 +55,7 @@ juju deploy redis-k8s --channel=latest/edge
 
 Integrate redis-k8s with NetBox with:
 ```
-juju integrate redis-k8s netbox
+juju integrate redis-k8s netbox-k8s
 ```
 
 ### Deploy PostgreSQL
@@ -63,7 +63,7 @@ juju integrate redis-k8s netbox
 NetBox requires PostgreSQL to work. Deploy and integrate with:
 ```
 juju deploy postgresql-k8s --channel 14/stable --trust
-juju integrate postgresql-k8s netbox
+juju integrate postgresql-k8s netbox-k8s
 ```
 
 ### Deploy `s3-integrator`
@@ -79,7 +79,7 @@ juju deploy s3-integrator --channel edge
 juju config s3-integrator endpoint="<aws_endpoing_url>" bucket=<bucket_name> path=<path_in_bucket> region=<region> s3-uri-style=<path_or_host>
 juju wait-for application s3-integrator --query='name=="s3-integrator" && (status=="active" || status=="blocked")'
 juju run s3-integrator/leader sync-s3-credentials access-key=<aws_access_key_id> secret-key=<aws_secret_access_key>
-juju integrate s3-integrator netbox
+juju integrate s3-integrator netbox-k8s
 ```
 
 See the [s3-integrator charmhub page](https://charmhub.io/s3-integrator) for more information.
@@ -93,11 +93,11 @@ With the next example, you can configure Traefik using path mode routing:
 juju deploy traefik-k8s --channel edge --trust
 juju config traefik-k8s external_hostname=<netbox_hostname>
 juju config traefik-k8s routing_mode=path
-juju integrate traefik-k8s netbox
+juju integrate traefik-k8s netbox-k8s
 ```
 
 If the host `netbox_hostname` can be resolved to the correct IP (the load balancer IP),
-you should be able to browse NetBox in the URL http://netbox_hostname/netbox-tutorial-netbox
+you should be able to browse NetBox in the URL http://netbox_hostname/netbox-tutorial-netbox-k8s
 
 You can check the endpoints behind the proxy with the command:
 ```
@@ -107,7 +107,7 @@ juju run traefik-k8s/0 show-proxied-endpoints --format=yaml
 ## Create superuser
 To be able to login to NetBox, you can create a super user with the next command:
 ```
-juju run netbox/0 create-superuser username=<admin_username> email=<admin_email>
+juju run netbox-k8s/0 create-superuser username=<admin_username> email=<admin_email>
 ```
 
 Congratulations, With the username created and the password provided in the response, 

@@ -4,9 +4,9 @@
 # Easiest way to deploy NetBox. The only requirement is multipass.
 
 # To deploy:
-# multipass launch  -vvvv --cloud-init cloudinit-juju-3.1.yaml --timeout 1800 --name netbox --memory 4G --cpus 3 --disk 30G 22.04
+# multipass launch  -vvvv --cloud-init cloudinit-juju-3.6.yaml --timeout 1800 --name netbox --memory 4G --cpus 3 --disk 30G 22.04
 # Or from the cloud init in the repo (main branch):
-# multipass launch  -vvvv --cloud-init https://raw.githubusercontent.com/canonical/netbox/main/charm/cloudinit-juju-3.1.yaml --timeout 1800 --name netbox --memory 4G --cpus 3 --disk 30G 22.04
+# multipass launch  -vvvv --cloud-init https://raw.githubusercontent.com/canonical/netbox/main/charm/cloudinit-juju-3.6.yaml --timeout 1800 --name netbox --memory 4G --cpus 3 --disk 30G 22.04
 
 # After deploying, you can get the url for NetBox, that will work in the host computer with:
 # multipass exec netbox -- juju run traefik-k8s/0 show-proxied-endpoints --format=yaml
@@ -33,7 +33,7 @@ packages:
 
 snap:
   commands:
-  - snap install juju --channel=3.5/stable
+  - snap install juju --channel=3.6/stable
   - snap install microk8s --channel 1.31-strict/stable
   - snap alias microk8s.kubectl kubectl
   - snap alias microk8s.kubectl k

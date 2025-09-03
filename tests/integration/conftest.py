@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 # pylint: disable=redefined-outer-name
 
 MINIO_APP_NAME = "minio"
-NETBOX_APP_NAME = "netbox"
+NETBOX_APP_NAME = "netbox-k8s"
 NGINX_APP_NAME = "nginx-ingress-integrator"
 POSTGRESQL_APP_NAME = "postgresql-k8s"
 REDIS_APP_NAME = "redis-k8s"
@@ -36,7 +36,7 @@ S3_INTEGRATOR_APP_NAME = "s3-integrator"
 @pytest.fixture(scope="module", name="netbox_hostname")
 def netbox_hostname_fixture() -> str:
     """Return the name of the NetBox hostname used for tests."""
-    return "netbox.internal"
+    return "netbox-k8s.internal"
 
 
 @pytest.fixture(scope="module", name="netbox_app_image")

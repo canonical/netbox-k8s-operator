@@ -17,7 +17,7 @@ jobs:
       load-test-enabled: false
       trivy-fs-enabled: true
       trivy-image-config: "trivy.yaml"
-      juju-channel: 3.5/stable
+      juju-channel: 3/stable
       channel: 1.31-strict/stable
       pre-build-script: |
         -c './download_netbox.sh'

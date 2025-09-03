@@ -9,7 +9,7 @@ To configure it, you need to know the `entidy_id` and `metadata_url` of your IdP
 `entity_id` must be a valid URI. It can be configured with the following commands:
 ```
 juju deploy saml-integrator --channel latest/edge --config entity_id=<idp_entidy_id> --config metadata_url=<idp_metadata_url>
-juju integrate saml-integrator netbox
+juju integrate saml-integrator netbox-k8s
 ```
 
 For NetBox to work, you may need to customise some of the following configuration options:
@@ -19,5 +19,5 @@ For NetBox to work, you may need to customise some of the following configuratio
 
 NetBox configuration options for SAML can be configured like:
 ```
-juju config netbox saml-sp-entity-id=<your_sp_entity_id_url> saml-username=<saml_attribute_for_uid_and_username>
+juju config netbox-k8s saml-sp-entity-id=<your_sp_entity_id_url> saml-username=<saml_attribute_for_uid_and_username>
 ```

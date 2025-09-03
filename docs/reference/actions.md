@@ -1,3 +1,3 @@
 # Actions
 
-See [Actions](https://charmhub.io/netbox/actions).
+See [Actions](https://charmhub.io/netbox-k8s/actions).
