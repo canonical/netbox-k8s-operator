@@ -3,7 +3,7 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-"""Django Charm entrypoint."""
+"""Netbox Charm entrypoint."""
 
 import logging
 import typing
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class NetboxCharm(paas_charm.django.Charm):
-    """Django Charm service."""
+    """Netbox Charm service."""
 
     def __init__(self, *args: typing.Any) -> None:
         """Initialize the instance.

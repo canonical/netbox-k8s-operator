@@ -21,8 +21,6 @@ from tests.integration.types import App
 
 logger = logging.getLogger(__name__)
 
-# caused by pytest fixtures, mark does not work in fixtures
-# pylint: disable=too-many-arguments, unused-argument
 # pylint things `juju`` is redefined, but it's a fixture
 # pylint: disable=redefined-outer-name
 
@@ -37,7 +35,7 @@ S3_INTEGRATOR_APP_NAME = "s3-integrator"
 
 @pytest.fixture(scope="module", name="netbox_hostname")
 def netbox_hostname_fixture() -> str:
-    """Return the name of the netbox hostname used for tests."""
+    """Return the name of the NetBox hostname used for tests."""
     return "netbox.internal"
 
 
@@ -64,7 +62,7 @@ def netbox_charm_fixture(pytestconfig: Config) -> str:
 def saml_helper_fixture(
     juju: jubilant.Juju,
 ) -> SamlK8sTestHelper:
-    """Fixture for SamlHelper."""
+    """Return the SamlK8sTestHelper instance used for tests."""
     model_name = juju.status().model.name
     try:
         saml_helper = SamlK8sTestHelper.deploy_saml_idp(model_name)
@@ -100,7 +98,7 @@ def netbox_saml_integration_fixture(
     netbox_hostname: str,
     saml_helper: SamlK8sTestHelper,
 ):
-    """Integrate Netbox and SAML for saml integration."""
+    """Integrate NetBox and SAML for saml integration."""
     juju.config(
         netbox_app.name,
         {
@@ -144,13 +142,13 @@ def netbox_saml_integration_fixture(
     # There are instructions to generate it in:
     # https://python-social-auth.readthedocs.io/en/latest/backends/saml.html#basic-usage.
     # This one is instead a minimalistic one that works for the test.
-    metadata_xml = """
+    metadata_xml = f"""
     <md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" cacheDuration="P10D"
-                         entityID="https://netbox.internal">
+                         entityID="https://{netbox_hostname}">
       <md:SPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol"
                           AuthnRequestsSigned="false" WantAssertionsSigned="true">
         <md:AssertionConsumerService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
-                                     Location="https://netbox.internal/oauth/complete/saml/"
+                                     Location="https://{netbox_hostname}/oauth/complete/saml/"
                                      index="1"/>
       </md:SPSSODescriptor>
     </md:EntityDescriptor>
@@ -170,7 +168,7 @@ def s3_netbox_configuration_fixture(juju: jubilant.Juju, minio_app: App) -> dict
     """Return the S3 configuration to use.
 
     Returns:
-        The S3 configuration as a dict
+        The S3 configuration as a dict.
     """
     status = juju.status()
     unit_ip = status.apps[minio_app.name].units[minio_app.name + "/0"].address
@@ -188,7 +186,7 @@ def s3_netbox_credentials_fixture() -> dict:
     """Return the S3 AWS credentials to use.
 
     Returns:
-        The S3 credentials as a dict
+        The S3 credentials as a dict.
     """
     return {"access-key": "test-access-key", "secret-key": "test-secret-key"}
 
@@ -231,18 +229,15 @@ def juju(request: pytest.FixtureRequest) -> Generator[jubilant.Juju, None, None]
 
 @pytest.fixture(scope="module", name="minio_app")
 def minio_app_fixture(juju: jubilant.Juju, s3_netbox_credentials):
-    """Deploy and set up minio and s3-integrator needed for s3-like storage backend
-    in the HA charms.
-    """
+    """Deploy and set up minio and s3-integrator needed for s3-like storage backend."""
     if juju.status().apps.get(MINIO_APP_NAME):
         logger.info("%s already deployed", MINIO_APP_NAME)
         return App(MINIO_APP_NAME)
 
-    config = s3_netbox_credentials
     juju.deploy(
         MINIO_APP_NAME,
         channel="edge",
-        config=config,
+        config=s3_netbox_credentials,
         trust=True,
     )
 
@@ -270,7 +265,7 @@ def netbox_nginx_integration_fixture(
     netbox_app: App,
     netbox_hostname: str,
 ):
-    """Integrate Netbox and Nginx for ingress integration."""
+    """Integrate NetBox and Nginx for ingress integration."""
     juju.config(
         nginx_app.name,
         {"service-hostname": netbox_hostname, "path-routes": "/"},
@@ -346,7 +341,7 @@ def s3_integrator_app_fixture(
 def postgresql_app_fixture(
     juju: jubilant.Juju,
 ):
-    """Deploy and set up postgresql charm needed for the 12-factor charm."""
+    """Deploy and set up postgresql charm needed for the NetBox charm."""
     if juju.status().apps.get(POSTGRESQL_APP_NAME):
         logger.info("%s already deployed", POSTGRESQL_APP_NAME)
         return App(POSTGRESQL_APP_NAME)
@@ -364,7 +359,7 @@ def postgresql_app_fixture(
 def redis_app_fixture(
     juju: jubilant.Juju,
 ):
-    """Deploy and set up postgresql charm needed for the 12-factor charm."""
+    """Deploy and set up postgresql charm needed for the NetBox charm."""
     if juju.status().apps.get(REDIS_APP_NAME):
         logger.info("%s already deployed", REDIS_APP_NAME)
         return App(REDIS_APP_NAME)
@@ -382,7 +377,7 @@ def netbox_barebones_fixture(
     netbox_charm: str,
     netbox_app_image: str,
 ) -> App:
-    """Deploy netbox app without any relations."""
+    """Deploy NetBox app without any relations."""
     status = juju.status()
     if NETBOX_APP_NAME in status.apps:
         return App(NETBOX_APP_NAME)
@@ -409,7 +404,7 @@ def netbox_app_fixture(
     postgresql_app: App,
     s3_integrator_app: App,
 ) -> App:
-    """Deploy netbox app."""
+    """Deploy NetBox app with necessary integrations."""
     try:
         juju.integrate(
             f"{netbox_barebones.name}:s3",

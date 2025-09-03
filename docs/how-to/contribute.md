@@ -6,7 +6,7 @@ This document explains the processes and practices recommended for contributing
 enhancements to the NetBox operator.
 
 - Generally, before developing enhancements to this charm, you should consider
-[opening an issue](https://github.com/canonical/netbox/issues)
+[opening an issue](https://github.com/canonical/netbox-k8s-operator/issues)
 explaining your use case.
 - If you would like to chat with us about your use-cases or proposed
 implementation, you can reach us at [Canonical Matrix public channel](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)
@@ -27,7 +27,7 @@ creates a linear Git commit history.
 The code for this charm can be downloaded as follows:
 
 ```
-git clone https://github.com/canonical/netbox
+git clone https://github.com/canonical/netbox-k8s-operator
 ```
 
 You can use the environments created by `tox` for development:
@@ -57,7 +57,7 @@ the OCI images below. The following commands can then be used to run the tests:
 Build the charm in this git repository using:
 
 ```shell
-pushd charm && charmcraft pack && popd
+charmcraft pack
 ```
 For the integration tests (and also to deploy the charm locally), the netbox
 image is required in the MicroK8s registry. To enable it:
@@ -82,7 +82,7 @@ juju add-model netbox-dev
 # Enable DEBUG logging
 juju model-config logging-config="<root>=INFO;unit=DEBUG"
 # Deploy the charm (assuming you're on amd64)
-juju deploy ./charm/netbox_ubuntu-22.04-amd64.charm \
+juju deploy ./netbox_ubuntu-22.04-amd64.charm \
   --resource django-app-image=localhost:32000/netbox:latest
 ```
 

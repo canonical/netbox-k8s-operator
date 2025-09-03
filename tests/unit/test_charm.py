@@ -54,9 +54,9 @@ EXPECTED_ENV = {
 
 def test_netbox_config(base_state: dict) -> None:
     """
-    arrange: set the workload charm config.
-    act: start the workload charm and integrate with oauth.
-    assert: workload charm should be blocked before the ingress integration and active after.
+    arrange: initialize the base state.
+    act: run the config changed event.
+    assert: App layer should have the correct environment and command.
     """
     state = testing.State(**base_state)
     context = testing.Context(
@@ -66,8 +66,8 @@ def test_netbox_config(base_state: dict) -> None:
 
     assert out.unit_status == testing.ActiveStatus()
 
-    springboot_layer = list(out.containers)[0].plan.services["django"].to_dict()
-    assert springboot_layer == {
+    netbox_layer = list(out.containers)[0].plan.services["django"].to_dict()
+    assert netbox_layer == {
         "environment": EXPECTED_ENV,
         "startup": "enabled",
         "override": "replace",

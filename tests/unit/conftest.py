@@ -14,7 +14,7 @@ PROJECT_ROOT = pathlib.Path(__file__).parent.parent.parent
 
 
 def peer_relation() -> PeerRelation:
-    """Peer relation fixture.
+    """Peer relation for NetBox charm.
 
     Returns:
         Relation: Peer relation object.

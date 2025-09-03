@@ -2,7 +2,7 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-"""Integration tests for Netbox SAML integration."""
+"""Integration tests for NetBox SAML integration."""
 
 import logging
 
@@ -23,9 +23,9 @@ def test_saml_integration(
     netbox_hostname: str,
 ):
     """
-    arrange: Integrate the Charm with saml-integrator, with a real SP.
-    act: Call the endpoint to get env variables.
-    assert: Valid Saml env variables should be in the workload.
+    arrange: Integrate the NetBox Charm with saml-integrator, with a real SP.
+    act: Call the endpoint to login with Saml.
+    assert: User should be logged in.
     """
     saml_integrator_app_name = "saml-integrator"
     juju.wait(
@@ -38,7 +38,7 @@ def test_saml_integration(
         "https://127.0.0.1/",
         headers={"Host": netbox_hostname},
         verify=False,
-        timeout=30,  # nosec
+        timeout=30,
     )
     assert res.status_code == 200
     assert "<title>Home | NetBox</title>" in res.text

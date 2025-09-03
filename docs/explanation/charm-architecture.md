@@ -9,6 +9,8 @@ project provides many of the functionalities needed by this charm like:
 - Django migrations
 - Ingress integration
 - COS (Prometheus metrics and Loki logs for `gunicorn`).
+- SAML integration.
+- S3 integration.
 
 For the static assets, `gunicorn` is used with the help of the [WhiteNoiseMiddleware](https://whitenoise.readthedocs.io/en/stable/index.html).
 
@@ -17,11 +19,6 @@ services managed by Pebble:
 - `django`: runs `gunicorn`.
 - `cron`: periodically runs the `housekeeping` and `syncdatasource` management commands.
 - `statsd_exporter`: exposes `gunicorn` metrics.
-
-Besides the integrations provided directly by the paas-charm tool chain, the following
-integrations are implemented in NetBox:
-- SAML integration.
-- S3 integration.
 
 The NetBox charm is designed for a high availability (HA) environment.
 The NetBox application can be scaled to more than one unit to provide

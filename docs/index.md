@@ -56,7 +56,7 @@ you see that’s wrong, or ask a question, or make a suggestion about a
 potential change via the comments section.
 
 If there’s a particular area of documentation that you’d like to see that’s
-missing, please [file a bug](https://github.com/canonical/netbox/issues).
+missing, please [file a bug](https://github.com/canonical/netbox-k8s-operator/issues).
 
 # Contents
 

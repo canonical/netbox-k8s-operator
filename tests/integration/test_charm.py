@@ -10,7 +10,7 @@ import string
 import jubilant
 import pytest
 import requests
-from tenacity import retry, stop_after_attempt, wait_exponential
+from tenacity import retry, stop_after_delay, wait_fixed
 
 from tests.integration.helpers import get_new_admin_token
 from tests.integration.types import App
@@ -35,7 +35,7 @@ def test_netbox_health(netbox_app: App, juju: jubilant.Juju) -> None:
         assert res.status_code == 200
         assert b"<title>Home | NetBox</title>" in res.content
 
-        # Also  some random thing from the static dir.
+        # Also some random thing from the static dir.
         url = f"http://{unit.address}:8000/static/netbox.ico"
         res = requests.get(
             url,
@@ -103,8 +103,8 @@ def test_netbox_check_cronjobs(
 
     # The cron task for the syncdatasource should update the datasource status to completed.
     @retry(
-        stop=stop_after_attempt(15),
-        wait=wait_exponential(multiplier=1.5, min=4, max=10),
+        stop=stop_after_delay(350),
+        wait=wait_fixed(10),
     )
     def check_data_source_updated():
         """Check that the data source gets updated."""

@@ -2,7 +2,7 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-"""Integration tests for 12Factor charms S3 integration."""
+"""Integration tests for the NetBox S3 integration."""
 
 import logging
 import secrets
@@ -37,15 +37,15 @@ def test_netbox_storage(
         in S3.
     """
     status = juju.status()
-    minio_addr = status.apps[minio_app.name].units[minio_app.name + "/0"].address
+    minio_ip = status.apps[minio_app.name].units[minio_app.name + "/0"].address
+    unit_ip = status.apps[netbox_app.name].units[netbox_app.name + "/0"].address
 
     minio_client = Minio(
-        f"{minio_addr}:9000",
+        f"{minio_ip}:9000",
         access_key=s3_netbox_credentials["access-key"],
         secret_key=s3_netbox_credentials["secret-key"],
         secure=False,
     )
-    unit_ip = status.apps[netbox_app.name].units[netbox_app.name + "/0"].address
     juju.wait(
         jubilant.all_active,
         timeout=600,
@@ -55,10 +55,8 @@ def test_netbox_storage(
 
     # Save the current number of objects in the S3 bucket.
     bucket_name = s3_netbox_configuration["bucket"]
-    boto_res = list(
-        minio_client.list_objects(bucket_name=bucket_name)
-    )  # .list_objects_v2(Bucket=bucket_name)
-    previous_keycount = len(boto_res) if boto_res else 0
+    object_list = list(minio_client.list_objects(bucket_name=bucket_name))
+    previous_keycount = len(object_list) if object_list else 0
 
     # Create a site.
     headers_with_auth = {
@@ -101,7 +99,5 @@ def test_netbox_storage(
     assert res.status_code == 201
 
     # check that there is a new file in S3.
-    key_count = len(
-        list(minio_client.list_objects(bucket_name=bucket_name))
-    )  # .list_objects_v2(Bucket=bucket_name)
+    key_count = len(list(minio_client.list_objects(bucket_name=bucket_name)))
     assert key_count == previous_keycount + 1
