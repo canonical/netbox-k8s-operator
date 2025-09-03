@@ -30,16 +30,6 @@ links:
 extensions:
   - django-framework
 
-peers:
-  secret-storage:
-    interface: secret-storage
-
-provides:
-  metrics-endpoint:
-    interface: prometheus_scrape
-  grafana-dashboard:
-    interface: grafana_dashboard
-
 requires:
   postgresql:
     interface: postgresql_client
