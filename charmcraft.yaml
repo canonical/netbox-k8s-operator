@@ -33,6 +33,7 @@ extensions:
 peers:
   secret-storage:
     interface: secret-storage
+
 provides:
   metrics-endpoint:
     interface: prometheus_scrape
@@ -53,11 +54,6 @@ requires:
     interface: saml
     limit: 1
     optional: true
-  logging:
-    interface: loki_push_api
-  ingress:
-    interface: ingress
-    limit: 1
 
 config:
   options:
