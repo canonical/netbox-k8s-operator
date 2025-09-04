@@ -11,6 +11,5 @@ jobs:
       vale-style-check: true
       vale-files: '["docs/**/*.md", "README.md"]' 
       self-hosted-runner: true
-      self-hosted-runner-label: self-hosted-linux-amd64-noble-medium
       self-hosted-runner-arch: amd64
-      self-hosted-runner-image: noble
+      self-hosted-runner-label: "edge"

@@ -182,13 +182,6 @@ LOGGING = {
             'level': 'DEBUG',
             'formatter': 'normal',
         },
-        # FIXME this is problematic, as migrate is currently run as root.
-        # 'file': {
-        #     'level': 'DEBUG',
-        #     'class': 'logging.handlers.WatchedFileHandler',
-        #     'filename': '/tmp/netbox.log',
-        #     'formatter': 'normal',
-        # },
     },
     'loggers': {
         'django': {

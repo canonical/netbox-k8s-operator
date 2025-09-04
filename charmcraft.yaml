@@ -13,7 +13,7 @@ bases:
     - name: ubuntu
       channel: "22.04"
 
-summary: NetBox.
+summary: NetBox is a solution for modeling and documenting network infrastructure.
 description: |
   NetBox is the go-to solution for modeling and documenting network
   infrastructure for thousands of organizations worldwide. As a successor
