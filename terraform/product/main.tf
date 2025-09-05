@@ -89,7 +89,7 @@ resource "juju_integration" "netbox_postgresql_database" {
 
   application {
     name     = module.postgresql_k8s.application_name
-    endpoint = module.postgresql_k8s.provides.ingress
+    endpoint = module.postgresql_k8s.provides.database
   }
 }
 
