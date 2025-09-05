@@ -11,7 +11,7 @@ variable "model_user" {
   type        = string
 }
 
-variable "netbox" {
+variable "netbox_k8s" {
   type = object({
     app_name    = optional(string, "netbox-k8s")
     channel     = optional(string, "latest/edge")
