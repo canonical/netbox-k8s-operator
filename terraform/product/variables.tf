@@ -24,9 +24,9 @@ variable "netbox_k8s" {
 
 }
 
-variable "postgresql" {
+variable "postgresql_k8s" {
   type = object({
-    app_name    = optional(string, "postgresql")
+    app_name    = optional(string, "postgresql-k8s")
     channel     = optional(string, "14/stable")
     config      = optional(map(string), {})
     constraints = optional(string, "arch=amd64")

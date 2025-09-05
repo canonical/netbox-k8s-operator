@@ -17,8 +17,8 @@ module "netbox_k8s" {
   units       = var.netbox_k8s.units
 }
 
-module "postgresql" {
-  source          = "git::https://github.com/canonical/postgresql-operator//terraform"
+module "postgresql_k8s" {
+  source          = "git::https://github.com/canonical/postgresql-k8s-operator//terraform"
   app_name        = var.postgresql.app_name
   channel         = var.postgresql.channel
   config          = var.postgresql.config
@@ -88,7 +88,7 @@ resource "juju_integration" "netbox_postgresql_database" {
   }
 
   application {
-    name     = module.postgresql.app_name
+    name     = module.postgresql.application_name
     endpoint = module.postgresql.provides.ingress
   }
 }
