@@ -36,7 +36,7 @@ module "saml_integrator" {
   channel         = var.saml_integrator.channel
   config          = var.saml_integrator.config
   constraints     = var.saml_integrator.constraints
-  juju_model_name = data.juju_model.netbox.name
+  model           = data.juju_model.netbox.name
   revision        = var.saml_integrator.revision
   base            = var.saml_integrator.base
   units           = var.saml_integrator.units
