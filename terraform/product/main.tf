@@ -19,14 +19,14 @@ module "netbox_k8s" {
 
 module "postgresql_k8s" {
   source          = "git::https://github.com/canonical/postgresql-k8s-operator//terraform"
-  app_name        = var.postgresql.app_name
-  channel         = var.postgresql.channel
-  config          = var.postgresql.config
-  constraints     = var.postgresql.constraints
+  app_name        = var.postgresql_k8s.app_name
+  channel         = var.postgresql_k8s.channel
+  config          = var.postgresql_k8s.config
+  constraints     = var.postgresql_k8s.constraints
   juju_model_name = data.juju_model.netbox_k8s.name
-  revision        = var.postgresql.revision
-  base            = var.postgresql.base
-  units           = var.postgresql.units
+  revision        = var.postgresql_k8s.revision
+  base            = var.postgresql_k8s.base
+  units           = var.postgresql_k8s.units
 
 }
 
@@ -88,8 +88,8 @@ resource "juju_integration" "netbox_postgresql_database" {
   }
 
   application {
-    name     = module.postgresql.application_name
-    endpoint = module.postgresql.provides.ingress
+    name     = module.postgresql_k8s.application_name
+    endpoint = module.postgresql_k8s.provides.ingress
   }
 }
 
