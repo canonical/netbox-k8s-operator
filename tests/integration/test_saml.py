@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 @pytest.mark.usefixtures("netbox_saml_integration")
 def test_saml_integration(
-    netbox_nginx_integration: App,
+    netbox_ingress_integration: App,
     juju: jubilant.Juju,
     saml_helper,
     netbox_hostname: str,
@@ -30,12 +30,12 @@ def test_saml_integration(
     saml_integrator_app_name = "saml-integrator"
     juju.wait(
         lambda status: jubilant.all_active(
-            status, saml_integrator_app_name, netbox_nginx_integration.name
+            status, saml_integrator_app_name, netbox_ingress_integration.name
         ),
         timeout=600,
     )
     res = requests.get(
-        "https://127.0.0.1/",
+        "https://10.0.1.0/",
         headers={"Host": netbox_hostname},
         verify=False,
         timeout=30,
@@ -49,7 +49,7 @@ def test_saml_integration(
     session = requests.session()
 
     # Act part. Log in with SAML.
-    redirect_url = "https://127.0.0.1/oauth/login/saml/?next=%2F&idp=saml"
+    redirect_url = "https://10.0.1.0/oauth/login/saml/?next=%2F&idp=saml"
     res = session.get(
         redirect_url,
         headers={"Host": netbox_hostname},
@@ -63,7 +63,7 @@ def test_saml_integration(
     assert f"https://{netbox_hostname}" in saml_response.url
 
     # Assert part. Check that the user is logged in.
-    url = saml_response.url.replace(f"https://{netbox_hostname}", "https://127.0.0.1")
+    url = saml_response.url.replace(f"https://{netbox_hostname}", "https://10.0.1.0")
     logged_in_page = session.post(
         url,
         data=saml_response.data,
