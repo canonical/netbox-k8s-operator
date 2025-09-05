@@ -31,8 +31,16 @@ module "postgresql" {
 }
 
 module "saml_integrator" {
-  source          = "git::https://github.com/canonical/saml-integrator-operator//terraform"
-  saml_integrator = var.saml_integrator
+  source          = "git::https://github.com/canonical/saml-integrator-operator//terraform/charm"
+  app_name        = var.saml_integrator.app_name
+  channel         = var.saml_integrator.channel
+  config          = var.saml_integrator.config
+  constraints     = var.saml_integrator.constraints
+  juju_model_name = data.juju_model.netbox.name
+  revision        = var.saml_integrator.revision
+  base            = var.saml_integrator.base
+  units           = var.saml_integrator.units
+
 }
 
 module "redis_k8s" {
