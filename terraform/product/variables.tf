@@ -39,7 +39,7 @@ variable "postgresql" {
 variable "saml_integrator" {
   type = object({
     app_name    = optional(string, "saml-integrator")
-    channel     = optional(string, "latest/edge")
+    channel     = optional(string, "latest/stable")
     config      = optional(map(string), {})
     constraints = optional(string, "arch=amd64")
     revision    = optional(number)
