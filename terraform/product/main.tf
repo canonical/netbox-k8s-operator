@@ -30,7 +30,7 @@ module "postgresql" {
 
 }
 
-module "saml-integrator" {
+module "saml_integrator" {
   source          = "git::https://github.com/canonical/saml-integrator-operator//terraform"
   app_name        = var.saml_integrator.app_name
   channel         = var.saml_integrator.channel
