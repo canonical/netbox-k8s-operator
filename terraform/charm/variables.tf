@@ -4,25 +4,19 @@
 variable "app_name" {
   description = "Name of the application in the Juju model."
   type        = string
-  default     = "<charm-name>"
-}
-
-variable "base" {
-  description = "The operating system on which to deploy"
-  type        = string
-  default     = "ubuntu@22.04"
+  default     = "netbox-k8s"
 }
 
 variable "channel" {
   description = "The channel to use when deploying a charm."
   type        = string
-  default     = "4/edge"
+  default     = "latest/edge"
 }
 
 variable "config" {
   description = "Application config. Details about available options can be found at https://charmhub.io/netbox-k8s/configurations."
   type        = map(string)
-  default     = {}
+  default     = { "django-debug": "False", "django-allowed-hosts": "*" } # Update defaults as appropriate
 }
 
 variable "constraints" {
@@ -34,18 +28,19 @@ variable "constraints" {
 variable "model" {
   description = "Reference to a `juju_model`."
   type        = string
+  default     = ""
 }
 
 variable "revision" {
   description = "Revision number of the charm"
   type        = number
-  default     = 1
+  default     = null
 }
 
-variable "storage" {
-  description = "Map of storage used by the application."
-  type        = map(string)
-  default     = {}
+variable "base" {
+  description = "The operating system on which to deploy"
+  type        = string
+  default     = "ubuntu@22.04"
 }
 
 variable "units" {

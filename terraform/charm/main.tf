@@ -1,7 +1,7 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-resource "juju_application" "charm_name" {
+resource "juju_application" "netbox_k8s" {
   name  = var.app_name
   model = var.model
 
@@ -12,8 +12,7 @@ resource "juju_application" "charm_name" {
     base     = var.base
   }
 
-  config             = var.config
-  constraints        = var.constraints
-  units              = var.units
-  storage_directives = var.storage
+  config      = var.config
+  constraints = var.constraints
+  units       = var.units
 }
