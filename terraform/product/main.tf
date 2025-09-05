@@ -117,7 +117,7 @@ resource "juju_integration" "netbox_s3" {
 
   application {
     name     = module.s3.app_name
-    endpoint = module.s3.provides.s3
+    endpoint = module.s3.provides.s3_credentials
   }
 }
 
