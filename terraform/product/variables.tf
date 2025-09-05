@@ -36,6 +36,18 @@ variable "postgresql" {
   })
 }
 
+variable "saml_integrator" {
+  type = object({
+    app_name    = optional(string, "saml-integrator")
+    channel     = optional(string, "latest/edge")
+    config      = optional(map(string), {})
+    constraints = optional(string, "arch=amd64")
+    revision    = optional(number)
+    base        = optional(string, "ubuntu@22.04")
+    units       = optional(number, 1)
+  })
+}
+
 variable "traefik_k8s" {
   type = object({
     app_name    = optional(string, "traefik-k8s")
