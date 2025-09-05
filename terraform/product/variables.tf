@@ -6,36 +6,22 @@ variable "model" {
   type        = string
 }
 
-variable "db_model" {
-  description = "Reference to the VM Juju model to deploy database charm to."
-  type        = string
-}
-
 variable "model_user" {
   description = "Juju user used for deploying the application."
   type        = string
 }
 
-variable "db_model_user" {
-  description = "Juju user used for deploying database charms."
-  type        = string
-}
-
-variable "hockeypuck" {
+variable "netbox" {
   type = object({
-    app_name    = optional(string, "hockeypuck-k8s")
-    channel     = optional(string, "2.2/edge")
-    config      = optional(map(string), { "metrics-port" : 9626, "app-port" : 11371 })
+    app_name    = optional(string, "netbox-k8s")
+    channel     = optional(string, "latest/edge")
+    config      = optional(map(string), { }) 
     constraints = optional(string, "arch=amd64")
     revision    = optional(number)
-    base        = optional(string, "ubuntu@24.04")
+    base        = optional(string, "ubuntu@22.04")
     units       = optional(number, 1)
   })
 
-  validation {
-    condition     = var.hockeypuck.units == 1
-    error_message = "Hockeypuck doesn't support multi-unit Hockeypuck charm deployment"
-  }
 }
 
 variable "postgresql" {
@@ -58,6 +44,32 @@ variable "traefik_k8s" {
     constraints = optional(string, "arch=amd64")
     revision    = optional(number)
     base        = optional(string, "ubuntu@20.04")
+    units       = optional(number, 1)
+    storage     = optional(map(string), {})
+  })
+}
+
+variable "redis_k8s" {
+  type = object({
+    app_name    = optional(string, "redis-k8s")
+    channel     = optional(string, "latest/edge")
+    config      = optional(map(string), {})
+    constraints = optional(string, "arch=amd64")
+    revision    = optional(number, null)
+    base        = optional(string, "ubuntu@22.04")
+    units       = optional(number, 1)
+    storage     = optional(map(string), {})
+  })
+}
+
+variable "s3" {
+  type = object({
+    app_name    = optional(string, "s3-integrator")
+    channel     = optional(string, "latest/stable")
+    config      = optional(map(string), {})
+    constraints = optional(string, "arch=amd64")
+    revision    = optional(number, null)
+    base        = optional(string, "ubuntu@22.04")
     units       = optional(number, 1)
     storage     = optional(map(string), {})
   })
