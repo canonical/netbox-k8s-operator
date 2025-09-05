@@ -6,7 +6,7 @@ data "juju_model" "netbox" {
 }
 
 module "netbox_k8s" {
-  source      = "../"
+  source      = "../charm"
   app_name    = var.netbox.app_name
   channel     = var.netbox.channel
   config      = var.netbox.config
