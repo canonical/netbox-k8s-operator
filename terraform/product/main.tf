@@ -18,7 +18,7 @@ module "netbox_k8s" {
 }
 
 module "postgresql_k8s" {
-  source          = "git::https://github.com/canonical/postgresql-k8s-operator//terraform?ref=rev582"
+  source          = "git::https://github.com/canonical/postgresql-k8s-operator//terraform"
   app_name        = var.postgresql_k8s.app_name
   channel         = var.postgresql_k8s.channel
   config          = var.postgresql_k8s.config
