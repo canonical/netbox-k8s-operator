@@ -31,7 +31,7 @@ variable "postgresql_k8s" {
     config      = optional(map(string), {})
     constraints = optional(string, "arch=amd64")
     revision    = optional(number, 495)
-    base        = optional(string, "ubuntu@24.04")
+    base        = optional(string, "ubuntu@22.04")
     units       = optional(number, 1)
   })
 }
