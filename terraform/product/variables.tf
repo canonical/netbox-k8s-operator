@@ -27,10 +27,10 @@ variable "netbox_k8s" {
 variable "postgresql_k8s" {
   type = object({
     app_name    = optional(string, "postgresql-k8s")
-    channel     = optional(string, "14/edge")
+    channel     = optional(string, "14/stable")
     config      = optional(map(string), {})
     constraints = optional(string, "arch=amd64")
-    revision    = optional(number)
+    revision    = optional(number, 495)
     base        = optional(string, "ubuntu@24.04")
     units       = optional(number, 1)
   })
