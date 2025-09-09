@@ -23,8 +23,6 @@ extensions:
     - django-framework
 parts:
     django-framework/dependencies:
-        overlay-packages:
-            - ca-certificates
         build-packages:
             - pkg-config
             - libxmlsec1-dev
@@ -35,6 +33,7 @@ parts:
             - libxmlsec1-openssl
             # needed for postgresql (psycopg[c])
             - libpq5
+            - ca-certificates
         override-build: |-
             rm -f pyproject.toml
             craftctl default
