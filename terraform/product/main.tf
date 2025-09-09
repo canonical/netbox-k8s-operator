@@ -121,6 +121,20 @@ resource "juju_integration" "netbox_s3" {
   }
 }
 
+resource "juju_integration" "netbox_traefik" {
+  model = data.juju_model.netbox_k8s.name
+
+  application {
+    name     = module.netbox_k8s.app_name
+    endpoint = module.netbox_k8s.requires.ingress
+  }
+
+  application {
+    name     = module.traefik_k8s.app_name
+    endpoint = module.traefik_k8s.provides.ingress
+  }
+}
+
 # resource "juju_integration" "netbox_traefik_nginx" {
 #   model = data.juju_model.netbox_k8s.name
 
