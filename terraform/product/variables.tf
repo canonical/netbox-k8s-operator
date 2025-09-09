@@ -48,14 +48,14 @@ variable "saml_integrator" {
   })
 }
 
-variable "traefik_k8s" {
+variable "gateway_api_integrator" {
   type = object({
-    app_name    = optional(string, "traefik-k8s")
-    channel     = optional(string, "latest/stable")
+    app_name    = optional(string, "gateway-api-integrator")
+    channel     = optional(string, "latest/edge")
     config      = optional(map(string), {})
     constraints = optional(string, "arch=amd64")
     revision    = optional(number)
-    base        = optional(string, "ubuntu@20.04")
+    base        = optional(string, "ubuntu@24.04")
     units       = optional(number, 1)
     storage     = optional(map(string), {})
   })

@@ -134,31 +134,3 @@ resource "juju_integration" "netbox_gateway" {
     endpoint = module.gateway_api_integrator.provides.gateway
   }
 }
-
-# resource "juju_integration" "netbox_traefik_nginx" {
-#   model = data.juju_model.netbox_k8s.name
-
-#   application {
-#     name     = module.netbox_k8s.app_name
-#     endpoint = module.netbox_k8s.requires.ingress
-#   }
-
-#   application {
-#     name     = module.traefik_k8s.app_name
-#     endpoint = module.traefik_k8s.provides.ingress
-#   }
-# }
-
-# resource "juju_integration" "netbox_traefik_traefik_route" {
-#   model = data.juju_model.netbox_k8s.name
-
-#   application {
-#     name     = module.netbox_k8s.app_name
-#     endpoint = module.netbox_k8s.requires.traefik_route
-#   }
-
-#   application {
-#     name     = module.traefik_k8s.app_name
-#     endpoint = module.traefik_k8s.provides.traefik_route
-#   }
-# }
