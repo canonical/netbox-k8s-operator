@@ -271,11 +271,14 @@ if "DJANGO_OIDC_CLIENT_ID" in os.environ:
     REMOTE_AUTH_ENABLED = True
     REMOTE_AUTH_BACKEND = 'social_core.backends.open_id_connect.OpenIdConnectAuth'
 
-    SOCIAL_AUTH_OIDC_ENDPOINT = os.environ.get("DJANGO_OIDC_ENDPOINT")
+    SOCIAL_AUTH_OIDC_ENDPOINT = os.environ.get("DJANGO_OIDC_API_BASE_URL")
     SOCIAL_AUTH_OIDC_KEY = os.environ.get("DJANGO_OIDC_CLIENT_ID")
     SOCIAL_AUTH_OIDC_SECRET = os.environ.get("DJANGO_OIDC_CLIENT_SECRET")
     SOCIAL_AUTH_OIDC_SCOPE = os.environ.get("DJANGO_OIDC_SCOPES").split(",") if os.environ.get("OIDC_SCOPES") else ["openid", "profile", "email"]
     SOCIAL_AUTH_VERIFY_SSL = False
+    SOCIAL_AUTH_LOGIN_URL = os.environ.get("DJANGO_OIDC_REDIRECT_PATH") 
+    SOCIAL_AUTH_OIDC_USERNAME_KEY="email"
+
 
 REMOTE_AUTH_AUTO_CREATE_USER = True
 REMOTE_AUTH_DEFAULT_GROUPS = []
