@@ -6,6 +6,7 @@
 import json
 import logging
 import re
+from urllib.parse import urlparse
 
 import jubilant
 import requests
@@ -111,13 +112,16 @@ def _assert_idp_login_success(app_url: str, endpoint: str, test_email: str, test
         browser = p.chromium.launch(headless=True)
         context = browser.new_context(ignore_https_errors=True)
         page = context.new_page()
-        page.goto(f"{app_url}/oauth/login/oidc/")
-        logger.info("Page content: %s", page.content())
+        return_path = urlparse(url=app_url).path
+        page.goto(f"{app_url}/oauth/login/oidc/?next={return_path}/")
         expect(page).not_to_have_title(re.compile("Sign in failed"))
         page.get_by_label("Email").fill(test_email)
         page.get_by_label("Password").fill(test_password)
         page.get_by_role("button", name="Sign in").click()
-        assert "<title>Home | NetBox</title>" in page.content()
+        expect(page).to_have_url(f"{app_url}/")
+        cont = page.content()
+        assert "<title>Home | NetBox</title>" in cont
+        cont = page.content()
         # The user is logged in.
-        assert "Log Out" in page.content()
         assert test_email in page.content()
+        assert "Log Out" in page.content()
