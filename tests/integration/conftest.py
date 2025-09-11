@@ -440,6 +440,7 @@ def netbox_app_fixture(
 
     return App(netbox_barebones.name)
 
+
 @pytest.fixture(scope="module", name="identity_bundle")
 def deploy_identity_bundle_fixture(juju: jubilant.Juju):
     """Deploy Canonical identity bundle."""
@@ -449,6 +450,7 @@ def deploy_identity_bundle_fixture(juju: jubilant.Juju):
     juju.deploy("identity-platform", channel="latest/edge", trust=True)
     juju.remove_application("kratos-external-idp-integrator")
     juju.config("kratos", {"enforce_mfa": False})
+
 
 @pytest.fixture(scope="session")
 def browser_context_manager():

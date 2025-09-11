@@ -16,6 +16,10 @@ from tests.integration.types import App
 logger = logging.getLogger(__name__)
 
 
+# Pylint thinks there are too many local variables, but that's not true.
+# pylint: disable=too-many-locals, unused-argument
+
+
 def test_oauth_integrations(
     juju: jubilant.Juju,
     netbox_app: App,
@@ -37,7 +41,8 @@ def test_oauth_integrations(
     app = netbox_app
     status = juju.status()
 
-    if not status.apps.get(app.name).relations.get("ingress"):
+    # mypy things status.apps is possibly None, but we if it's None, something is very wrong
+    if not status.apps.get(app.name).relations.get("ingress"):  # type: ignore
         juju.integrate(f"{app.name}", "traefik-public")
 
     juju.wait(
@@ -46,7 +51,7 @@ def test_oauth_integrations(
         delay=5,
     )
 
-    if not status.apps.get(app.name).relations.get("oidc"):
+    if not status.apps.get(app.name).relations.get("oidc"):  # type: ignore
         juju.integrate(f"{app.name}", "hydra")
 
     juju.wait(
@@ -91,15 +96,17 @@ def test_oauth_integrations(
 
 
 def _admin_identity_exists(juju, test_email):
+    """Check if the admin identity already exists in Kratos."""
     try:
         res = juju.run("kratos/0", "get-identity", {"email": test_email})
         return res.status == "completed"
     except jubilant.TaskError as e:
-        logger.info(f"Error checking admin identity: {e}")
+        logger.info("Error checking admin identity: %s", e)
         return False
 
 
 def _assert_idp_login_success(app_url: str, endpoint: str, test_email: str, test_password: str):
+    """Use playwright to test the OIDC login flow."""
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         context = browser.new_context(ignore_https_errors=True)
