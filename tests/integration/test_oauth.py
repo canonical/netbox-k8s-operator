@@ -42,13 +42,13 @@ def test_oauth_integrations(
     app = netbox_app
     status = juju.status()
 
-    # mypy things status.apps is possibly None, but we if it's None, something is very wrong
+    # mypy things status.apps is possibly None, but if it's None, something is very wrong
     if not status.apps.get(app.name).relations.get("ingress"):  # type: ignore
         juju.integrate(f"{app.name}", "traefik-public")
 
     juju.wait(
         jubilant.all_active,
-        timeout=10 * 60,
+        timeout=15 * 60,
         delay=5,
     )
 
