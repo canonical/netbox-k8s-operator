@@ -16,17 +16,6 @@ from tests.integration.types import App
 logger = logging.getLogger(__name__)
 
 
-# @pytest.mark.parametrize(
-#     "app_fixture, endpoint",
-#     [
-#         ("expressjs_app", "login"),
-#         ("go_app", "login/openid-connect"),
-#         ("fastapi_app", "login"),
-#         ("spring_boot_app", "oauth2/authorization/oidc"),
-#         ("flask_app", "login"),
-#         ("django_app", "auth_login"),
-#     ],
-# )
 def test_oauth_integrations(
     juju: jubilant.Juju,
     netbox_app: App,
@@ -35,9 +24,9 @@ def test_oauth_integrations(
     http: requests.Session,
 ):
     """
-    arrange: set up the test Juju model and deploy the workload charm.
+    arrange: set up the test Juju model and deploy the NetBox charm.
     act: integrate with ingress and hydra.
-    assert: the workload charm uses the Kratos charm as the idp.
+    assert: the NetBox charm uses the Kratos charm as the idp.
     """
     endpoint = "login"
     test_email = "test@example.com"
