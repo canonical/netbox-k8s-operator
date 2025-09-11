@@ -58,7 +58,7 @@ config:
     oidc-redirect-path:
       type: string
       description: The path that the user will be redirected upon completing login.
-      default: /callback
+      default: /oauth/complete/oidc/
     oidc-scopes:
       type: string
       description: A list of scopes with spaces in between.
