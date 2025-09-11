@@ -9,6 +9,7 @@ import re
 from urllib.parse import urlparse
 
 import jubilant
+import pytest
 import requests
 from playwright.sync_api import expect, sync_playwright
 
@@ -19,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 # Pylint thinks there are too many local variables, but that's not true.
 # pylint: disable=too-many-locals, unused-argument
+
 
 @pytest.mark.usefixtures("identity_bundle")
 @pytest.mark.usefixtures("browser_context_manager")
