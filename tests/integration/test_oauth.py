@@ -20,12 +20,11 @@ logger = logging.getLogger(__name__)
 # Pylint thinks there are too many local variables, but that's not true.
 # pylint: disable=too-many-locals, unused-argument
 
-
+@pytest.mark.usefixtures("identity_bundle")
+@pytest.mark.usefixtures("browser_context_manager")
 def test_oauth_integrations(
     juju: jubilant.Juju,
     netbox_app: App,
-    identity_bundle,
-    browser_context_manager,
     http: requests.Session,
 ):
     """

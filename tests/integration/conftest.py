@@ -442,7 +442,7 @@ def netbox_app_fixture(
 
 
 @pytest.fixture(scope="module", name="identity_bundle")
-def deploy_identity_bundle_fixture(juju: jubilant.Juju):
+def deploy_identity_bundle_fixture(juju: jubilant.Juju) -> None:
     """Deploy Canonical identity bundle."""
     if juju.status().apps.get("hydra"):
         logger.info("identity-platform is already deployed")
@@ -453,10 +453,10 @@ def deploy_identity_bundle_fixture(juju: jubilant.Juju):
 
 
 @pytest.fixture(scope="session")
-def browser_context_manager():
+def browser_context_manager() -> None:
     """
-    A session-scoped fixture that installs the Playwright browser
-    and yields. This ensures the browser is installed only for oauth test.
+    A session-scoped fixture that installs the Playwright browser.
+    This ensures the browser is installed only for oauth test.
     """
     try:
         subprocess.run(
@@ -465,15 +465,12 @@ def browser_context_manager():
             capture_output=True,
             text=True,
         )
-        print("Chromium installation complete.")
     except subprocess.CalledProcessError as e:
         pytest.fail(f"Failed to install Playwright browser: {e.stderr}")
 
-    yield
-
 
 @pytest.fixture(scope="function", name="http")
-def fixture_http_client():
+def fixture_http_client() -> Generator[requests.Session]:
     """Return the --test-flask-image test parameter."""
     retry_strategy = Retry(
         total=5,

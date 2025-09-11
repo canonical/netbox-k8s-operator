@@ -61,5 +61,5 @@ config:
       default: /oauth/complete/oidc/
     oidc-scopes:
       type: string
-      description: A list of scopes with spaces in between.
+      description: List of scopes separated by spaces.
       default: "openid profile email"
