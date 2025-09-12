@@ -12,7 +12,7 @@ jobs:
         [
           "test_charm.py",
           "test_s3.py",
-          "test_saml.py"
+          "test_oauth.py"
         ]
       load-test-enabled: false
       trivy-fs-enabled: true
