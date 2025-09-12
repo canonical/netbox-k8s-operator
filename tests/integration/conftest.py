@@ -220,17 +220,8 @@ def juju(request: pytest.FixtureRequest) -> Generator[jubilant.Juju, None, None]
     with jubilant.temp_model(keep=keep_models) as juju:
         juju.wait_timeout = 10 * 60
         yield juju
-        if not keep_models:
-            _cleanup(juju)
         show_debug_log(juju)
         return
-
-def _cleanup(juju: jubilant.Juju):
-    """Remove the test artifacts created during the test."""
-    status = juju.status()
-
-    for app in status.apps:
-        juju.remove_application(app, force=True, destroy_storage=True)
 
 
 @pytest.fixture(scope="module", name="minio_app")
@@ -250,6 +241,7 @@ def minio_app_fixture(juju: jubilant.Juju, s3_netbox_credentials):
     juju.wait(lambda status: status.apps[MINIO_APP_NAME].is_active, timeout=60 * 30)
     return App(MINIO_APP_NAME)
 
+
 @pytest.fixture(scope="module", name="gateway_app")
 def gateway_app_fixture(
     juju: jubilant.Juju,
@@ -261,6 +253,7 @@ def gateway_app_fixture(
 
     juju.deploy(GATEWAY_APP_NAME, base="ubuntu@24.04", channel="latest/edge", trust=True)
     return App(GATEWAY_APP_NAME)
+
 
 @pytest.fixture(scope="module", name="netbox_ingress_integration")
 def netbox_ingress_integration_fixture(
@@ -442,7 +435,7 @@ def netbox_app_fixture(
 
 
 @pytest.fixture(scope="module", name="identity_bundle")
-def deploy_identity_bundle_fixture(juju: jubilant.Juju) -> None:
+def deploy_identity_bundle_fixture(juju: jubilant.Juju) -> Generator[None]:
     """Deploy Canonical identity bundle."""
     if juju.status().apps.get("hydra"):
         logger.info("identity-platform is already deployed")
@@ -450,6 +443,20 @@ def deploy_identity_bundle_fixture(juju: jubilant.Juju) -> None:
     juju.deploy("identity-platform", channel="latest/edge", trust=True)
     juju.remove_application("kratos-external-idp-integrator")
     juju.config("kratos", {"enforce_mfa": False})
+
+    yield
+
+    # Remove the apps in CI
+    if juju.status().model.name == "testing":
+        _cleanup(juju)
+
+
+def _cleanup(juju: jubilant.Juju):
+    """Remove the test artifacts created during the test."""
+    status = juju.status()
+
+    for app in status.apps:
+        juju.remove_application(app, force=True, destroy_storage=True)
 
 
 @pytest.fixture(scope="session")
