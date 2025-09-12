@@ -220,8 +220,17 @@ def juju(request: pytest.FixtureRequest) -> Generator[jubilant.Juju, None, None]
     with jubilant.temp_model(keep=keep_models) as juju:
         juju.wait_timeout = 10 * 60
         yield juju
+        if not keep_models:
+            _cleanup(juju)
         show_debug_log(juju)
         return
+
+def _cleanup(juju: jubilant.Juju):
+    """Remove the test artifacts created during the test."""
+    status = juju.status()
+
+    for app in status.apps:
+        juju.remove_application(app, force=True, destroy_storage=True)
 
 
 @pytest.fixture(scope="module", name="minio_app")
