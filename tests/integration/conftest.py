@@ -446,9 +446,7 @@ def deploy_identity_bundle_fixture(juju: jubilant.Juju) -> Generator[None]:
 
     yield
 
-    # Remove the apps in CI
-    if juju.status().model.name == "testing":
-        _cleanup(juju)
+    _cleanup(juju)
 
 
 def _cleanup(juju: jubilant.Juju):
