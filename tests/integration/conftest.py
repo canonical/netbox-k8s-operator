@@ -456,6 +456,12 @@ def browser_context_manager() -> None:
             capture_output=True,
             text=True,
         )
+        subprocess.run(
+            ["python", "-m", "playwright", "install-deps"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
     except subprocess.CalledProcessError as e:
         pytest.fail(f"Failed to install Playwright browser: {e.stderr}")
 
