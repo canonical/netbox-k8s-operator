@@ -23,7 +23,5 @@ jobs:
         -c './download_netbox.sh'
       use-canonical-k8s: true
       provider: 'k8s'
-      extra-arguments: |
-        --kube-config=~/.kube/config
       self-hosted-runner: true
       self-hosted-runner-label: xlarge
