@@ -4,17 +4,17 @@
 variable "app_name" {
   description = "Name of the application in the Juju model."
   type        = string
-  default     = "gateway-api-integrator"
+  default     = "traefik-k8s"
 }
 
 variable "channel" {
   description = "The channel to use when deploying a charm."
   type        = string
-  default     = "latest/edge"
+  default     = "latest/stable"
 }
 
 variable "config" {
-  description = "Application config. Details about available options can be found at https://charmhub.io/gateway-api-integrator/configure."
+  description = "Application config. Details about available options can be found at https://charmhub.io/traefik-k8s/configurations."
   type        = map(string)
   default     = {}
 }
@@ -22,7 +22,7 @@ variable "config" {
 variable "constraints" {
   description = "Juju constraints to apply for this application."
   type        = string
-  default     = "arch=amd64"
+  default     = null
 }
 
 variable "model" {
@@ -40,7 +40,7 @@ variable "revision" {
 variable "base" {
   description = "The operating system on which to deploy"
   type        = string
-  default     = "ubuntu@24.04"
+  default     = "ubuntu@20.04"
 }
 
 variable "units" {
