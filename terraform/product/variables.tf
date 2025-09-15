@@ -36,9 +36,9 @@ variable "postgresql_k8s" {
   })
 }
 
-variable "saml_integrator" {
+variable "self_signed_certificates" {
   type = object({
-    app_name    = optional(string, "saml-integrator")
+    app_name    = optional(string, "self-signed-certificates")
     channel     = optional(string, "latest/stable")
     config      = optional(map(string), {})
     constraints = optional(string, "arch=amd64")
@@ -48,14 +48,14 @@ variable "saml_integrator" {
   })
 }
 
-variable "gateway_api_integrator" {
+variable "traefik_k8s" {
   type = object({
-    app_name    = optional(string, "gateway-api-integrator")
-    channel     = optional(string, "latest/edge")
+    app_name    = optional(string, "traefik-k8s")
+    channel     = optional(string, "latest/stable")
     config      = optional(map(string), {})
     constraints = optional(string, "arch=amd64")
     revision    = optional(number)
-    base        = optional(string, "ubuntu@24.04")
+    base        = optional(string, "ubuntu@20.04")
     units       = optional(number, 1)
     storage     = optional(map(string), {})
   })

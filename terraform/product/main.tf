@@ -30,19 +30,6 @@ module "postgresql_k8s" {
 
 }
 
-module "saml_integrator" {
-  source          = "git::https://github.com/canonical/saml-integrator-operator//terraform/charm"
-  app_name        = var.saml_integrator.app_name
-  channel         = var.saml_integrator.channel
-  config          = var.saml_integrator.config
-  constraints     = var.saml_integrator.constraints
-  model           = data.juju_model.netbox_k8s.name
-  revision        = var.saml_integrator.revision
-  base            = var.saml_integrator.base
-  units           = var.saml_integrator.units
-
-}
-
 module "redis_k8s" {
   source      = "./modules/redis-k8s"
   app_name    = var.redis_k8s.app_name
@@ -77,6 +64,18 @@ module "traefik_k8s" {
   revision    = var.traefik_k8s.revision
   base        = var.traefik_k8s.base
   units       = var.traefik_k8s.units
+}
+
+module self_signed_certificates {
+  source      = "./modules/self-signed-certificates"
+  app_name    = var.self_signed_certificates.app_name
+  channel     = var.self_signed_certificates.channel
+  config      = var.self_signed_certificates.config
+  constraints = var.self_signed_certificates.constraints
+  model       = data.juju_model.netbox_k8s.name
+  revision    = var.self_signed_certificates.revision
+  base        = var.self_signed_certificates.base
+  units       = var.self_signed_certificates.units
 }
 
 resource "juju_integration" "netbox_postgresql_database" {
@@ -132,5 +131,19 @@ resource "juju_integration" "netbox_traefik" {
   application {
     name     = module.traefik_k8s.app_name
     endpoint = module.traefik_k8s.provides.ingress
+  }
+}
+
+resource "juju_integration" "traefik_certs" {
+  model = data.juju_model.netbox_k8s.name
+
+  application {
+    name     = module.traefik_k8s.app_name
+    endpoint = module.traefik_k8s.requires.certificates
+  }
+
+  application {
+    name     = module.self_signed_certificates.app_name
+    endpoint = module.self_signed_certificates.provides.certificates
   }
 }
