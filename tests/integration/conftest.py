@@ -504,6 +504,7 @@ def prometheus_app_name_fixture() -> str:
     """Return the name of the prometheus application deployed for tests."""
     return "prometheus-k8s"
 
+
 @pytest.fixture(scope="module", name="loki_app_name")
 def loki_app_name_fixture() -> str:
     """Return the name of the prometheus application deployed for tests."""
@@ -514,6 +515,7 @@ def loki_app_name_fixture() -> str:
 def grafana_app_name_fixture() -> str:
     """Return the name of the grafana application deployed for tests."""
     return "grafana-k8s"
+
 
 @pytest.fixture(scope="module", name="prometheus_app")
 def deploy_prometheus_fixture(
@@ -558,7 +560,7 @@ def deploy_cos_fixture(
     loki_app,
     prometheus_app,
     grafana_app_name: str,
-) -> dict[str:App]:
+) -> dict[str, App]:
     """Deploy the cos applications."""
     if not juju.status().apps.get(grafana_app_name):
         juju.deploy(

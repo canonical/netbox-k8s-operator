@@ -8,7 +8,6 @@ import logging
 import time
 
 import jubilant
-import pytest
 import requests
 
 from tests.integration.types import App

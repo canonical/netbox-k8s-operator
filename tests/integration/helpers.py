@@ -9,9 +9,9 @@ import string
 
 import jubilant
 import requests
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 from tests.integration.types import App
-from tenacity import retry, stop_after_attempt, wait_exponential, wait_fixed
 
 logger = logging.getLogger(__name__)
 
@@ -57,11 +57,17 @@ def get_new_admin_token(juju: jubilant.Juju, netbox_app: App, netbox_base_url: s
 
 @retry(stop=stop_after_attempt(5), wait=wait_fixed(5))
 def check_grafana_datasource_types_patiently(
-    grafana_session: requests.session,
+    grafana_session: requests.Session,
     grafana_ip: str,
     expected_datasource_types: list[str],
 ):
-    """Get datasources directly from Grafana REST API, but also try multiple times."""
+    """Get datasources directly from Grafana REST API, but also try multiple times.
+
+    Args:
+        grafana_session: Session with Grafana credentials already set.
+        grafana_ip: IP address of Grafana unit.
+        expected_datasource_types: List of expected datasource types to check for.
+    """
     url = f"http://{grafana_ip}:3000/api/datasources"
     datasources = grafana_session.get(url, timeout=10).json()
     datasource_types = set(datasource["type"] for datasource in datasources)
@@ -71,10 +77,16 @@ def check_grafana_datasource_types_patiently(
 
 @retry(stop=stop_after_attempt(5), wait=wait_fixed(15))
 def check_grafana_dashboards_patiently(
-    grafana_session: requests.session, grafana_ip: str, dashboard: str
+    grafana_session: requests.Session, grafana_ip: str, dashboard: str
 ):
     """Check if dashboard can be found in Grafana directly from Grafana REST API,
-    but also try multiple times."""
+    but also try multiple times.
+
+    Args:
+        grafana_session: Session with Grafana credentials already set.
+        grafana_ip: IP address of Grafana unit.
+        dashboard: Name of dashboard to search for.
+    """
     dashboards = grafana_session.get(
         f"http://{grafana_ip}:3000/api/search",
         timeout=10,

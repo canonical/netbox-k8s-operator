@@ -7,7 +7,6 @@
 import logging
 
 import jubilant
-import pytest
 import requests
 
 from tests.integration.helpers import (
@@ -22,7 +21,7 @@ logger = logging.getLogger(__name__)
 def test_grafana_integration(
     netbox_app: App,
     juju: jubilant.Juju,
-    cos_apps: dict[str:App],
+    cos_apps: dict[str, App],
     http: requests.Session,
 ):
     """
