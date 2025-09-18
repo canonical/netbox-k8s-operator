@@ -9,7 +9,7 @@ This tutorial will allow you to test NetBox locally in the easiest possible way 
 ## What you'll do
 
 - Install [Multipass](https://multipass.run)
-- [Launch NetBox with a Multipass VM](#Launch NetBox with a Multipass VM)
+- [Launch NetBox with a Multipass VM](#launch-netbox-with-a-multipass-vm-5)
 
 ## Prerequisites
 
@@ -28,11 +28,11 @@ Follow the instruction in [https://multipass.run/install](https://multipass.run/
 <!-- vale Canonical.007-Headings-sentence-case = YES -->
 
 You will launch a VM named `netbox` with Multipass, using the
-[cloud init configuration](https://raw.githubusercontent.com/canonical/netbox-k8s/main/charm/cloudinit-juju-3.6.yaml)
+[cloud init configuration](https://raw.githubusercontent.com/canonical/netbox/main/charm/cloudinit-juju-3.1.yaml)
 that will install NetBox. This process will take about 20 minutes, depending on your computer and internet connection.
 Run the next command to provision the VM with NetBox:
 ```
-multipass launch  -vvvv --cloud-init https://raw.githubusercontent.com/canonical/netbox-k8s/main/charm/cloudinit-juju-3.6.yaml --timeout 1800 --name netbox --memory 4G --cpus 3 --disk 20G 22.04
+multipass launch  -vvvv --cloud-init https://raw.githubusercontent.com/canonical/netbox/main/charm/cloudinit-juju-3.1.yaml --timeout 1800 --name netbox --memory 4G --cpus 3 --disk 20G 22.04
 ```
 
 Congratulations, at this point your NetBox instance is installed and working. You can get the Netbox URL
@@ -41,12 +41,12 @@ with the following command:
 multipass exec netbox -- juju run traefik-k8s/0 show-proxied-endpoints --format=yaml
 ```
 
-The previous command will output a URL similar to `http://<your VM ip>/netbox-netbox-k8s`. Open it with
+The previous command will output a URL similar to `http://<your VM ip>/netbox-netbox`. Open it with
 with your favourite internet browser. However, you will not be able to do much without a user.
 
 You can create an admin user with the next command:
 ```
-multipass exec netbox -- juju run netbox-k8s/leader create-superuser username=admin email=netbox@example.com
+multipass exec netbox -- juju run netbox/leader create-superuser username=admin email=netbox@example.com
 ```
 
 The output of the previous command will output a password. You can now log in into the NetBox

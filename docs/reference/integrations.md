@@ -1,3 +1,3 @@
 # Integrations
 
-See [Integrations](https://charmhub.io/netbox-k8s/integrations).
+See [Integrations](https://charmhub.io/netbox/integrations).

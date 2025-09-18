@@ -30,17 +30,17 @@ pod gets rescheduled, those files will be lost.
 Giving the limitations of NetBox for scripts and reports, the alternative
 is using a Data Source, and creating the scripts and reports from
 the Data Source, using the "Auto sync enabled" checkbox. Using this checkbox,
-the scripts and reports will be synchronized every five minutes in all
+the scripts and reports will be synchronized every 5 minutos in all
 units. See [Configure Scripts and Reports for HA](how-to/configure-scripts-reports.md)
 for more information.
 
 ## Other resources
 
-* [NetBox upstream repository](https://github.com/netbox-community/netbox)
+* [Netbox upstream repository](https://github.com/netbox-community/netbox)
 * [Get support](https://discourse.charmhub.io/)
 * [Join our online chat](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)
-* [Contribute](https://charmhub.io/netbox-k8s/docs/contributing)
-* [Getting Started](https://charmhub.io/netbox-k8s/docs/getting-started)
+* [Contribute](https://charmhub.io/netbox/docs/contributing)
+* [Getting Started](https://charmhub.io/netbox/docs/getting-started)
 * [Juju SDK documentation](https://juju.is/docs/sdk) for more information about developing and improving charms.
 
 ## Contributing to this documentation
@@ -56,19 +56,19 @@ you see that’s wrong, or ask a question, or make a suggestion about a
 potential change via the comments section.
 
 If there’s a particular area of documentation that you’d like to see that’s
-missing, please [file a bug](https://github.com/canonical/netbox-k8s-operator/issues).
+missing, please [file a bug](https://github.com/canonical/netbox/issues).
 
 # Contents
 
 1. [Tutorial](tutorial)
   1. [Getting Started](tutorial/getting-started.md)
-  1. [Testing NetBox](tutorial/testing-netbox.md)
+  1. [Testing Netbox](tutorial/testing-netbox.md)
 1. [How To](how-to)
   1. [Contribute](how-to/contribute.md)
-  2. [Configure SAML](how-to/configure-saml.md)
-  3. [Configure Scripts and Reports for HA](how-to/configure-scripts-reports.md)
+  1. [Configure SAML](how-to/configure-saml.md)
+  1. [Configure Scripts and Reports for HA](how-to/configure-scripts-reports.md)
 1. [Reference](reference)
   1. [Actions](reference/actions.md)
-  2. [Integrations](reference/integrations.md)
+  1. [Integrations](reference/integrations.md)
 1. [Explanation](explanation)
   1. [Charm Architecture](explanation/charm-architecture.md)
