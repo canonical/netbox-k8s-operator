@@ -10,7 +10,7 @@ variable "app_name" {
 variable "channel" {
   description = "The channel to use when deploying a charm."
   type        = string
-  default     = "latest/edge"
+  default     = "4/edge"
 }
 
 variable "config" {
@@ -40,7 +40,7 @@ variable "revision" {
 variable "base" {
   description = "The operating system on which to deploy"
   type        = string
-  default     = "ubuntu@22.04"
+  default     = "ubuntu@24.04"
 }
 
 variable "units" {
