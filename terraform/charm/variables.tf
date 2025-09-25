@@ -16,7 +16,7 @@ variable "channel" {
 variable "config" {
   description = "Application config. Details about available options can be found at https://charmhub.io/netbox-k8s/configurations."
   type        = map(string)
-  default     = { "django-debug": "False", "django-allowed-hosts": "*" } # Update defaults as appropriate
+  default     = { "django-debug" : "False", "django-allowed-hosts" : "*" } # Update defaults as appropriate
 }
 
 variable "constraints" {

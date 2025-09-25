@@ -15,7 +15,7 @@ variable "netbox_k8s" {
   type = object({
     app_name    = optional(string, "netbox-k8s")
     channel     = optional(string, "4/edge")
-    config      = optional(map(string), { }) 
+    config      = optional(map(string), {})
     constraints = optional(string, "arch=amd64")
     revision    = optional(number)
     base        = optional(string, "ubuntu@24.04")

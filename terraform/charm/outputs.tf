@@ -8,12 +8,12 @@ output "app_name" {
 
 output "requires" {
   value = {
-    ingress       = "ingress"
-    logging       = "logging"
-    postgresql    = "postgresql"
-    redis         = "redis"
-    s3            = "s3"
-    saml          = "saml"
+    ingress    = "ingress"
+    logging    = "logging"
+    postgresql = "postgresql"
+    redis      = "redis"
+    s3         = "s3"
+    saml       = "saml"
   }
 }
 

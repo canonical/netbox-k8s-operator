@@ -53,7 +53,7 @@ module "traefik_k8s" {
   units       = var.traefik_k8s.units
 }
 
-module self_signed_certificates {
+module "self_signed_certificates" {
   source      = "./modules/self-signed-certificates"
   app_name    = var.self_signed_certificates.app_name
   channel     = var.self_signed_certificates.channel
