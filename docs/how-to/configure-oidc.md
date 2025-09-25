@@ -1,4 +1,6 @@
+<!-- vale Canonical.007-Headings-sentence-case = NO -->
 # Configure OIDC
+<!-- vale Canonical.007-Headings-sentence-case = YES -->
 
 The NetBox charm makes use of the oauth integration for OIDC. You can find
 more information in [charmhub](https://charmhub.io/integrations/oauth).
