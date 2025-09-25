@@ -1,6 +1,6 @@
 # Configure scripts and reports for high availability
 
-The NetBox charm is designed with high availability (HA) in mind. As there is no support
+The NetBox K8s charm is designed with high availability (HA) in mind. As there is no support
 for a shared filesystem, this implies that reports and scripts should not be uploaded as file uploads,
 as they will not work correctly with multiple instances and there is risk of data loss.
 
