@@ -65,7 +65,7 @@ missing, please [file a bug](https://github.com/canonical/netbox-k8s-operator/is
   1. [Testing NetBox](tutorial/testing-netbox.md)
 1. [How To](how-to)
   1. [Contribute](how-to/contribute.md)
-  2. [Configure SAML](how-to/configure-saml.md)
+  2. [Configure OIDC](how-to/configure-oidc.md)
   3. [Configure Scripts and Reports for HA](how-to/configure-scripts-reports.md)
 1. [Reference](reference)
   1. [Actions](reference/actions.md)

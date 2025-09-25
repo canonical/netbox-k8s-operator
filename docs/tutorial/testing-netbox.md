@@ -2,7 +2,7 @@
 # Test NetBox
 <!-- vale Canonical.007-Headings-sentence-case = YES -->
 
-We recommend the [Getting Started Tutorial](./getting-started.md) to get familiarised with NetBox in a Juju deployment.
+We recommend the [Getting Started Tutorial](./getting-started.md) to get familiarised with NetBox K8s in a Juju deployment.
 
 This tutorial will allow you to test NetBox locally in the easiest possible way (not recommended for a production environment).
 

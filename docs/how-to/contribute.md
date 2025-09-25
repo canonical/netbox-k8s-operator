@@ -3,7 +3,7 @@
 ## Overview
 
 This document explains the processes and practices recommended for contributing
-enhancements to the NetBox operator.
+enhancements to the NetBox NetBox K8s operator.
 
 - Generally, before developing enhancements to this charm, you should consider
 [opening an issue](https://github.com/canonical/netbox-k8s-operator/issues)
@@ -82,7 +82,7 @@ juju add-model netbox-dev
 # Enable DEBUG logging
 juju model-config logging-config="<root>=INFO;unit=DEBUG"
 # Deploy the charm (assuming you're on amd64)
-juju deploy ./netbox_ubuntu-22.04-amd64.charm \
+juju deploy ./netbox-k8s_ubuntu-22.04-amd64.charm \
   --resource django-app-image=localhost:32000/netbox:latest
 ```
 
@@ -93,7 +93,7 @@ done with:
 
 ```bash
 juju deploy redis-k8s --channel=latest/edge
-juju integrate redis-k8s netbox
+juju integrate redis-k8s netbox-k8s
 ```
 
 NetBox is built using Django. It is necessary to set the
@@ -115,4 +115,4 @@ juju integrate postgresql-k8s netbox-k8s
 
 ## Canonical contributor agreement
 
-Canonical welcomes contributions to the NetBox Operator. Please check out our [contributor agreement](https://ubuntu.com/legal/contributors) if you're interested in contributing to the solution.
+Canonical welcomes contributions to the NetBox K8s Operator. Please check out our [contributor agreement](https://ubuntu.com/legal/contributors) if you're interested in contributing to the solution.

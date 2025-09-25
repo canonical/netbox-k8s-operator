@@ -1,7 +1,7 @@
 # Getting started
 
 ## What you’ll do
-- Deploy the NetBox charm.
+- Deploy the NetBox K8s charm.
 - Integrate with Redis using the redis-k8s charm.
 - Integrate with the PostgreSQL K8s charm.
 - Integrate with S3 for storage.
@@ -31,13 +31,13 @@ juju add-model netbox-tutorial
 
 ## Deploy
 
-Deploy the NetBox charm, with all its mandatory requirements (PostgreSQL, Redis and S3).
+Deploy the NetBox K8s charm, with all its mandatory requirements (PostgreSQL, Redis and S3).
 
 ```
 juju deploy netbox-k8s
 ```
 
-At this point NetBox should be blocked as there is no S3 integration for
+At this point NetBox K8s should be blocked as there is no S3 integration for
 storage, Redis or PostgreSQL.
 
 Set the allowed hosts. In this example every host is allowed. For a production environment
@@ -48,19 +48,19 @@ juju config netbox-k8s django-allowed-hosts='*'
 
 ### Redis
 
-NetBox requires Redis to work. You can deploy Redis with redis-k8s:
+NetBox K8s requires Redis to work. You can deploy Redis with redis-k8s:
 ```
 juju deploy redis-k8s --channel=latest/edge
 ```
 
-Integrate redis-k8s with NetBox with:
+Integrate redis-k8s with NetBox K8s with:
 ```
 juju integrate redis-k8s netbox-k8s
 ```
 
 ### Deploy PostgreSQL
 
-NetBox requires PostgreSQL to work. Deploy and integrate with:
+NetBox K8s requires PostgreSQL to work. Deploy and integrate with:
 ```
 juju deploy postgresql-k8s --channel 14/stable --trust
 juju integrate postgresql-k8s netbox-k8s

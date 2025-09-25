@@ -5,13 +5,11 @@ name: netbox-k8s
 
 type: charm
 
-bases:
-  - build-on:
-    - name: ubuntu
-      channel: "22.04"
-    run-on:
-    - name: ubuntu
-      channel: "22.04"
+base: ubuntu@24.04
+
+platforms:
+  amd64:
+
 
 summary: NetBox is a solution for modeling and documenting network infrastructure.
 description: |
@@ -21,7 +19,6 @@ description: |
   extensive, and accessible data model for all things networked.
 
 links:
-  documentation: https://discourse.charmhub.io/t/netbox-documentation-overview/13564
   issues: https://github.com/canonical/netbox-k8s-operator/issues
   source: https://github.com/canonical/netbox-k8s-operator
   website:
@@ -29,6 +26,10 @@ links:
 
 extensions:
   - django-framework
+
+charm-libs:
+- lib: hydra.oauth
+  version: '0'
 
 requires:
   postgresql:
@@ -44,18 +45,18 @@ requires:
     interface: saml
     limit: 1
     optional: true
+  oidc:
+    interface: oauth
+    optional: True
+    limit: 1
 
 config:
   options:
-    saml-sp-entity-id:
-      description: SAML SP entity id.
+    oidc-redirect-path:
       type: string
-    saml-username:
-      description: |-
-        SAML attribute used for both the social uid and the username.
-        NameID can be used setting this config to 'name.
+      description: The path that the user will be redirected upon completing login.
+      default: /oauth/complete/oidc/
+    oidc-scopes:
       type: string
-      default: name
-    saml-email:
-      description: SAML attribute used for the email.
-      type: string
+      description: List of scopes separated by spaces.
+      default: "openid profile email"
