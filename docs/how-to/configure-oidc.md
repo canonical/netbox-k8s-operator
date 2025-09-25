@@ -13,7 +13,7 @@ juju integrate hydra netbox-k8s
 ```
 
 For NetBox to work, you may need to customise some of the following configuration options:
- - `oidc-scopes`: Oauth scopes. It must include `openid` to be a valid oidc.
+ - `oidc-scopes`: OIDC scopes are used by an application during authentication to authorize access to a user's details, like name and picture. It must include `openid` to be a valid OIDC.
  - `oidc-redirect-path`: The redirect URL used by the OIDC provider to redirect back to NetBox application after the authorization is done.
 
 NetBox configuration options for OIDC can be configured like:
