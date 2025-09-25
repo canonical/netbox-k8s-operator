@@ -6,11 +6,6 @@ variable "model" {
   type        = string
 }
 
-variable "model_user" {
-  description = "Juju user used for deploying the application."
-  type        = string
-}
-
 variable "netbox_k8s" {
   type = object({
     app_name    = optional(string, "netbox-k8s")
