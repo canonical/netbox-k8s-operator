@@ -19,7 +19,6 @@ description: |
   extensive, and accessible data model for all things networked.
 
 links:
-  documentation: https://discourse.charmhub.io/t/netbox-k8s-documentation/18891
   issues: https://github.com/canonical/netbox-k8s-operator/issues
   source: https://github.com/canonical/netbox-k8s-operator
   website:
