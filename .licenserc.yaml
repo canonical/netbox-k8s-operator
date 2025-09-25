@@ -37,4 +37,5 @@ header:
     - 'patches/**'
     - 'cron.d/**'
     - 'lib/**'
+    - 'icon.svg'
   comment: on-failure
