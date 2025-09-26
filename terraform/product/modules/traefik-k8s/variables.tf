@@ -4,13 +4,7 @@
 variable "app_name" {
   description = "Name of the application in the Juju model."
   type        = string
-  default     = "<charm-name>"
-}
-
-variable "base" {
-  description = "The operating system on which to deploy"
-  type        = string
-  default     = "ubuntu@24.04"
+  default     = "traefik-k8s"
 }
 
 variable "channel" {
@@ -20,7 +14,7 @@ variable "channel" {
 }
 
 variable "config" {
-  description = "Application config. Details about available options can be found at https://charmhub.io/<charm-name>/configurations."
+  description = "Application config. Details about available options can be found at https://charmhub.io/traefik-k8s/configurations."
   type        = map(string)
   default     = {}
 }
@@ -28,12 +22,13 @@ variable "config" {
 variable "constraints" {
   description = "Juju constraints to apply for this application."
   type        = string
-  default     = ""
+  default     = null
 }
 
 variable "model" {
   description = "Reference to a `juju_model`."
   type        = string
+  default     = ""
 }
 
 variable "revision" {
@@ -42,10 +37,10 @@ variable "revision" {
   default     = null
 }
 
-variable "storage" {
-  description = "Map of storage used by the application."
-  type        = map(string)
-  default     = {}
+variable "base" {
+  description = "The operating system on which to deploy"
+  type        = string
+  default     = "ubuntu@20.04"
 }
 
 variable "units" {

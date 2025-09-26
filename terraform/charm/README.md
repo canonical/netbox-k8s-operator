@@ -1,7 +1,6 @@
-<!-- Remember to update this file for your charm -- replace <charm_name> with the appropriate name. -->
-# <charm_name> Terraform module
+# NetBox Terraform module
 
-This folder contains a base [Terraform][Terraform] module for the <charm_name> charm.
+This folder contains a base [Terraform][Terraform] module for the NetBox charm.
 
 The module uses the [Terraform Juju provider][Terraform Juju provider] to model the charm
 deployment onto any Kubernetes environment managed by [Juju][Juju].
@@ -16,9 +15,9 @@ deployment onto any Kubernetes environment managed by [Juju][Juju].
   the Juju application name.
 - **versions.tf** - Defines the Terraform provider version.
 
-## Using <charm_name> base module in higher level modules
+## Using `netbox-k8s` base module in higher level modules
 
-If you want to use `<charm_name>` base module as part of your Terraform module, import it
+If you want to use `netbox-k8s` base module as part of your Terraform module, import it
 like shown below:
 
 ```text
@@ -26,8 +25,8 @@ data "juju_model" "my_model" {
   name = var.model
 }
 
-module "<charm_name>" {
-  source = "git::https://github.com/canonical/<charm_name>-operator//terraform"
+module "netbox-k8s" {
+  source = "git::https://github.com/canonical/netbox-k8s-operator//terraform"
   
   model = juju_model.my_model.name
   # (Customize configuration variables here if needed)
@@ -37,11 +36,11 @@ module "<charm_name>" {
 Create integrations, for instance:
 
 ```text
-resource "juju_integration" "<charm_name>-loki" {
+resource "juju_integration" "netbox-loki" {
   model = juju_model.my_model.name
   application {
-    name     = module.<charm_name>.app_name
-    endpoint = module.<charm_name>.endpoints.logging
+    name     = module.netbox-k8s.app_name
+    endpoint = module.netbox-k8s.requires.logging
   }
   application {
     name     = "loki-k8s"
@@ -50,9 +49,9 @@ resource "juju_integration" "<charm_name>-loki" {
 }
 ```
 
-The complete list of available integrations can be found [in the Integrations tab][<charm_name>-integrations].
+The complete list of available integrations can be found [in the Integrations tab][netbox-integrations].
 
 [Terraform]: https://www.terraform.io/
 [Terraform Juju provider]: https://registry.terraform.io/providers/juju/juju/latest
 [Juju]: https://juju.is
-[<charm_name>-integrations]: https://charmhub.io/<charm_name>/integrations
+[netbox-integrations]: https://charmhub.io/netbox-k8s/integrations

@@ -3,11 +3,17 @@
 
 output "app_name" {
   description = "Name of the deployed application."
-  value       = juju_application.charm_name.name
+  value       = juju_application.s3_integrator.name
 }
 
-output "endpoints" {
+output "requires" {
   value = {
-    ingress = "ingress"
+
+  }
+}
+
+output "provides" {
+  value = {
+    s3_credentials = "s3-credentials"
   }
 }
