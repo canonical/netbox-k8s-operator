@@ -4,13 +4,13 @@
 variable "app_name" {
   description = "Name of the application in the Juju model."
   type        = string
-  default     = "self-signed-certificates"
+  default     = "httprequest-lego-k8s"
 }
 
 variable "channel" {
   description = "The channel to use when deploying a charm."
   type        = string
-  default     = "1/stable"
+  default     = "latest/stable"
 }
 
 variable "config" {
@@ -40,7 +40,7 @@ variable "revision" {
 variable "base" {
   description = "The operating system on which to deploy"
   type        = string
-  default     = "ubuntu@24.04"
+  default     = "ubuntu@22.04"
 }
 
 variable "units" {

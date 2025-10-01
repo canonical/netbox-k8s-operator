@@ -8,7 +8,7 @@ output "app_name" {
 
 output "requires" {
   value = {
-    tracing = "tracing"
+    logging = "logging"
   }
 }
 
