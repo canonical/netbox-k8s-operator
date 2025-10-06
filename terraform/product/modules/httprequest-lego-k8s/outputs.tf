@@ -3,7 +3,7 @@
 
 output "app_name" {
   description = "Name of the deployed application."
-  value       = juju_application.self_signed_certificates.name
+  value       = juju_application.httprequest_lego_k8s.name
 }
 
 output "requires" {
