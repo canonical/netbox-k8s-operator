@@ -53,16 +53,16 @@ module "traefik_k8s" {
   units       = var.traefik_k8s.units
 }
 
-module "self_signed_certificates" {
-  source      = "./modules/self-signed-certificates"
-  app_name    = var.self_signed_certificates.app_name
-  channel     = var.self_signed_certificates.channel
-  config      = var.self_signed_certificates.config
-  constraints = var.self_signed_certificates.constraints
+module "httprequest_lego_k8s" {
+  source      = "./modules/httprequest-lego-k8s"
+  app_name    = var.httprequest_lego_k8s.app_name
+  channel     = var.httprequest_lego_k8s.channel
+  config      = var.httprequest_lego_k8s.config
+  constraints = var.httprequest_lego_k8s.constraints
   model       = data.juju_model.netbox_k8s.name
-  revision    = var.self_signed_certificates.revision
-  base        = var.self_signed_certificates.base
-  units       = var.self_signed_certificates.units
+  revision    = var.httprequest_lego_k8s.revision
+  base        = var.httprequest_lego_k8s.base
+  units       = var.httprequest_lego_k8s.units
 }
 
 resource "juju_integration" "netbox_redis" {
@@ -116,7 +116,7 @@ resource "juju_integration" "traefik_certs" {
   }
 
   application {
-    name     = module.self_signed_certificates.app_name
-    endpoint = module.self_signed_certificates.provides.certificates
+    name     = module.httprequest_lego_k8s.app_name
+    endpoint = module.httprequest_lego_k8s.provides.certificates
   }
 }
