@@ -54,7 +54,7 @@ module "traefik_k8s" {
 }
 
 module "httprequest_lego_k8s" {
-  source      = "./modules/self-signed-certificates"
+  source      = "./modules/httprequest-lego-k8s"
   app_name    = var.httprequest_lego_k8s.app_name
   channel     = var.httprequest_lego_k8s.channel
   config      = var.httprequest_lego_k8s.config
