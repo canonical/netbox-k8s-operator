@@ -69,3 +69,15 @@ variable "s3" {
     storage     = optional(map(string), {})
   })
 }
+
+variable "httprequoauth_external_idp_integratorest_lego_k8s" {
+  type = object({
+    app_name    = optional(string, "oauth-external-idp-integrator")
+    channel     = optional(string, "latest/edge")
+    config      = optional(map(string), {})
+    constraints = optional(string, "arch=amd64")
+    revision    = optional(number, 6)
+    base        = optional(string, "ubuntu@22.04")
+    units       = optional(number, 1)
+  })
+}
