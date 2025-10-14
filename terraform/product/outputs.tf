@@ -9,7 +9,6 @@ output "app_name" {
 output "requires" {
   value = {
     logging = "logging"
-    oidc    = "oauth"
   }
 }
 
