@@ -14,7 +14,7 @@ output "requires" {
     redis      = "redis"
     s3         = "s3"
     saml       = "saml"
-    oidc       = "oauth"
+    oidc       = "oidc"
   }
 }
 
