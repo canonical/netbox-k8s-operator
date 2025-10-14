@@ -70,7 +70,7 @@ variable "s3" {
   })
 }
 
-variable "httprequoauth_external_idp_integratorest_lego_k8s" {
+variable "oauth_external_idp_integrator" {
   type = object({
     app_name    = optional(string, "oauth-external-idp-integrator")
     channel     = optional(string, "latest/edge")
