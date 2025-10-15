@@ -65,7 +65,7 @@ module "httprequest_lego_k8s" {
   units       = var.httprequest_lego_k8s.units
 }
 
-module "oauth_external_idp_integrator" { 
+module "oauth_external_idp_integrator" {
   source      = "./modules/oauth-external-idp-integrator"
   app_name    = var.oauth_external_idp_integrator.app_name
   channel     = var.oauth_external_idp_integrator.channel
