@@ -65,6 +65,18 @@ module "httprequest_lego_k8s" {
   units       = var.httprequest_lego_k8s.units
 }
 
+module "oauth_external_idp_integrator" {
+  source      = "./modules/oauth-external-idp-integrator"
+  app_name    = var.oauth_external_idp_integrator.app_name
+  channel     = var.oauth_external_idp_integrator.channel
+  config      = var.oauth_external_idp_integrator.config
+  constraints = var.oauth_external_idp_integrator.constraints
+  model       = data.juju_model.netbox_k8s.name
+  revision    = var.oauth_external_idp_integrator.revision
+  base        = var.oauth_external_idp_integrator.base
+  units       = var.oauth_external_idp_integrator.units
+}
+
 resource "juju_integration" "netbox_redis" {
   model = data.juju_model.netbox_k8s.name
 
@@ -118,5 +130,19 @@ resource "juju_integration" "traefik_certs" {
   application {
     name     = module.httprequest_lego_k8s.app_name
     endpoint = module.httprequest_lego_k8s.provides.certificates
+  }
+}
+
+resource "juju_integration" "netbox_oidc" {
+  model = data.juju_model.netbox_k8s.name
+
+  application {
+    name     = module.netbox_k8s.app_name
+    endpoint = module.netbox_k8s.requires.oidc
+  }
+
+  application {
+    name     = module.oauth_external_idp_integrator.app_name
+    endpoint = module.oauth_external_idp_integrator.provides.oauth
   }
 }
