@@ -14,6 +14,7 @@ output "requires" {
     redis      = "redis"
     s3         = "s3"
     saml       = "saml"
+    oidc       = "oidc"
   }
 }
 
