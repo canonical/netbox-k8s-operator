@@ -1,0 +1,72 @@
+# This workflow compares documentation from the 'docs' directory to Discourse.
+# It can be triggered manually or on a schedule.
+
+name: Check Documentation agains Discourse
+
+on:
+  # Allows you to run this workflow manually from the Actions tab in your repository.
+  workflow_dispatch:
+    inputs:
+      working-directory:
+        description: 'The directory containing the charm and its docs folder.'
+        required: true
+        default: '.'
+  
+  # Allows you to run this workflow on a schedule.
+  schedule:
+    # This example runs at 02:00 UTC every day.
+    # You can customize the cron schedule as needed.
+    - cron: '0 2 * * *'
+
+jobs:
+  publish-docs:
+    name: Publish Documentation
+
+    runs-on: ubuntu-24.04
+
+    # Sets the default working directory for all `run` steps in this job.
+    # It uses the manually provided directory for `workflow_dispatch` triggers,
+    # or defaults to the repository root ('.') for scheduled runs.
+    defaults:
+      run:
+        working-directory: ${{ github.event.inputs.working-directory || '.' }}
+
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: Check if 'docs' directory exists
+        id: docs-check
+        # This command runs inside the specified working-directory.
+        run: |
+          if [[ -d "docs" ]]; then
+            echo "exists=true"
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false"
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish documentation to Discourse
+        # This step only runs if the 'docs' directory was found and secrets are available.
+        # if: steps.docs-check.outputs.exists == 'true' && secrets.DISCOURSE_API_USERNAME != '' && secrets.DISCOURSE_API_KEY != ''
+        uses: canonical/discourse-gatekeeper@stable
+        with:
+          # The Discourse instance to publish to.
+          discourse_host: discourse.charmhub.io
+          
+          # Credentials for the Discourse API, stored as repository secrets.
+          discourse_api_username: ${{ secrets.DISCOURSE_API_USERNAME }}
+          discourse_api_key: ${{ secrets.DISCOURSE_API_KEY }}
+
+          # A GitHub token is required for the action to fetch repository content.
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          
+          # 'true' for a test run without making changes. Set to 'false' to publish.
+          dry_run: true
+
+          # The directory containing the charm, relative to the repository root.
+          charm_dir: ${{ github.event.inputs.working-directory || '.' }}
+
+          # The branch to use as the source for documentation content.
+          base_branch: ${{ github.event.repository.default_branch }}
