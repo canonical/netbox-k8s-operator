@@ -51,7 +51,7 @@ jobs:
       - name: Publish documentation to Discourse
         # This step only runs if the 'docs' directory was found and secrets are available.
         # if: steps.docs-check.outputs.exists == 'true' && secrets.DISCOURSE_API_USERNAME != '' && secrets.DISCOURSE_API_KEY != ''
-        uses: canonical/discourse-gatekeeper@stable
+        uses: canonical/discourse-gatekeeper@test-action
         with:
           # The Discourse instance to publish to.
           discourse_host: discourse.charmhub.io
