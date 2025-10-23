@@ -1,0 +1,34 @@
+[32mINFO    [0m jubilant:_juju.py:237 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:237 cli: juju run --model testing --format json netbox-k8s/0 create-superuser --params /home/ubuntu/snap/juju/common/tmpbbjh_r8y
+[32mINFO    [0m tests.integration.helpers:helpers.py:53 Admin Token: b0f89b82436b224f0d4c23e23766e8ddef5d24ee
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'completed', 'label': 'Completed'}
