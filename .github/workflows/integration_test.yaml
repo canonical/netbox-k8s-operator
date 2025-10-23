@@ -25,3 +25,8 @@ jobs:
       provider: 'k8s'
       self-hosted-runner: true
       self-hosted-runner-label: xlarge
+  allure-report:
+    if: always() && !cancelled()
+    needs:
+      - integration-tests
+    uses: canonical/operator-workflows/.github/workflows/allure_report.yaml@main
