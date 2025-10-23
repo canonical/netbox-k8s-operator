@@ -4,15 +4,29 @@ on:
   pull_request:
     paths:
       - 'docs/**'
+      - '.github/workflows/check_docs.yaml'
+      - 'check_docs.py'
+  workflow_dispatch:
 
 jobs:
   check-docs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: canonical/discourse-doc-checker@v1
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          docs-path: 'docs'
-          discourse-url: 'https://discourse.charmhub.io'
-          discourse-api-key: ${{ secrets.DISCOURSE_API_KEY }}
-          discourse-api-user: ${{ secrets.DISCOURSE_API_USER }}
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests PyYAML markdown-analysis
+
+      - name: Run documentation check
+        env:
+          DISCOURSE_URL: https://discourse.charmhub.io
+          DISCOURSE_API_KEY: ${{ secrets.DISCOURSE_API_KEY }}
+          DISCOURSE_API_USER: ${{ secrets.DISCOURSE_API_USER }}
+        run: python check_docs.py
