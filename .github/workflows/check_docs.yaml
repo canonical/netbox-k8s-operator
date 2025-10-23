@@ -1,0 +1,18 @@
+name: Documentation Check
+
+on:
+  pull_request:
+    paths:
+      - 'docs/**'
+
+jobs:
+  check-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: canonical/discourse-doc-checker@v1
+        with:
+          docs-path: 'docs'
+          discourse-url: 'https://discourse.charmhub.io'
+          discourse-api-key: ${{ secrets.DISCOURSE_API_KEY }}
+          discourse-api-user: ${{ secrets.DISCOURSE_API_USER }}
