@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
         
       - name: Run documentation checker
-        uses: canonical/discourse-doc-checker@v1.1
+        uses: canonical/discourse-doc-checker@main  # Use the actual repository name
         with:
           docs-path: 'docs'
           discourse-url: 'https://discourse.charmhub.io'
