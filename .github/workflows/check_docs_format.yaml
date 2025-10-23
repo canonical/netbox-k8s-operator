@@ -1,4 +1,4 @@
-name: Check Documentation Format
+name: Compare Documentation
 
 on:
   pull_request:
@@ -13,8 +13,8 @@ on:
         default: '.'
 
 jobs:
-  check-docs-format:
-    name: Check Documentation Format
+  compare-docs:
+    name: Compare Documentation
     runs-on: ubuntu-24.04
     
     defaults:
