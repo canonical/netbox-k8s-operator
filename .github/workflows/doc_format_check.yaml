@@ -1,0 +1,45 @@
+name: Documentation Format Check
+
+on:
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'check_docs.py'
+  workflow_dispatch:
+
+jobs:
+  check-docs:
+    name: Check Documentation Format
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests PyYAML
+
+      - name: Run documentation check
+        env:
+          DISCOURSE_URL: https://discourse.charmhub.io
+          DISCOURSE_API_KEY: ${{ secrets.DISCOURSE_API_KEY }}
+          DISCOURSE_API_USER: ${{ secrets.DISCOURSE_API_USER }}
+        run: python check_docs.py
+
+      - name: Show results
+        if: always()
+        run: |
+          if [ $? -eq 0 ]; then
+            echo "✅ Documentation format check passed"
+          else
+            echo "❌ Documentation format check failed"
+            echo "Please check the output above for details"
+            exit 1
+          fi
