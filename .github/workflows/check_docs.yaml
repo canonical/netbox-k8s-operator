@@ -1,0 +1,32 @@
+name: Documentation Check
+
+on:
+  schedule:
+    - cron: '0 9 * * 1-5'  # Run daily at 9 AM UTC week days
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  check-docs:
+    name: Check Documentation Against Discourse
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write  # Required for creating issues
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Run documentation checker
+        uses: canonical/discourse-doc-checker@main
+        with:
+          docs-path: 'docs'
+          discourse-url: 'https://discourse.charmhub.io'
+          discourse-api-key: ${{ secrets.DISCOURSE_API_KEY }}
+          discourse-api-user: ${{ secrets.DISCOURSE_API_USER }}
+          # Issue creation settings
+          create-issue: 'true'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-title: 'Documentation Check Failed'
+          issue-labels: 'documentation'
+          update-existing-issue: 'true'  # Update existing issues instead of creating duplicates
