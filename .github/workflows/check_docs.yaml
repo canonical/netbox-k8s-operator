@@ -4,6 +4,10 @@ on:
   schedule:
     - cron: '0 9 * * 1-5'  # Run daily at 9 AM UTC week days
   workflow_dispatch:  # Allow manual triggering
+  pull_request:
+    paths:
+      - 'docs/**'  # Trigger on changes to documentation files
+      - '.github/workflows/check_docs.yaml'  # Also trigger if this workflow file changes
 
 jobs:
   check-docs:
@@ -14,11 +18,8 @@ jobs:
       issues: write  # Required for creating issues
     
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-        
       - name: Run documentation checker
-        uses: canonical/discourse-doc-checker@main
+        uses: canonical/discourse-doc-checker@feat/use-stable
         with:
           docs-path: 'docs'
           discourse-url: 'https://discourse.charmhub.io'
@@ -29,4 +30,5 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-title: 'Documentation Check Failed'
           issue-labels: 'documentation'
+          use-stable: 'true'
           update-existing-issue: 'true'  # Update existing issues instead of creating duplicates
