@@ -19,18 +19,6 @@ variable "netbox_k8s" {
 
 }
 
-variable "httprequest_lego_k8s" {
-  type = object({
-    app_name    = optional(string, "httprequest-lego-k8s")
-    channel     = optional(string, "latest/stable")
-    config      = optional(map(string), {})
-    constraints = optional(string, "arch=amd64")
-    revision    = optional(number, 99)
-    base        = optional(string, "ubuntu@22.04")
-    units       = optional(number, 1)
-  })
-}
-
 variable "traefik_k8s" {
   type = object({
     app_name    = optional(string, "traefik-k8s")
