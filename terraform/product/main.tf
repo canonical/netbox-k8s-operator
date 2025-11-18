@@ -53,18 +53,6 @@ module "traefik_k8s" {
   units       = var.traefik_k8s.units
 }
 
-module "httprequest_lego_k8s" {
-  source      = "./modules/httprequest-lego-k8s"
-  app_name    = var.httprequest_lego_k8s.app_name
-  channel     = var.httprequest_lego_k8s.channel
-  config      = var.httprequest_lego_k8s.config
-  constraints = var.httprequest_lego_k8s.constraints
-  model       = data.juju_model.netbox_k8s.name
-  revision    = var.httprequest_lego_k8s.revision
-  base        = var.httprequest_lego_k8s.base
-  units       = var.httprequest_lego_k8s.units
-}
-
 module "oauth_external_idp_integrator" {
   source      = "./modules/oauth-external-idp-integrator"
   app_name    = var.oauth_external_idp_integrator.app_name
@@ -116,20 +104,6 @@ resource "juju_integration" "netbox_traefik" {
   application {
     name     = module.traefik_k8s.app_name
     endpoint = module.traefik_k8s.provides.ingress
-  }
-}
-
-resource "juju_integration" "traefik_certs" {
-  model = data.juju_model.netbox_k8s.name
-
-  application {
-    name     = module.traefik_k8s.app_name
-    endpoint = module.traefik_k8s.requires.certificates
-  }
-
-  application {
-    name     = module.httprequest_lego_k8s.app_name
-    endpoint = module.httprequest_lego_k8s.provides.certificates
   }
 }
 
