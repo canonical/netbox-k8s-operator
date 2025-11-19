@@ -4,7 +4,7 @@
 
 NetBox supports direct upgrades to any newer release with one exception: major version upgrades. You must be on the latest minor release of your current version before upgrading to the next major version.
 
-## Minor Version Upgrade 
+## Minor version upgrade 
 
 To refresh the charm within the current channel (e.g., getting the latest patch or minor version):
 
@@ -12,7 +12,7 @@ To refresh the charm within the current channel (e.g., getting the latest patch 
 juju refresh netbox-k8s
 ```
 
-## Major Version Upgrade
+## Major version upgrade
 
 To upgrade to a new major version, switch the charm channel:
 
