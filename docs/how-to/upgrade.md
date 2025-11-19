@@ -1,6 +1,6 @@
 # How to upgrade
 
-**Important**: Before upgrading, make sure to back up your PostgreSQL database.
+**Important:** Before upgrading, make sure to back up your PostgreSQL database.
 
 NetBox supports direct upgrades to any newer release with one exception: major version upgrades. You must be on the latest minor release of your current version before upgrading to the next major version.
 
