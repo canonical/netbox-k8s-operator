@@ -3,7 +3,7 @@
 ## Overview
 
 This document explains the processes and practices recommended for contributing
-enhancements to the NetBox NetBox K8s operator.
+enhancements to the NetBox K8s operator.
 
 - Generally, before developing enhancements to this charm, you should consider
 [opening an issue](https://github.com/canonical/netbox-k8s-operator/issues)
@@ -59,7 +59,7 @@ Build the charm in this git repository using:
 ```shell
 charmcraft pack
 ```
-For the integration tests (and also to deploy the charm locally), the netbox
+For the integration tests (and also to deploy the charm locally), the NetBox
 image is required in the MicroK8s registry. To enable it:
 
 ```shell
