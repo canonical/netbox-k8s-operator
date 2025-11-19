@@ -2,8 +2,8 @@
 # netbox-k8s-operator
 
 [![CharmHub Badge](https://charmhub.io/netbox-k8s/badge.svg)](https://charmhub.io/netbox-k8s)
-[![Publish to edge](https://github.com/canonical/netbox-k8s/actions/workflows/publish_charm.yaml/badge.svg)](https://github.com/canonical/netbox-k8s/actions/workflows/publish_charm.yaml)
-[![Promote charm](https://github.com/canonical/netbox-k8s/actions/workflows/promote_charm.yaml/badge.svg)](https://github.com/canonical/netbox-k8s/actions/workflows/promote_charm.yaml)
+[![Publish to edge](https://github.com/canonical/netbox-k8s-operator/actions/workflows/publish_charm.yaml/badge.svg)](https://github.com/canonical/netbox-k8s-operator/actions/workflows/publish_charm.yaml)
+[![Promote charm](https://github.com/canonical/netbox-k8s-operator/actions/workflows/promote_charm.yaml/badge.svg)](https://github.com/canonical/netbox-k8s-operator/actions/workflows/promote_charm.yaml)
 [![Discourse Status](https://img.shields.io/discourse/status?server=https%3A%2F%2Fdiscourse.charmhub.io&style=flat&label=CharmHub%20Discourse)](https://discourse.charmhub.io)
 
 
