@@ -1,6 +1,6 @@
 # How to upgrade
 
-**Important:** Before upgrading, make sure to back up your PostgreSQL database. You can check how to backup in [the PostgreSQL docs](https://canonical-charmed-postgresql-k8s.readthedocs-hosted.com/14/how-to/back-up-and-restore/).
+**Important:** Before upgrading, make sure to back up your PostgreSQL database. You can check how to backup in [the PostgreSQL charm documentation](https://canonical-charmed-postgresql-k8s.readthedocs-hosted.com/14/how-to/back-up-and-restore/).
 
 NetBox supports direct upgrades to any newer release with one exception: major version upgrades. You must be on the latest minor release of your current version before upgrading to the next major version.
 
