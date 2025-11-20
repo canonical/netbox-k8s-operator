@@ -39,7 +39,7 @@ source .tox/unit/bin/activate
 
 ### Testing
 
-Note that the [NetBox](../rockcraft.yaml) image needs to be built and pushed to MicroK8s
+Note that the [NetBox](../../netbox/rockcraft.yaml) image needs to be built and pushed to MicroK8s
 for the tests to run. They should be tagged as `localhost:32000/netbox:latest` so that
 Kubernetes knows how to pull them from the MicroK8s repository. Note that the MicroK8s 
 registry needs to be enabled using `microk8s enable registry`. More details regarding 
