@@ -39,8 +39,8 @@ for more information.
 * [NetBox upstream repository](https://github.com/netbox-community/netbox)
 * [Get support](https://discourse.charmhub.io/)
 * [Join our online chat](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)
-* [Contribute](https://charmhub.io/netbox-k8s/docs/contributing)
-* [Getting Started](https://charmhub.io/netbox-k8s/docs/getting-started)
+* [Contribute](https://charmhub.io/netbox-k8s/docs/how-to-contribute)
+* [Getting Started](https://charmhub.io/netbox-k8s/docs/tutorial-getting-started)
 * [Juju SDK documentation](https://juju.is/docs/sdk) for more information about developing and improving charms.
 
 ## Contributing to this documentation

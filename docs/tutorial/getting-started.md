@@ -17,7 +17,7 @@ your NetBox instance.
 - Read/write access to a S3 compatible server with a bucket created.
 - Configuration compatible with the traefik-k8s charms. In the case of MicroK8s this can be achieved with the `metallb` add-on.
 
-For more information about how to install Juju, see [Get started with Juju](https://juju.is/docs/olm/get-started-with-juju).
+For more information about how to install Juju, see [Get started with Juju](https://documentation.ubuntu.com/juju/3.6/tutorial).
 
 
 ## Setting up a tutorial model
