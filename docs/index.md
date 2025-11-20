@@ -67,6 +67,7 @@ missing, please [file a bug](https://github.com/canonical/netbox-k8s-operator/is
   1. [Contribute](how-to/contribute.md)
   2. [Configure OIDC](how-to/configure-oidc.md)
   3. [Configure Scripts and Reports for HA](how-to/configure-scripts-reports.md)
+  4. [Upgrade](how-to/upgrade.md)
 1. [Reference](reference)
   1. [Actions](reference/actions.md)
   2. [Integrations](reference/integrations.md)
