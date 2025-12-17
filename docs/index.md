@@ -72,4 +72,3 @@ missing, please [file a bug](https://github.com/canonical/netbox-k8s-operator/is
   1. [Actions](reference/actions.md)
   1. [Charm Architecture](reference/charm-architecture.md)
   2. [Integrations](reference/integrations.md)
-1. [Explanation](explanation)
