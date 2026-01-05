@@ -441,14 +441,44 @@ def netbox_app_fixture(
     return App(netbox_barebones.name)
 
 
+
 @pytest.fixture(scope="module", name="identity_bundle")
-def deploy_identity_bundle_fixture(juju: jubilant.Juju) -> Generator[None]:
+def deploy_identity_bundle_fixture(juju: jubilant.Juju,
+    postgresql_app: App,):
     """Deploy Canonical identity bundle."""
     if juju.status().apps.get("hydra"):
         logger.info("identity-platform is already deployed")
         return
-    juju.deploy("identity-platform", channel="latest/edge", trust=True)
-    juju.remove_application("kratos-external-idp-integrator")
+    juju.deploy("hydra", channel="latest/stable", revision=362, trust=True)
+    juju.deploy("kratos", channel="latest/stable", revision=527, trust=True)
+    juju.deploy(
+        "identity-platform-login-ui-operator", channel="latest/stable", revision=166, trust=True
+    )
+    juju.deploy("self-signed-certificates", channel="latest/stable", revision=155, trust=True)
+    juju.deploy("traefik-k8s", "traefik-admin", channel="latest/stable", revision=176, trust=True)
+    juju.deploy("traefik-k8s", "traefik-public", channel="latest/stable", revision=176, trust=True)
+    # Integrations
+    juju.integrate(
+        "hydra:hydra-endpoint-info", "identity-platform-login-ui-operator:hydra-endpoint-info"
+    )
+    juju.integrate("hydra:hydra-endpoint-info", "kratos:hydra-endpoint-info")
+    juju.integrate("kratos:kratos-info", "identity-platform-login-ui-operator:kratos-info")
+    juju.integrate(
+        "hydra:ui-endpoint-info", "identity-platform-login-ui-operator:ui-endpoint-info"
+    )
+    juju.integrate(
+        "kratos:ui-endpoint-info", "identity-platform-login-ui-operator:ui-endpoint-info"
+    )
+    juju.integrate(f"{postgresql_app.name}:database", "hydra:pg-database")
+    juju.integrate(f"{postgresql_app.name}:database", "kratos:pg-database")
+    juju.integrate("self-signed-certificates:certificates", "traefik-admin:certificates")
+    juju.integrate("self-signed-certificates:certificates", "traefik-public:certificates")
+    juju.integrate("traefik-admin:ingress", "hydra:admin-ingress")
+    juju.integrate("traefik-admin:ingress", "kratos:admin-ingress")
+    juju.integrate("traefik-public:ingress", "hydra:public-ingress")
+    juju.integrate("traefik-public:ingress", "kratos:public-ingress")
+    juju.integrate("traefik-public:ingress", "identity-platform-login-ui-operator:ingress")
+
     juju.config("kratos", {"enforce_mfa": False})
 
     yield

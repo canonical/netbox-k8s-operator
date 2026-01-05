@@ -28,14 +28,14 @@ Follow the instruction in [https://multipass.run/install](https://multipass.run/
 <!-- vale Canonical.007-Headings-sentence-case = YES -->
 
 You will launch a VM named `netbox` with Multipass, using the
-[cloud init configuration](https://raw.githubusercontent.com/canonical/netbox-k8s/main/charm/cloudinit-juju-3.6.yaml)
+[cloud init configuration](https://raw.githubusercontent.com/canonical/netbox-k8s-operator/main/cloudinit-juju-3.6.yaml)
 that will install NetBox. This process will take about 20 minutes, depending on your computer and internet connection.
 Run the next command to provision the VM with NetBox:
 ```
-multipass launch  -vvvv --cloud-init https://raw.githubusercontent.com/canonical/netbox-k8s/main/charm/cloudinit-juju-3.6.yaml --timeout 1800 --name netbox --memory 4G --cpus 3 --disk 20G 22.04
+multipass launch  -vvvv --cloud-init https://raw.githubusercontent.com/canonical/netbox-k8s-operator/main/cloudinit-juju-3.6.yaml --timeout 1800 --name netbox --memory 4G --cpus 3 --disk 20G 22.04
 ```
 
-Congratulations, at this point your NetBox instance is installed and working. You can get the Netbox URL
+Congratulations, at this point your NetBox instance is installed and working. You can get the NetBox URL
 with the following command:
 ```
 multipass exec netbox -- juju run traefik-k8s/0 show-proxied-endpoints --format=yaml
@@ -52,7 +52,7 @@ multipass exec netbox -- juju run netbox-k8s/leader create-superuser username=ad
 The output of the previous command will output a password. You can now log in into the NetBox
 webpage with the user `admin` and the previous password. You have now full access to NetBox!.
 
-Once you are finished, you can delete the netbox VM with the next command:
+Once you are finished, you can delete the NetBox VM with the next command:
 ```
 multipass delete netbox --purge
 ```

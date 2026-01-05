@@ -3,7 +3,7 @@
 ## Overview
 
 This document explains the processes and practices recommended for contributing
-enhancements to the NetBox NetBox K8s operator.
+enhancements to the NetBox K8s operator.
 
 - Generally, before developing enhancements to this charm, you should consider
 [opening an issue](https://github.com/canonical/netbox-k8s-operator/issues)
@@ -39,7 +39,7 @@ source .tox/unit/bin/activate
 
 ### Testing
 
-Note that the [NetBox](../rockcraft.yaml) image needs to be built and pushed to MicroK8s
+Note that the [NetBox](../../netbox/rockcraft.yaml) image needs to be built and pushed to MicroK8s
 for the tests to run. They should be tagged as `localhost:32000/netbox:latest` so that
 Kubernetes knows how to pull them from the MicroK8s repository. Note that the MicroK8s 
 registry needs to be enabled using `microk8s enable registry`. More details regarding 
@@ -59,7 +59,7 @@ Build the charm in this git repository using:
 ```shell
 charmcraft pack
 ```
-For the integration tests (and also to deploy the charm locally), the netbox
+For the integration tests (and also to deploy the charm locally), the NetBox
 image is required in the MicroK8s registry. To enable it:
 
 ```shell

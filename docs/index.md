@@ -39,8 +39,8 @@ for more information.
 * [NetBox upstream repository](https://github.com/netbox-community/netbox)
 * [Get support](https://discourse.charmhub.io/)
 * [Join our online chat](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)
-* [Contribute](https://charmhub.io/netbox-k8s/docs/contributing)
-* [Getting Started](https://charmhub.io/netbox-k8s/docs/getting-started)
+* [Contribute](https://charmhub.io/netbox-k8s/docs/how-to-contribute)
+* [Getting Started](https://charmhub.io/netbox-k8s/docs/tutorial-getting-started)
 * [Juju SDK documentation](https://juju.is/docs/sdk) for more information about developing and improving charms.
 
 ## Contributing to this documentation
@@ -67,8 +67,8 @@ missing, please [file a bug](https://github.com/canonical/netbox-k8s-operator/is
   1. [Contribute](how-to/contribute.md)
   2. [Configure OIDC](how-to/configure-oidc.md)
   3. [Configure Scripts and Reports for HA](how-to/configure-scripts-reports.md)
+  4. [Upgrade](how-to/upgrade.md)
 1. [Reference](reference)
   1. [Actions](reference/actions.md)
+  1. [Charm Architecture](reference/charm-architecture.md)
   2. [Integrations](reference/integrations.md)
-1. [Explanation](explanation)
-  1. [Charm Architecture](explanation/charm-architecture.md)
