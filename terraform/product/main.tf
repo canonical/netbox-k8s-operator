@@ -3,7 +3,6 @@
 
 data "juju_model" "netbox_k8s" {
   name  = var.model
-  owner = var.model_owner
 }
 
 module "netbox_k8s" {
@@ -11,7 +10,7 @@ module "netbox_k8s" {
   app_name    = var.netbox_k8s.app_name
   channel     = var.netbox_k8s.channel
   config      = var.netbox_k8s.config
-  model       = data.juju_model.netbox_k8s.uuid
+  model_uuid  = data.juju_model.netbox_k8s.uuid
   constraints = var.netbox_k8s.constraints
   revision    = var.netbox_k8s.revision
   base        = var.netbox_k8s.base
@@ -24,7 +23,7 @@ module "redis_k8s" {
   channel     = var.redis_k8s.channel
   config      = var.redis_k8s.config
   constraints = var.redis_k8s.constraints
-  model       = data.juju_model.netbox_k8s.uuid
+  model_uuid  = data.juju_model.netbox_k8s.uuid
   revision    = var.redis_k8s.revision
   base        = var.redis_k8s.base
   units       = var.redis_k8s.units
@@ -36,7 +35,7 @@ module "s3" {
   channel     = var.s3.channel
   config      = var.s3.config
   constraints = var.s3.constraints
-  model       = data.juju_model.netbox_k8s.uuid
+  model_uuid  = data.juju_model.netbox_k8s.uuid
   revision    = var.s3.revision
   base        = var.s3.base
   units       = var.s3.units
@@ -48,7 +47,7 @@ module "gateway_api_integrator" {
   channel     = var.gateway_api_integrator.channel
   config      = var.gateway_api_integrator.config
   constraints = var.gateway_api_integrator.constraints
-  model       = data.juju_model.netbox_k8s.uuid
+  model_uuid  = data.juju_model.netbox_k8s.uuid
   revision    = var.gateway_api_integrator.revision
   base        = var.gateway_api_integrator.base
   units       = var.gateway_api_integrator.units
@@ -60,7 +59,7 @@ module "gateway_route_configurator" {
   channel     = var.gateway_route_configurator.channel
   config      = var.gateway_route_configurator.config
   constraints = var.gateway_route_configurator.constraints
-  model       = data.juju_model.netbox_k8s.uuid
+  model_uuid  = data.juju_model.netbox_k8s.uuid
   revision    = var.gateway_route_configurator.revision
   base        = var.gateway_route_configurator.base
   units       = var.gateway_route_configurator.units
@@ -72,7 +71,7 @@ module "oauth_external_idp_integrator" {
   channel     = var.oauth_external_idp_integrator.channel
   config      = var.oauth_external_idp_integrator.config
   constraints = var.oauth_external_idp_integrator.constraints
-  model       = data.juju_model.netbox_k8s.uuid
+  model_uuid  = data.juju_model.netbox_k8s.uuid
   revision    = var.oauth_external_idp_integrator.revision
   base        = var.oauth_external_idp_integrator.base
   units       = var.oauth_external_idp_integrator.units

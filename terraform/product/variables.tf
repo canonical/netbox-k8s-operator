@@ -1,15 +1,9 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-variable "model" {
-  description = "Reference to the k8s Juju model to deploy application to."
+variable "model_uuid" {
+  description = "Reference to the k8s Juju model's uuid to deploy application to."
   type        = string
-}
-
-variable "model_owner" {
-  description = "Owner of the Juju model. Required when looking up model by name."
-  type        = string
-  default     = "admin"
 }
 
 variable "netbox_k8s" {
