@@ -1,12 +1,12 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-resource "juju_application" "traefik_k8s" {
-  name  = var.app_name
-  model = var.model
+resource "juju_application" "gateway_route_configurator" {
+  name       = var.app_name
+  model_uuid = var.model
 
   charm {
-    name     = "traefik-k8s"
+    name     = "gateway-route-configurator"
     channel  = var.channel
     revision = var.revision
     base     = var.base
