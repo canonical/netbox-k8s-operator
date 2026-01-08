@@ -32,3 +32,8 @@ output "netbox_provides" {
     metrics_endpoint  = "metrics-endpoint"
   }
 }
+
+output "gateway_api_integrator_app_name" {
+  description = "Name of the deployed application."
+  value       = module.gateway_api_integrator.app_name
+}
