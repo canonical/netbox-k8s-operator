@@ -3,7 +3,7 @@
 
 resource "juju_application" "gateway_route_configurator" {
   name       = var.app_name
-  model_uuid = var.model
+  model_uuid = var.model_uuid
 
   charm {
     name     = "gateway-route-configurator"

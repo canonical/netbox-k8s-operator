@@ -2,7 +2,7 @@
 # See LICENSE file for licensing details.
 
 data "juju_model" "netbox_k8s" {
-  name  = var.model
+  uuid  = var.model_uuid
 }
 
 module "netbox_k8s" {
