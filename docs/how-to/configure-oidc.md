@@ -2,7 +2,7 @@
 # Configure OIDC
 <!-- vale Canonical.007-Headings-sentence-case = YES -->
 
-The NetBox charm makes use of the oauth integration for OIDC. You can find
+The NetBox charm makes use of the OAuth integration for OIDC. You can find
 more information in [charmhub](https://charmhub.io/integrations/oauth).
 
 OIDC is configured in NetBox using the library `python-social-core` with the [`OIDC` backend](https://python-social-auth.readthedocs.io/en/latest/backends/oidc.html).
