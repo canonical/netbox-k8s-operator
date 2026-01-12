@@ -41,30 +41,6 @@ module "s3" {
   units       = var.s3.units
 }
 
-module "gateway_api_integrator" {
-  source      = "./modules/gateway-api-integrator"
-  app_name    = var.gateway_api_integrator.app_name
-  channel     = var.gateway_api_integrator.channel
-  config      = var.gateway_api_integrator.config
-  constraints = var.gateway_api_integrator.constraints
-  model_uuid  = data.juju_model.netbox_k8s.uuid
-  revision    = var.gateway_api_integrator.revision
-  base        = var.gateway_api_integrator.base
-  units       = var.gateway_api_integrator.units
-}
-
-module "gateway_route_configurator" {
-  source      = "./modules/gateway-route-configurator"
-  app_name    = var.gateway_route_configurator.app_name
-  channel     = var.gateway_route_configurator.channel
-  config      = var.gateway_route_configurator.config
-  constraints = var.gateway_route_configurator.constraints
-  model_uuid  = data.juju_model.netbox_k8s.uuid
-  revision    = var.gateway_route_configurator.revision
-  base        = var.gateway_route_configurator.base
-  units       = var.gateway_route_configurator.units
-}
-
 module "oauth_external_idp_integrator" {
   source      = "./modules/oauth-external-idp-integrator"
   app_name    = var.oauth_external_idp_integrator.app_name
@@ -102,34 +78,6 @@ resource "juju_integration" "netbox_s3" {
   application {
     name     = module.s3.app_name
     endpoint = module.s3.provides.s3_credentials
-  }
-}
-
-resource "juju_integration" "netbox_ingress" {
-  model_uuid = data.juju_model.netbox_k8s.uuid
-
-  application {
-    name     = module.netbox_k8s.app_name
-    endpoint = module.netbox_k8s.requires.ingress
-  }
-
-  application {
-    name     = module.gateway_route_configurator.app_name
-    endpoint = module.gateway_route_configurator.provides.ingress
-  }
-}
-
-resource "juju_integration" "gateway_route" {
-  model_uuid = data.juju_model.netbox_k8s.uuid
-
-  application {
-    name     = module.gateway_route_configurator.app_name
-    endpoint = module.gateway_route_configurator.requires.gateway_route
-  }
-
-  application {
-    name     = module.gateway_api_integrator.app_name
-    endpoint = module.gateway_api_integrator.provides.gateway_route
   }
 }
 

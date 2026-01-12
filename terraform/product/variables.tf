@@ -19,32 +19,6 @@ variable "netbox_k8s" {
 
 }
 
-variable "gateway_api_integrator" {
-  type = object({
-    app_name    = optional(string, "gai")
-    channel     = optional(string, "latest/edge")
-    config      = optional(map(string), {})
-    constraints = optional(string, "arch=amd64")
-    revision    = optional(number)
-    base        = optional(string, "ubuntu@24.04")
-    units       = optional(number, 1)
-  })
-  default = {}
-}
-
-variable "gateway_route_configurator" {
-  type = object({
-    app_name    = optional(string, "gateway-route-configurator")
-    channel     = optional(string, "latest/edge")
-    config      = optional(map(string), {})
-    constraints = optional(string, "arch=amd64")
-    revision    = optional(number)
-    base        = optional(string, "ubuntu@24.04")
-    units       = optional(number, 1)
-  })
-  default = {}
-}
-
 variable "redis_k8s" {
   type = object({
     app_name    = optional(string, "redis-k8s")
