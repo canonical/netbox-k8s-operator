@@ -16,7 +16,6 @@ variable "netbox_k8s" {
     base        = optional(string, "ubuntu@24.04")
     units       = optional(number, 1)
   })
-
 }
 
 variable "redis_k8s" {
