@@ -16,7 +16,7 @@ variable "revision" {
 terraform {
   required_providers {
     juju = {
-      version = "~> 0.20.0"
+      version = ">= 1.1"
       source  = "juju/juju"
     }
   }
