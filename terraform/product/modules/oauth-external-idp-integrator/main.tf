@@ -2,8 +2,8 @@
 # See LICENSE file for licensing details.
 
 resource "juju_application" "oauth_external_idp_integrator" {
-  name  = var.app_name
-  model = var.model
+  name       = var.app_name
+  model_uuid = var.model_uuid
 
   charm {
     name     = "oauth-external-idp-integrator"
