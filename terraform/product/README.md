@@ -1,7 +1,7 @@
 # Terraform modules
 
 This project contains the [Terraform][Terraform] modules to deploy the 
-[Hockeypuck charm][Hockeypuck charm] with its dependencies.
+[Netbox K8s charm][Netbox K8s charm] with its dependencies.
 
 The modules use the [Terraform Juju provider][Terraform Juju provider] to model
 the bundle deployment onto any Kubernetes environment managed by [Juju][Juju].
@@ -16,4 +16,4 @@ the bundle deployment onto any Kubernetes environment managed by [Juju][Juju].
 [Terraform]: https://www.terraform.io/
 [Terraform Juju provider]: https://registry.terraform.io/providers/juju/juju/latest
 [Juju]: https://juju.is
-[Hockeypuck charm]: https://charmhub.io/hockeypuck
+[Netbox K8s charm]: https://charmhub.io/netbox-k8s
