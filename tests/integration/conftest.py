@@ -441,10 +441,11 @@ def netbox_app_fixture(
     return App(netbox_barebones.name)
 
 
-
 @pytest.fixture(scope="module", name="identity_bundle")
-def deploy_identity_bundle_fixture(juju: jubilant.Juju,
-    postgresql_app: App,):
+def deploy_identity_bundle_fixture(
+    juju: jubilant.Juju,
+    postgresql_app: App,
+):
     """Deploy Canonical identity bundle."""
     if juju.status().apps.get("hydra"):
         logger.info("identity-platform is already deployed")
@@ -469,8 +470,8 @@ def deploy_identity_bundle_fixture(juju: jubilant.Juju,
     juju.integrate(
         "kratos:ui-endpoint-info", "identity-platform-login-ui-operator:ui-endpoint-info"
     )
-    juju.integrate("postgresql-k8s:database", "hydra:pg-database")
-    juju.integrate("postgresql-k8s:database", "kratos:pg-database")
+    juju.integrate(f"{postgresql_app.name}:database", "hydra:pg-database")
+    juju.integrate(f"{postgresql_app.name}:database", "kratos:pg-database")
     juju.integrate("self-signed-certificates:certificates", "traefik-admin:certificates")
     juju.integrate("self-signed-certificates:certificates", "traefik-public:certificates")
     juju.integrate("traefik-public:traefik-route", "hydra:public-route")
