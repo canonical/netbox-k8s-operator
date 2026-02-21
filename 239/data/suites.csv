@@ -1,0 +1,28 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"
+    arrange: Build and deploy the NetBox charm.
+    act: Do a get request to the main page and to an asset.
+    assert: Both return 200 and the page contains the correct title.
+    ","3868","test_netbox_health","tests.integration","2026-02-21","passed","2026-02-21","","test_charm","",""
+"
+    arrange: Build and deploy the NetBox charm.
+    act: Do a get request to the status api.
+    assert: Check that there is one rq worker running.
+    ","224","test_netbox_rq_worker_running","tests.integration","2026-02-21","passed","2026-02-21","","test_charm","",""
+"
+    arrange: set up the test Juju model and deploy the NetBox charm.
+    act: integrate with ingress and hydra.
+    assert: the NetBox charm uses the Kratos charm as the idp.
+    ","96467","test_oauth_integrations","tests.integration","2026-02-21","passed","2026-02-21","","test_oauth","",""
+"
+    arrange: Build and deploy the NetBox charm. Create a superuser and get its token.
+    act: Create a s3 data source.
+    assert: The cron task syncdatasource should update the status of the datasource
+        to completed.
+    ","108032","test_netbox_check_cronjobs","tests.integration","2026-02-21","passed","2026-02-21","","test_charm","",""
+"
+    arrange: Build and deploy the NetBox charm.
+    act: Create a site and post an image
+    assert: The site is created and there is an extra object (the image)
+        in S3.
+    ","13719","test_netbox_storage","tests.integration","2026-02-21","passed","2026-02-21","","test_s3","",""
