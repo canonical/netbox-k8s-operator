@@ -1,4 +1,4 @@
-cosl ==0.1.1
+cosl ==1.4.0
 git+https://github.com/canonical/saml-test-idp.git
 jubilant ==1.7.0
 juju ==3.6.1.3
