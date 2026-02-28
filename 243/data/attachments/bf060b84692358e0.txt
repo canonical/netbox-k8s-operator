@@ -1,0 +1,15 @@
+[32mINFO    [0m jubilant:_juju.py:394 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:394 cli: juju run --model testing --format json netbox-k8s/0 create-superuser --params /home/ubuntu/snap/juju/common/tmpsrys45ik
+[32mINFO    [0m tests.integration.helpers:helpers.py:53 Admin Token: 5e78b88847874656a5452a6ca0c69d5def178ed3
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'new', 'label': 'New'}
+[32mINFO    [0m tests.integration.test_charm:test_charm.py:114 current datasource status: {'value': 'completed', 'label': 'Completed'}
