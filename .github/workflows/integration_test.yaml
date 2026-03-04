@@ -8,7 +8,7 @@ on:
 jobs:
   integration-tests:
     uses: 
-      canonical/operator-workflows/.github/workflows/integration_test.yaml@main
+      canonical/operator-workflows/.github/workflows/integration_test.yaml@add-authentication-to-k8s-ghcr-io
     secrets: inherit
     with:
       modules: |
