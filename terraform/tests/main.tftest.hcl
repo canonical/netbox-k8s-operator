@@ -1,15 +1,27 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-variables {
-  channel = "latest/edge"
-  # renovate: depName="charm_name"
-  revision = 1
+run "setup_tests" {
+  module {
+    source = "./tests/setup"
+  }
 }
 
-run "basic_deploy" {
+run "basic_deploy_charm" {
+  variables {
+    model_uuid = run.setup_tests.model_uuid
+    channel    = "4/edge"
+    # renovate: depName="netbox-k8s"
+    revision = 35
+    base     = "ubuntu@24.04"
+  }
+
+  module {
+    source = "./charm"
+  }
+
   assert {
-    condition     = module.charm_name.app_name == "charm_name"
-    error_message = "charm_name app_name did not match expected"
+    condition     = output.app_name == "netbox-k8s"
+    error_message = "netbox-k8s app_name did not match expected"
   }
 }
