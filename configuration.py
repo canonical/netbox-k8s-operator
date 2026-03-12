@@ -277,7 +277,7 @@ if "DJANGO_OIDC_CLIENT_ID" in os.environ:
     SOCIAL_AUTH_OIDC_SCOPE = os.environ.get("DJANGO_OIDC_SCOPES").split(",") if os.environ.get("OIDC_SCOPES") else ["openid", "profile", "email"]
     SOCIAL_AUTH_OIDC_SECRET = os.environ.get("DJANGO_OIDC_CLIENT_SECRET")
     SOCIAL_AUTH_OIDC_USERNAME_KEY="email"
-    SOCIAL_AUTH_VERIFY_SSL = False
+    SOCIAL_AUTH_VERIFY_SSL = True
     SOCIAL_AUTH_OIDC_AUTHORIZATION_URL = os.environ.get("DJANGO_OIDC_AUTHORIZE_URL")
     SOCIAL_AUTH_OIDC_ACCESS_TOKEN_URL = os.environ.get("DJANGO_OIDC_ACCESS_TOKEN_URL")
     SOCIAL_AUTH_OIDC_JWKS_URI = os.environ.get("DJANGO_OIDC_JWKS_URL")
