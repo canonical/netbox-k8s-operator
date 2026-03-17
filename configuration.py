@@ -10,9 +10,21 @@
 import json
 import os
 
+# If the charm has pushed a combined CA bundle (system CAs + custom CAs from the
+# certificates relation), configure the requests library to use it.
+# This is necessary for OIDC SSL verification with self-signed or custom CA certificates.
+_CA_CERT_PATH = "/app/ca-certificates.crt"
+if os.path.exists(_CA_CERT_PATH):
+    os.environ["REQUESTS_CA_BUNDLE"] = _CA_CERT_PATH
+    # SSL_CERT_FILE is read by Python's ssl module (and by urllib3 underneath requests),
+    # which is used by social_core for the OpenID Connect discovery endpoint fetch.
+    # REQUESTS_CA_BUNDLE alone is not sufficient because the .well-known/openid-configuration
+    # request goes through ssl.create_default_context() which only reads SSL_CERT_FILE.
+    os.environ["SSL_CERT_FILE"] = _CA_CERT_PATH
+
 # see https://github.com/netbox-community/netbox/issues/15427
-if 'DJANGO_AWS_ENDPOINT_URL' in os.environ:
-    os.environ['AWS_ENDPOINT_URL'] = os.environ['DJANGO_AWS_ENDPOINT_URL']
+if "DJANGO_AWS_ENDPOINT_URL" in os.environ:
+    os.environ["AWS_ENDPOINT_URL"] = os.environ["DJANGO_AWS_ENDPOINT_URL"]
 
 # This is a list of valid fully-qualified domain names (FQDNs) for the NetBox server. NetBox will not permit write
 # access to the server via any other hostnames. The first FQDN in the list will be treated as the preferred name.
@@ -23,13 +35,13 @@ ALLOWED_HOSTS = json.loads(os.environ.get("DJANGO_ALLOWED_HOSTS", "[]"))
 #   https://docs.djangoproject.com/en/stable/ref/settings/#databases
 
 DATABASE = {
-    'ENGINE': 'django.db.backends.postgresql',  # Database engine
+    "ENGINE": "django.db.backends.postgresql",  # Database engine
     "NAME": os.environ.get("POSTGRESQL_DB_NAME"),
     "USER": os.environ.get("POSTGRESQL_DB_USERNAME"),
     "PASSWORD": os.environ.get("POSTGRESQL_DB_PASSWORD"),
     "HOST": os.environ.get("POSTGRESQL_DB_HOSTNAME"),
     "PORT": int(os.environ.get("POSTGRESQL_DB_PORT", "5432")),
-    'CONN_MAX_AGE': 300,      # Max database connection age
+    "CONN_MAX_AGE": 300,  # Max database connection age
 }
 
 # Redis database settings. Redis is used for caching and for queuing background tasks such as webhook events. A separate
@@ -37,38 +49,38 @@ DATABASE = {
 # to use two separate database IDs.
 
 REDIS = {
-    'tasks': {
-        'HOST': os.environ.get("REDIS_DB_HOSTNAME"),
-        'PORT': os.environ.get("REDIS_DB_PORT", "6379"),
+    "tasks": {
+        "HOST": os.environ.get("REDIS_DB_HOSTNAME"),
+        "PORT": os.environ.get("REDIS_DB_PORT", "6379"),
         # Comment out `HOST` and `PORT` lines and uncomment the following if using Redis Sentinel
         # 'SENTINELS': [('mysentinel.redis.example.com', 6379)],
         # 'SENTINEL_SERVICE': 'netbox',
-        'USERNAME': os.environ.get("REDIS_DB_USERNAME", ""),
-        'PASSWORD': os.environ.get("REDIS_DB_PASSWORD", ""),
-        'DATABASE': 0,
-        'SSL': False,
+        "USERNAME": os.environ.get("REDIS_DB_USERNAME", ""),
+        "PASSWORD": os.environ.get("REDIS_DB_PASSWORD", ""),
+        "DATABASE": 0,
+        "SSL": False,
         # Set this to True to skip TLS certificate verification
         # This can expose the connection to attacks, be careful
         # 'INSECURE_SKIP_TLS_VERIFY': False,
         # Set a path to a certificate authority, typically used with a self signed certificate.
         # 'CA_CERT_PATH': '/etc/ssl/certs/ca.crt',
     },
-    'caching': {
-        'HOST': os.environ.get("REDIS_DB_HOSTNAME"),
-        'PORT': os.environ.get("REDIS_DB_PORT", "6379"),
+    "caching": {
+        "HOST": os.environ.get("REDIS_DB_HOSTNAME"),
+        "PORT": os.environ.get("REDIS_DB_PORT", "6379"),
         # Comment out `HOST` and `PORT` lines and uncomment the following if using Redis Sentinel
         # 'SENTINELS': [('mysentinel.redis.example.com', 6379)],
         # 'SENTINEL_SERVICE': 'netbox',
-        'USERNAME': os.environ.get("REDIS_DB_USERNAME", ""),
-        'PASSWORD': os.environ.get("REDIS_DB_PASSWORD", ""),
-        'DATABASE': 1,
-        'SSL': False,
+        "USERNAME": os.environ.get("REDIS_DB_USERNAME", ""),
+        "PASSWORD": os.environ.get("REDIS_DB_PASSWORD", ""),
+        "DATABASE": 1,
+        "SSL": False,
         # Set this to True to skip TLS certificate verification
         # This can expose the connection to attacks, be careful
         # 'INSECURE_SKIP_TLS_VERIFY': False,
         # Set a path to a certificate authority, typically used with a self signed certificate.
         # 'CA_CERT_PATH': '/etc/ssl/certs/ca.crt',
-    }
+    },
 }
 
 # This key is used for secure generation of random numbers and strings. It must never be exposed outside of this file.
@@ -78,7 +90,7 @@ REDIS = {
 
 # It is less than 50 characters in the 12 factor. Double the size.
 # FIXME This is becausse currently the 12 factor in sending a small secret_key. Pending to fix.
-SECRET_KEY = os.environ['DJANGO_SECRET_KEY'] * 2
+SECRET_KEY = os.environ["DJANGO_SECRET_KEY"] * 2
 
 
 #########################
@@ -123,7 +135,7 @@ CORS_ORIGIN_REGEX_WHITELIST = [
 ]
 
 # The name to use for the CSRF token cookie.
-CSRF_COOKIE_NAME = 'csrftoken'
+CSRF_COOKIE_NAME = "csrftoken"
 
 # Set to True to enable server debugging. WARNING: Debugging introduces a substantial performance penalty and may reveal
 # sensitive information about your installation. Only enable debugging while performing testing. Never enable debugging
@@ -131,18 +143,18 @@ CSRF_COOKIE_NAME = 'csrftoken'
 DEBUG = os.environ.get("DJANGO_DEBUG", "false") == "true"
 
 # Set the default preferred language/locale
-DEFAULT_LANGUAGE = 'en-us'
+DEFAULT_LANGUAGE = "en-us"
 
 # Email settings
 EMAIL = {
-    'SERVER': 'localhost',
-    'PORT': 25,
-    'USERNAME': '',
-    'PASSWORD': '',
-    'USE_SSL': False,
-    'USE_TLS': False,
-    'TIMEOUT': 10,  # seconds
-    'FROM_EMAIL': '',
+    "SERVER": "localhost",
+    "PORT": 25,
+    "USERNAME": "",
+    "PASSWORD": "",
+    "USE_SSL": False,
+    "USE_TLS": False,
+    "TIMEOUT": 10,  # seconds
+    "FROM_EMAIL": "",
 }
 
 # Localization
@@ -164,33 +176,31 @@ EXEMPT_VIEW_PERMISSIONS = [
 
 # IP addresses recognized as internal to the system. The debugging toolbar will be available only to clients accessing
 # NetBox from an internal IP.
-INTERNAL_IPS = ('127.0.0.1', '::1')
+INTERNAL_IPS = ("127.0.0.1", "::1")
 
 # Enable custom logging. Please see the Django documentation for detailed guidance on configuring custom logs:
 #   https://docs.djangoproject.com/en/stable/topics/logging/
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'normal': {
-            'format': '%(asctime)s %(name)s %(levelname)s: %(message)s'
-        },
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "normal": {"format": "%(asctime)s %(name)s %(levelname)s: %(message)s"},
     },
-    'handlers': {
+    "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            'level': 'DEBUG',
-            'formatter': 'normal',
+            "level": "DEBUG",
+            "formatter": "normal",
         },
     },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "DEBUG",
         },
-        'netbox': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
+        "netbox": {
+            "handlers": ["console"],
+            "level": "DEBUG",
         },
     },
 }
@@ -208,7 +218,7 @@ LOGIN_REQUIRED = False
 LOGIN_TIMEOUT = None
 
 # The view name or URL to which users are redirected after logging out.
-LOGOUT_REDIRECT_URL = 'home'
+LOGOUT_REDIRECT_URL = "home"
 
 # The file path where uploaded media such as image attachments are stored. A trailing slash is not needed. Note that
 # the default value of this setting is derived from the installed location.
@@ -246,7 +256,7 @@ RQ_DEFAULT_TIMEOUT = 300
 # SCRIPTS_ROOT = '/opt/netbox/netbox/scripts'
 
 # The name to use for the session cookie.
-SESSION_COOKIE_NAME = 'sessionid'
+SESSION_COOKIE_NAME = "sessionid"
 
 # By default, NetBox will store session data in the database. Alternatively, a file path can be specified here to use
 # local file storage instead. (This can be useful for enabling authentication on a standby instance with read-only
@@ -254,35 +264,38 @@ SESSION_COOKIE_NAME = 'sessionid'
 SESSION_FILE_PATH = None
 
 # Time zone (default: UTC)
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 # Date/time formatting. See the following link for supported formats:
 # https://docs.djangoproject.com/en/stable/ref/templates/builtins/#date
-DATE_FORMAT = 'N j, Y'
-SHORT_DATE_FORMAT = 'Y-m-d'
-TIME_FORMAT = 'g:i a'
-SHORT_TIME_FORMAT = 'H:i:s'
-DATETIME_FORMAT = 'N j, Y g:i a'
-SHORT_DATETIME_FORMAT = 'Y-m-d H:i'
+DATE_FORMAT = "N j, Y"
+SHORT_DATE_FORMAT = "Y-m-d"
+TIME_FORMAT = "g:i a"
+SHORT_TIME_FORMAT = "H:i:s"
+DATETIME_FORMAT = "N j, Y g:i a"
+SHORT_DATETIME_FORMAT = "Y-m-d H:i"
 
 # Remote authentication support
 REMOTE_AUTH_ENABLED = False
 if "DJANGO_OIDC_CLIENT_ID" in os.environ:
     REMOTE_AUTH_ENABLED = True
-    REMOTE_AUTH_BACKEND = 'social_core.backends.open_id_connect.OpenIdConnectAuth'
+    REMOTE_AUTH_BACKEND = "social_core.backends.open_id_connect.OpenIdConnectAuth"
 
     SOCIAL_AUTH_LOGIN_URL = os.environ.get("DJANGO_OIDC_REDIRECT_PATH")
     SOCIAL_AUTH_OIDC_ENDPOINT = os.environ.get("DJANGO_OIDC_API_BASE_URL")
     SOCIAL_AUTH_OIDC_KEY = os.environ.get("DJANGO_OIDC_CLIENT_ID")
-    SOCIAL_AUTH_OIDC_SCOPE = os.environ.get("DJANGO_OIDC_SCOPES").split(",") if os.environ.get("OIDC_SCOPES") else ["openid", "profile", "email"]
+    SOCIAL_AUTH_OIDC_SCOPE = (
+        os.environ.get("DJANGO_OIDC_SCOPES").split(",")
+        if os.environ.get("OIDC_SCOPES")
+        else ["openid", "profile", "email"]
+    )
     SOCIAL_AUTH_OIDC_SECRET = os.environ.get("DJANGO_OIDC_CLIENT_SECRET")
-    SOCIAL_AUTH_OIDC_USERNAME_KEY="email"
+    SOCIAL_AUTH_OIDC_USERNAME_KEY = "email"
     SOCIAL_AUTH_VERIFY_SSL = True
     SOCIAL_AUTH_OIDC_AUTHORIZATION_URL = os.environ.get("DJANGO_OIDC_AUTHORIZE_URL")
     SOCIAL_AUTH_OIDC_ACCESS_TOKEN_URL = os.environ.get("DJANGO_OIDC_ACCESS_TOKEN_URL")
     SOCIAL_AUTH_OIDC_JWKS_URI = os.environ.get("DJANGO_OIDC_JWKS_URL")
     SOCIAL_AUTH_OIDC_USERINFO_URL = os.environ.get("DJANGO_OIDC_USER_URL")
-
 
 
 REMOTE_AUTH_AUTO_CREATE_USER = True
@@ -292,17 +305,17 @@ REMOTE_AUTH_DEFAULT_PERMISSIONS = {}
 # By default, uploaded media is stored on the local filesystem. Using Django-storages is also supported. Provide the
 # class path of the storage driver in STORAGE_BACKEND and any configuration options in STORAGE_CONFIG.
 # For the NetBox charm, the only supported option is S3 storage.
-if 'S3_ACCESS_KEY' in os.environ:
+if "S3_ACCESS_KEY" in os.environ:
     STORAGES = {
-    "default": {
-        "BACKEND": "storages.backends.s3.S3Storage",
-        "OPTIONS": {
-        'access_key': os.environ.get('S3_ACCESS_KEY'),
-        'secret_key': os.environ.get('S3_SECRET_KEY'),
-        'bucket_name': os.environ.get('S3_BUCKET'),
-        'region_name': os.environ.get('S3_REGION'),
-        'endpoint_url': os.environ.get('S3_ENDPOINT'),
-        'addressing_style': os.environ.get('S3_ADDRESSING_STYLE'),
+        "default": {
+            "BACKEND": "storages.backends.s3.S3Storage",
+            "OPTIONS": {
+                "access_key": os.environ.get("S3_ACCESS_KEY"),
+                "secret_key": os.environ.get("S3_SECRET_KEY"),
+                "bucket_name": os.environ.get("S3_BUCKET"),
+                "region_name": os.environ.get("S3_REGION"),
+                "endpoint_url": os.environ.get("S3_ENDPOINT"),
+                "addressing_style": os.environ.get("S3_ADDRESSING_STYLE"),
+            },
         },
-    },
-}
+    }
