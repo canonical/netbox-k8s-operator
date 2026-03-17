@@ -31,6 +31,8 @@ extensions:
 charm-libs:
 - lib: hydra.oauth
   version: '0'
+- lib: certificate_transfer_interface.certificate_transfer
+  version: '1'
 
 requires:
   postgresql:
@@ -50,6 +52,9 @@ requires:
     interface: oauth
     optional: True
     limit: 1
+  receive-ca-cert:
+    interface: certificate_transfer
+    optional: true
 
 config:
   options:
