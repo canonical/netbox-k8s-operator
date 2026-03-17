@@ -58,9 +58,7 @@ def test_oauth_integrations(
     # This must happen before the OIDC integration so the CA bundle is available when NetBox
     # makes server-side HTTPS calls to Hydra's token endpoint.
     if not status.apps.get(app.name).relations.get("receive-ca-cert"):  # type: ignore
-        juju.integrate(
-            f"{app.name}:receive-ca-cert", "self-signed-certificates:send-ca-cert"
-        )
+        juju.integrate(f"{app.name}:receive-ca-cert", "self-signed-certificates:send-ca-cert")
 
     juju.wait(
         jubilant.all_active,
@@ -95,9 +93,7 @@ def test_oauth_integrations(
         if e.stderr != f'ERROR secret with name "{test_secret}" already exists\n':
             raise e
         secrets = json.loads(juju.cli("secrets", "--format", "json"))
-        secret_id = [
-            secret for secret in secrets if secrets[secret].get("name") == test_secret
-        ][0]
+        secret_id = [secret for secret in secrets if secrets[secret].get("name") == test_secret][0]
 
     juju.cli("grant-secret", secret_id, "kratos")
     result = juju.run(
@@ -108,9 +104,7 @@ def test_oauth_integrations(
     logger.info("results reset-password %s", result.results)
 
     res = json.loads(
-        juju.run("traefik-public/0", "show-proxied-endpoints").results[
-            "proxied-endpoints"
-        ]
+        juju.run("traefik-public/0", "show-proxied-endpoints").results["proxied-endpoints"]
     )
     logger.info("result show-proxied %s", res)
 
@@ -255,7 +249,7 @@ def _extract_certs_from_databag(
                     parsed = json.loads(certs_raw)
                     if isinstance(parsed, list) and parsed:
                         return [c for c in parsed if c.strip()]
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:  # noqa: BLE001  # pylint: disable=broad-exception-caught
         logger.info("Error reading relation databag: %s", exc)
     return []
 
@@ -331,10 +325,12 @@ def _trigger_config_changed(juju: jubilant.Juju, app_name: str) -> None:
     juju.cli("config", app_name, f"oidc-redirect-path={default_value}")
 
 
-def _assert_idp_login_success(
-    app_url: str, endpoint: str, test_email: str, test_password: str
-):
-    """Use playwright to test the OIDC login flow."""
+def _assert_idp_login_success(app_url: str, endpoint: str, test_email: str, test_password: str):
+    """Use playwright to test the OIDC login flow.
+
+    Raises:
+        AssertionError: If the OIDC callback does not redirect to the home page.
+    """
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         context = browser.new_context(ignore_https_errors=True)

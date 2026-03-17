@@ -47,12 +47,12 @@ class NetboxCharm(paas_charm.django.Charm):
             self._on_certificates_removed,
         )
 
-    def _on_certificates_updated(self, event: ops.EventBase) -> None:
+    def _on_certificates_updated(self, _event: ops.EventBase) -> None:
         """Handle CA certificates updated event."""
         logger.info("CA certificates updated via certificate_transfer")
         self.restart()
 
-    def _on_certificates_removed(self, event: ops.EventBase) -> None:
+    def _on_certificates_removed(self, _event: ops.EventBase) -> None:
         """Handle CA certificates removed event."""
         logger.info("CA certificates removed via certificate_transfer")
         self.restart()
