@@ -5,14 +5,18 @@
 
 """Netbox Charm entrypoint."""
 
-import json
 import logging
 import typing
 
 import ops
 import paas_charm.django
-from charms.certificate_transfer_interface.v1.certificate_transfer import (
-    CertificateTransferRequires,
+
+# pylint: disable-next=import-error,no-name-in-module
+from charms.tls_certificates_interface.v4.tls_certificates import (
+    CertificateAvailableEvent,
+    CertificateRequestAttributes,
+    Mode,
+    TLSCertificatesRequiresV4,
 )
 
 # Pebble service name used by the django-framework extension.
@@ -21,7 +25,7 @@ _PEBBLE_SERVICE_NAME = "django"
 logger = logging.getLogger(__name__)
 
 CA_CERT_PATH = "/app/ca-certificates.crt"
-RECEIVE_CA_CERT_RELATION_NAME = "receive-ca-cert"
+CERTIFICATES_RELATION_NAME = "certificates"
 
 
 class NetboxCharm(paas_charm.django.Charm):
@@ -34,27 +38,28 @@ class NetboxCharm(paas_charm.django.Charm):
             args: passthrough to CharmBase.
         """
         super().__init__(*args)
-        self._ca_transfer = CertificateTransferRequires(
+        self._certs = TLSCertificatesRequiresV4(
             charm=self,
-            relationship_name=RECEIVE_CA_CERT_RELATION_NAME,
+            relationship_name=CERTIFICATES_RELATION_NAME,
+            certificate_requests=[
+                CertificateRequestAttributes(
+                    common_name=self.app.name,
+                ),
+            ],
+            mode=Mode.UNIT,
         )
         self.framework.observe(
-            self._ca_transfer.on.certificate_set_updated,
-            self._on_certificates_updated,
-        )
-        self.framework.observe(
-            self._ca_transfer.on.certificates_removed,
-            self._on_certificates_removed,
+            self._certs.on.certificate_available,
+            self._on_certificate_available,
         )
 
-    def _on_certificates_updated(self, _event: ops.EventBase) -> None:
-        """Handle CA certificates updated event."""
-        logger.info("CA certificates updated via certificate_transfer")
-        self.restart()
+    def _on_certificate_available(self, _event: CertificateAvailableEvent) -> None:
+        """Handle certificate available event.
 
-    def _on_certificates_removed(self, _event: ops.EventBase) -> None:
-        """Handle CA certificates removed event."""
-        logger.info("CA certificates removed via certificate_transfer")
+        Extracts the CA certificate from the event and restarts the service
+        so it can use the updated CA bundle for HTTPS connections.
+        """
+        logger.info("Certificate available via tls-certificates relation")
         self.restart()
 
     def restart(self, rerun_migrations: bool = False) -> None:
@@ -69,7 +74,7 @@ class NetboxCharm(paas_charm.django.Charm):
     def _push_ca_certificates(self) -> None:
         """Push CA certificates to the workload container.
 
-        Reads CA certificates from the receive-ca-cert relation databag,
+        Reads CA certificates from the tls-certificates relation,
         combines them with the system CA bundle, and writes the result
         to the container so that ``REQUESTS_CA_BUNDLE`` can point to it.
         """
@@ -129,85 +134,35 @@ class NetboxCharm(paas_charm.django.Charm):
         )
 
     def _collect_ca_certificates(self) -> set:
-        """Collect CA certificates from the receive-ca-cert relation.
+        """Collect CA certificates from the tls-certificates relation.
 
-        Tries the certificate_transfer library first, then falls back
-        to parsing the raw relation databag directly.
+        Retrieves assigned certificates from the TLSCertificatesRequiresV4
+        integration and extracts the CA certificate from each one.
 
         Returns:
             Set of CA certificate PEM strings.
         """
-        # Try the library first
-        ca_certs = self._ca_transfer.get_all_certificates()
-        if ca_certs:
-            logger.info(
-                "Got %d CA certs from certificate_transfer library",
-                len(ca_certs),
+        ca_certs: set = set()
+        try:
+            assigned_certs, _ = self._certs.get_assigned_certificates()
+            for cert in assigned_certs:
+                if cert and cert.ca:
+                    ca_pem = str(cert.ca)
+                    if ca_pem.strip():
+                        ca_certs.add(ca_pem)
+                        logger.info("Extracted CA certificate from relation")
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logger.warning(
+                "Error retrieving certificates from relation: %s",
+                e,
             )
-            return ca_certs
 
-        # Fallback: parse the raw relation databag directly.
-        # This handles cases where the library's data model validation
-        # is too strict or the provider uses an unexpected format.
-        ca_certs = self._parse_raw_databag()
         if ca_certs:
             logger.info(
-                "Got %d CA certs from raw databag fallback",
+                "Got %d CA certs from tls-certificates relation",
                 len(ca_certs),
             )
         return ca_certs
-
-    def _parse_raw_databag(self) -> set:
-        """Parse CA certs directly from the relation databag.
-
-        Handles both v0 (unit databag) and v1 (app databag) formats
-        of the ``certificate_transfer`` interface.
-
-        Returns:
-            Set of CA certificate PEM strings.
-        """
-        certs: set = set()
-        for rel in self.model.relations.get(RECEIVE_CA_CERT_RELATION_NAME, []):
-            if not rel.active:
-                continue
-            # v1 format: app databag with "certificates" key
-            if rel.app:
-                app_bag = dict(rel.data.get(rel.app, {}))
-                raw = app_bag.get("certificates", "")
-                if raw:
-                    certs.update(self._parse_cert_value(raw))
-            # v0 format: unit databag with "ca" / "chain" keys
-            for unit in list(rel.units):
-                unit_bag = dict(rel.data.get(unit, {}))
-                ca_val = unit_bag.get("ca", "")
-                if ca_val:
-                    certs.update(self._parse_cert_value(ca_val))
-                chain_val = unit_bag.get("chain", "")
-                if chain_val:
-                    certs.update(self._parse_cert_value(chain_val))
-        return certs
-
-    @staticmethod
-    def _parse_cert_value(raw: str) -> set:
-        """Parse a certificate value that may be JSON-encoded.
-
-        Args:
-            raw: A raw string from the relation databag.
-
-        Returns:
-            Set of PEM certificate strings.
-        """
-        certs: set = set()
-        try:
-            parsed = json.loads(raw)
-            if isinstance(parsed, list):
-                certs.update(c for c in parsed if c.strip())
-            elif isinstance(parsed, str) and parsed.strip():
-                certs.add(parsed.strip())
-        except (json.JSONDecodeError, TypeError):
-            if raw.strip():
-                certs.add(raw.strip())
-        return certs
 
 
 if __name__ == "__main__":
