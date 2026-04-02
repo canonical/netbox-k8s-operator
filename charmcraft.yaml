@@ -31,6 +31,8 @@ extensions:
 charm-libs:
 - lib: hydra.oauth
   version: '0'
+- lib: tls_certificates_interface.tls_certificates
+  version: '4'
 
 requires:
   postgresql:
@@ -49,6 +51,10 @@ requires:
   oidc:
     interface: oauth
     optional: True
+    limit: 1
+  certificates:
+    interface: tls-certificates
+    optional: true
     limit: 1
 
 config:
