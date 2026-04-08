@@ -1,8 +1,6 @@
-<!-- Remember to update this file for your charm -- replace <charm-name> with the appropriate name. -->
-
 # Contributing
 
-This document explains the processes and practices recommended for contributing enhancements to the netbox-k8s charm.
+This document explains the processes and practices recommended for contributing enhancements to the NetBox Operator.
 
 ## Overview
 
@@ -11,7 +9,7 @@ This document explains the processes and practices recommended for contributing 
 - If you would like to chat with us about your use-cases or proposed implementation, you can reach
   us at [Canonical Matrix public channel](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)
   or [Discourse](https://discourse.charmhub.io/).
-- Familiarizing yourself with the [Juju documentation](https://canonical-juju.readthedocs-hosted.com/en/latest/user/howto/manage-charms/)
+- Familiarizing yourself with the [Juju documentation](https://documentation.ubuntu.com/juju/3.6/howto/manage-charms/)
   will help you a lot when working on new features or bug fixes.
 - All enhancements require review before being merged. Code review typically examines
   - code quality
@@ -27,12 +25,11 @@ This document explains the processes and practices recommended for contributing 
 When contributing, you must abide by the
 [Ubuntu Code of Conduct](https://ubuntu.com/community/ethos/code-of-conduct).
 
-## Releases and versions
-
-This project uses [semantic versioning](https://semver.org/).
+## Changelog
 
 Please ensure that any new feature, fix, or significant change is documented by
-adding an entry to the [CHANGELOG.md](https://github.com/canonical/netbox-k8s-operator/blob/main/docs/changelog.md) file.
+adding an entry to the [CHANGELOG.md](docs/changelog.md) file. Use the date of the
+contribution as the header for new entries.
 
 To learn more about changelog best practices, visit [Keep a Changelog](https://keepachangelog.com/).
 
@@ -53,35 +50,31 @@ also, reference the issue or bug number when you submit the changes.
 
 Your changes will be reviewed in due time; if approved, they will be eventually merged.
 
-### Describing pull requests
+### AI
 
-To be properly considered, reviewed and merged,
-your pull request must provide the following details:
+You are free to use any tools you want while preparing your contribution, including
+AI, provided that you do so lawfully and ethically.
 
-- **Title**: Summarize the change in a short, descriptive title.
+Avoid using AI to complete issues tagged with the "good first issues" label. The
+purpose of these issues is to provide newcomers with opportunities to contribute
+to our projects and gain coding skills. Using AI to complete these tasks
+undermines their purpose.
 
-- **Overview**: Describe the problem that your pull request solves.
-  Mention any new features, bug fixes or refactoring.
+We have created instructions and tools that you can provide AI while preparing your contribution: [`copilot-collections`](https://github.com/canonical/copilot-collections)
 
-- **Rationale**: Explain why the change is needed.
+While it isn't necessary to use `copilot-collections` while preparing your
+contribution, these files contain details about our quality standards and
+practices that will help the AI avoid common pitfalls when interacting with
+our projects. By using these tools, you can avoid longer review times and nitpicks.
 
-- **Juju Events Changes**: Describe any changes made to Juju events, or
-  "None" if the pull request does not change any Juju events.
+If you choose to use AI, please disclose this information to us by indicating
+AI usage in the PR description (for instance, marking the checklist item about
+AI usage). You don't need to go into explicit details about how and where you used AI.
 
-- **Module Changes**: Describe any changes made to the module, or "None"
-  if your pull request does not change the module.
-
-- **Library Changes**: Describe any changes made to the library,
-  or "None" is the library is not affected.
-
-- **Checklist**: Complete the following items:
-
-  - The [charm style guide](https://documentation.ubuntu.com/juju/3.6/reference/charm/charm-development-best-practices/) was applied
-  - The [contributing guide](https://github.com/canonical/is-charms-contributing-guide) was applied
-  - The changes are compliant with [ISD054 - Managing Charm Complexity](https://discourse.charmhub.io/t/specification-isd014-managing-charm-complexity/11619)
-  - The documentation is updated
-  - The PR is tagged with appropriate label (trivial, senior-review-required)
-  - The changelog has been updated
+Avoid submitting contributions that you don't fully understand.
+You are responsible for the entire contribution, including the AI-assisted portions.
+You must be willing to engage in discussion and respond to any questions, comments,
+or suggestions we may have. 
 
 ### Signing commits
 
@@ -91,7 +84,7 @@ we use the [Canonical contributor license agreement](https://assets.ubuntu.com/v
 
 #### Canonical contributor agreement
 
-Canonical welcomes contributions to the netbox-k8s charm. Please check out our
+Canonical welcomes contributions to the NetBox Operator. Please check out our
 [contributor agreement](https://ubuntu.com/legal/contributors) if you're interested in contributing to the solution.
 
 The CLA sign-off is simple line at the
@@ -107,7 +100,7 @@ To add signatures on your commits, follow the
 ## Develop
 
 To make contributions to this charm, you'll need a working
-[development setup](https://documentation.ubuntu.com/juju/latest/user/howto/manage-your-deployment/manage-your-deployment-environment/).
+[development setup](https://documentation.ubuntu.com/juju/latest/howto/manage-your-juju-deployment/set-up-your-juju-deployment-local-testing-and-development/).
 
 The code for this charm can be downloaded as follows:
 
@@ -115,14 +108,27 @@ The code for this charm can be downloaded as follows:
 git clone https://github.com/canonical/netbox-k8s-operator
 ```
 
-You can create an environment for development with `python3-venv`.
-We will also install `tox` inside the virtual environment for testing:
+Make sure to install [`uv`](https://docs.astral.sh/uv/). For example, you can install `uv` on Ubuntu using:
 
 ```bash
-sudo apt install python3-venv
-python3 -m venv venv
-source venv/bin/activate
-pip install tox
+sudo snap install astral-uv --classic
+```
+
+For other systems, follow the [`uv` installation guide](https://docs.astral.sh/uv/getting-started/installation/).
+
+Then install `tox` with its extensions, and install a range of Python versions:
+
+```bash
+uv python install
+uv tool install tox --with tox-uv
+uv tool update-shell
+```
+
+To create a development environment, run:
+
+```bash
+uv sync --all-groups
+source .venv/bin/activate
 ```
 
 ### Test
@@ -131,14 +137,16 @@ This project uses `tox` for managing test environments. There are some pre-confi
 that can be used for linting and formatting code when you're preparing contributions to the charm:
 
 * ``tox``: Executes all of the basic checks and tests (``lint``, ``unit``, ``static``, and ``coverage-report``).
-* ``tox -e fmt``: Runs formatting using ``black`` and ``isort``.
+* ``tox -e fmt``: Runs formatting using ``ruff``.
 * ``tox -e lint``: Runs a range of static code analysis to check the code.
 * ``tox -e static``: Runs other checks such as ``bandit`` for security issues.
+* ``tox -e unit``: Runs the unit tests.
+* ``tox -e integration``: Runs the integration tests.
 
 ### Build the rock and charm
 
-Use [Rockcraft](https://documentation.ubuntu.com/rockcraft/en/latest/) to create an
-OCI image for the netbox-k8s app, and then upload the image to a MicroK8s registry,
+Use [Rockcraft](https://documentation.ubuntu.com/rockcraft/stable/) to create an
+OCI image for the NetBox app, and then upload the image to a MicroK8s registry,
 which stores OCI archives so they can be downloaded and deployed.
 
 Enable the MicroK8s registry:
@@ -151,10 +159,9 @@ The following commands pack the OCI image and push it into
 the MicroK8s registry:
 
 ```bash
-cd netbox-k8s-operator/netbox
+cd <project_dir>
 rockcraft pack
-skopeo --insecure-policy copy --dest-tls-verify=false oci-archive:netbox_4.3.6_amd64.rock docker://localhost:32000/netbox:latest
-cd ..
+skopeo --insecure-policy copy --dest-tls-verify=false oci-archive:<rock-name>.rock docker://localhost:32000/<app-name>:latest
 ```
 
 Build the charm in this git repository using:
@@ -171,7 +178,8 @@ juju add-model charm-dev
 # Enable DEBUG logging
 juju model-config logging-config="<root>=INFO;unit=DEBUG"
 # Deploy the charm
-juju deploy ./netbox-k8s_ubuntu-22.04-amd64.charm --resource django-app-image=localhost:32000/netbox:latest
+juju deploy ./netbox-k8s*.charm 
 ```
+
 
 
