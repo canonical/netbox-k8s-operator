@@ -87,10 +87,7 @@ def saml_app_fixture(
     if juju.status().apps.get(SAML_APP_NAME):
         logger.info("%s already deployed", SAML_APP_NAME)
         return App(SAML_APP_NAME)
-    juju.deploy(
-        SAML_APP_NAME,
-        channel="latest/edge",
-    )
+    juju.deploy(SAML_APP_NAME, channel="latest/edge", log=False)
     return App(SAML_APP_NAME)
 
 
@@ -110,6 +107,7 @@ def netbox_saml_integration_fixture(
             # The saml Name for FriendlyName "uid"
             "saml-username": "urn:oid:0.9.2342.19200300.100.1.1",
         },
+        log=False,
     )
     model_name = juju.status().model.name
     saml_helper.prepare_pod(model_name, f"{saml_app.name}-0")
@@ -121,6 +119,7 @@ def netbox_saml_integration_fixture(
             "entity_id": f"https://{saml_helper.SAML_HOST}/metadata",
             "metadata_url": f"https://{saml_helper.SAML_HOST}/metadata",
         },
+        log=False,
     )
     juju.config(
         netbox_app.name,
@@ -129,6 +128,7 @@ def netbox_saml_integration_fixture(
             # The saml Name for FriendlyName "uid"
             "saml-username": "urn:oid:0.9.2342.19200300.100.1.1",
         },
+        log=False,
     )
     try:
         juju.integrate(saml_app.name, netbox_app.name)
@@ -243,6 +243,7 @@ def minio_app_fixture(juju: jubilant.Juju, s3_netbox_credentials):
         channel="ckf-1.10/stable",
         config=s3_netbox_credentials,
         trust=True,
+        log=False,
     )
 
     juju.wait(lambda status: status.apps[MINIO_APP_NAME].is_active, timeout=60 * 30)
@@ -258,7 +259,9 @@ def gateway_app_fixture(
         logger.info("%s already deployed", GATEWAY_APP_NAME)
         return App(GATEWAY_APP_NAME)
 
-    juju.deploy(GATEWAY_APP_NAME, base="ubuntu@24.04", channel="latest/edge", trust=True)
+    juju.deploy(
+        GATEWAY_APP_NAME, base="ubuntu@24.04", channel="latest/edge", trust=True, log=False
+    )
     return App(GATEWAY_APP_NAME)
 
 
@@ -273,6 +276,7 @@ def netbox_ingress_integration_fixture(
     juju.config(
         gateway_app.name,
         {"external-hostname": netbox_hostname, "path-routes": "/", "gateway-class": "cilium"},
+        log=False,
     )
     try:
         juju.integrate(
@@ -306,10 +310,7 @@ def s3_integrator_app_fixture(
     if juju.status().apps.get(S3_INTEGRATOR_APP_NAME):
         logger.info("%s already deployed", S3_INTEGRATOR_APP_NAME)
         return App(S3_INTEGRATOR_APP_NAME)
-    juju.deploy(
-        S3_INTEGRATOR_APP_NAME,
-        channel="edge",
-    )
+    juju.deploy(S3_INTEGRATOR_APP_NAME, channel="edge", log=False)
     juju.wait(
         lambda status: jubilant.all_blocked(status, S3_INTEGRATOR_APP_NAME),
         timeout=120,
@@ -331,10 +332,7 @@ def s3_integrator_app_fixture(
         mc_client.make_bucket(bucket_name)
 
     # configure s3-integrator
-    juju.config(
-        "s3-integrator",
-        s3_netbox_configuration,
-    )
+    juju.config("s3-integrator", s3_netbox_configuration, log=False)
 
     task = juju.run(f"{S3_INTEGRATOR_APP_NAME}/0", "sync-s3-credentials", s3_netbox_credentials)
     assert task.status == "completed"
@@ -351,10 +349,7 @@ def postgresql_app_fixture(
         return App(POSTGRESQL_APP_NAME)
 
     juju.deploy(
-        POSTGRESQL_APP_NAME,
-        channel="14/stable",
-        base="ubuntu@22.04",
-        trust=True,
+        POSTGRESQL_APP_NAME, channel="14/stable", base="ubuntu@22.04", trust=True, log=False
     )
     return App(POSTGRESQL_APP_NAME)
 
@@ -368,10 +363,7 @@ def redis_app_fixture(
         logger.info("%s already deployed", REDIS_APP_NAME)
         return App(REDIS_APP_NAME)
 
-    juju.deploy(
-        REDIS_APP_NAME,
-        channel="edge",
-    )
+    juju.deploy(REDIS_APP_NAME, channel="edge", log=False)
     return App(REDIS_APP_NAME)
 
 
@@ -396,6 +388,7 @@ def netbox_barebones_fixture(
             "django-debug": False,
             "django-allowed-hosts": "*",
         },
+        log=False,
     )
     return App(NETBOX_APP_NAME)
 
@@ -450,14 +443,29 @@ def deploy_identity_bundle_fixture(
     if juju.status().apps.get("hydra"):
         logger.info("identity-platform is already deployed")
         return
-    juju.deploy("hydra", channel="latest/edge", revision=399, trust=True)
-    juju.deploy("kratos", channel="latest/edge", revision=567, trust=True)
+    juju.deploy("hydra", channel="latest/edge", revision=399, trust=True, log=False)
+    juju.deploy("kratos", channel="latest/edge", revision=567, trust=True, log=False)
     juju.deploy(
-        "identity-platform-login-ui-operator", channel="latest/edge", revision=200, trust=True
+        "identity-platform-login-ui-operator",
+        channel="latest/edge",
+        revision=200,
+        trust=True,
+        log=False,
     )
-    juju.deploy("self-signed-certificates", channel="1/stable", revision=317, trust=True)
-    juju.deploy("traefik-k8s", "traefik-admin", channel="latest/stable", revision=176, trust=True)
-    juju.deploy("traefik-k8s", "traefik-public", channel="latest/edge", revision=270, trust=True)
+    juju.deploy(
+        "self-signed-certificates", channel="1/stable", revision=317, trust=True, log=False
+    )
+    juju.deploy(
+        "traefik-k8s",
+        "traefik-admin",
+        channel="latest/stable",
+        revision=176,
+        trust=True,
+        log=False,
+    )
+    juju.deploy(
+        "traefik-k8s", "traefik-public", channel="latest/edge", revision=270, trust=True, log=False
+    )
     # Integrations
     juju.integrate(
         "hydra:hydra-endpoint-info", "identity-platform-login-ui-operator:hydra-endpoint-info"
@@ -480,7 +488,7 @@ def deploy_identity_bundle_fixture(
         "traefik-public:traefik-route", "identity-platform-login-ui-operator:public-route"
     )
 
-    juju.config("kratos", {"enforce_mfa": False})
+    juju.config("kratos", {"enforce_mfa": False}, log=False)
     yield
 
     _cleanup(juju)
