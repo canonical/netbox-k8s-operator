@@ -50,7 +50,7 @@ also, reference the issue or bug number when you submit the changes.
 
 Your changes will be reviewed in due time; if approved, they will be eventually merged.
 
-### AI
+### Using artificial intelligence
 
 You are free to use any tools you want while preparing your contribution, including
 AI, provided that you do so lawfully and ethically.
@@ -180,6 +180,5 @@ juju model-config logging-config="<root>=INFO;unit=DEBUG"
 # Deploy the charm
 juju deploy ./netbox-k8s*.charm 
 ```
-
 
 
