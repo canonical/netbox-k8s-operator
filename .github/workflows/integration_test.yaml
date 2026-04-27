@@ -17,7 +17,6 @@ jobs:
           "test_s3.py",
           "test_oauth.py"
         ]
-      load-test-enabled: false
       trivy-fs-enabled: true
       trivy-image-config: "trivy.yaml"
       juju-channel: 3/stable
