@@ -27,6 +27,18 @@
     },
     {
       "customType": "regex",
+      "datasourceTemplate": "github-releases",
+      "description": "Update NetBox workload version",
+      "fileMatch": [
+        "download_netbox.sh"
+      ],
+      "matchStrings": [
+        "# renovate: depName=(?<depName>.*?)\\nNETBOX_VERSION=\"(?<currentValue>.*)\""
+      ],
+      "versioningTemplate": "semver-coerced"
+    },
+    {
+      "customType": "regex",
       "datasourceTemplate": "custom.charmhub",
       "fileMatch": [
         "\\.tftest\\.hcl$",

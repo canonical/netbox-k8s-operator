@@ -3,6 +3,7 @@
 # See LICENSE file for licensing details.
 
 # This script downloads and extracts the NetBox source code.
+# renovate: depName=netbox-community/netbox
 NETBOX_VERSION="4.3.6"
 wget https://github.com/netbox-community/netbox/archive/refs/tags/v${NETBOX_VERSION}.tar.gz
 
