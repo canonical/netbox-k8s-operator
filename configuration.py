@@ -19,6 +19,10 @@ if 'DJANGO_AWS_ENDPOINT_URL' in os.environ:
 #
 ALLOWED_HOSTS = json.loads(os.environ.get("DJANGO_ALLOWED_HOSTS", "[]"))
 
+# CSRF_TRUSTED_ORIGINS must contain the same hostnames as ALLOWED_HOSTS for CSRF protection to work
+# when NetBox is behind a reverse proxy (e.g. Traefik ingress).
+CSRF_TRUSTED_ORIGINS = ALLOWED_HOSTS[:]
+
 # PostgreSQL database configuration. See the Django documentation for a complete list of available parameters:
 #   https://docs.djangoproject.com/en/stable/ref/settings/#databases
 
