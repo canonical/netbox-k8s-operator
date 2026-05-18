@@ -14,10 +14,23 @@ import os
 if 'DJANGO_AWS_ENDPOINT_URL' in os.environ:
     os.environ['AWS_ENDPOINT_URL'] = os.environ['DJANGO_AWS_ENDPOINT_URL']
 
+
+def _uniq(values: list[str]) -> list[str]:
+    """Return values with duplicates removed while preserving order."""
+    return list(dict.fromkeys(values))
+
+
 # This is a list of valid fully-qualified domain names (FQDNs) for the NetBox server. NetBox will not permit write
 # access to the server via any other hostnames. The first FQDN in the list will be treated as the preferred name.
 #
-ALLOWED_HOSTS = json.loads(os.environ.get("DJANGO_ALLOWED_HOSTS", "[]"))
+ALLOWED_HOSTS = _uniq(json.loads(os.environ.get("DJANGO_ALLOWED_HOSTS", "[]")))
+CSRF_TRUSTED_ORIGINS = _uniq(
+    [
+        host if "://" in host else f"https://{host}"
+        for host in ALLOWED_HOSTS
+        if host and host != "*"
+    ]
+)
 
 # PostgreSQL database configuration. See the Django documentation for a complete list of available parameters:
 #   https://docs.djangoproject.com/en/stable/ref/settings/#databases
