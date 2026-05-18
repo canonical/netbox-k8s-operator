@@ -20,15 +20,28 @@ def _uniq(values: list[str]) -> list[str]:
     return list(dict.fromkeys(values))
 
 
+def _to_https_origin(host: str) -> str:
+    """Convert a host entry into an HTTPS origin for CSRF trusted origins."""
+    if host.startswith("https://"):
+        return host
+    if host.startswith("http://"):
+        return f"https://{host.removeprefix('http://')}"
+    if "://" in host:
+        return ""
+    return f"https://{host}"
+
+
 # This is a list of valid fully-qualified domain names (FQDNs) for the NetBox server. NetBox will not permit write
 # access to the server via any other hostnames. The first FQDN in the list will be treated as the preferred name.
 #
 ALLOWED_HOSTS = _uniq(json.loads(os.environ.get("DJANGO_ALLOWED_HOSTS", "[]")))
 CSRF_TRUSTED_ORIGINS = _uniq(
     [
-        host if "://" in host else f"https://{host}"
+        origin
         for host in ALLOWED_HOSTS
         if host and host != "*"
+        for origin in [_to_https_origin(host)]
+        if origin
     ]
 )
 

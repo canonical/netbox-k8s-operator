@@ -14,7 +14,8 @@ def test_allowed_hosts_and_csrf_trusted_origins_are_deduplicated(monkeypatch) ->
     monkeypatch.setenv("DJANGO_SECRET_KEY", "secret-key")
     monkeypatch.setenv(
         "DJANGO_ALLOWED_HOSTS",
-        '["netbox.example.com", "netbox.example.com", "https://other.example.com"]',
+        '["netbox.example.com", "netbox.example.com", "http://other.example.com", '
+        '"http://other.example.com"]',
     )
 
     module_globals = runpy.run_path(
@@ -23,7 +24,7 @@ def test_allowed_hosts_and_csrf_trusted_origins_are_deduplicated(monkeypatch) ->
 
     assert module_globals["ALLOWED_HOSTS"] == [
         "netbox.example.com",
-        "https://other.example.com",
+        "http://other.example.com",
     ]
     assert module_globals["CSRF_TRUSTED_ORIGINS"] == [
         "https://netbox.example.com",
