@@ -83,7 +83,9 @@ class TestCsrfTrustedOrigins:
         assert: CSRF_TRUSTED_ORIGINS should contain all of them.
         """
         config = _load_configuration(
-            {"DJANGO_ALLOWED_HOSTS": '["host1.example.com", "host2.example.com", "host3.example.com"]'}
+            {
+                "DJANGO_ALLOWED_HOSTS": '["host1.example.com", "host2.example.com", "host3.example.com"]'
+            }
         )
         assert config["CSRF_TRUSTED_ORIGINS"] == [
             "host1.example.com",
