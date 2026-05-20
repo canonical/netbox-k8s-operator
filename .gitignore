@@ -12,3 +12,11 @@ __pycache__/
 netbox/*
 *.tar.gz*
 lib/
+
+# Vale synced styles (installed via vale sync, not tracked in git)
+.vale/styles/Canonical/
+.vale/styles/PFE/
+.vale/styles/config/dictionaries/
+.vale/styles/config/vocabularies/Canonical/
+.vale/styles/config/vocabularies/PFE/
+.vale/styles/.vale-config/
