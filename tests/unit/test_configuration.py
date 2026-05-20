@@ -54,9 +54,12 @@ class TestCsrfTrustedOrigins:
         act: Load the configuration module.
         assert: CSRF_TRUSTED_ORIGINS should contain the same values as ALLOWED_HOSTS.
         """
-        hosts = ["example.com", "netbox.local"]
-        config = _load_configuration({"DJANGO_ALLOWED_HOSTS": json.dumps(hosts)})
-        assert config["CSRF_TRUSTED_ORIGINS"] == hosts
+        config = _load_configuration({"DJANGO_ALLOWED_HOSTS": '["example.com", "netbox.local"]'})
+
+        assert config["CSRF_TRUSTED_ORIGINS"] == [
+            "https://example.com",
+            "https://netbox.local",
+        ]
 
     def test_independent_copy(self):
         """
@@ -74,7 +77,7 @@ class TestCsrfTrustedOrigins:
         assert: CSRF_TRUSTED_ORIGINS should contain exactly that host.
         """
         config = _load_configuration({"DJANGO_ALLOWED_HOSTS": '["netbox.example.com"]'})
-        assert config["CSRF_TRUSTED_ORIGINS"] == ["netbox.example.com"]
+        assert config["CSRF_TRUSTED_ORIGINS"] == ["https://netbox.example.com"]
 
     def test_with_multiple_hosts(self):
         """
@@ -88,7 +91,7 @@ class TestCsrfTrustedOrigins:
             }
         )
         assert config["CSRF_TRUSTED_ORIGINS"] == [
-            "host1.example.com",
-            "host2.example.com",
-            "host3.example.com",
+            "https://host1.example.com",
+            "https://host2.example.com",
+            "https://host3.example.com",
         ]
