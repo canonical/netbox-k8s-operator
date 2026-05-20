@@ -4,12 +4,9 @@
 """Unit tests for the NetBox Django configuration module."""
 
 import importlib.util
-import json
 import os
 import pathlib
 import sys
-
-import pytest
 
 CONFIG_PATH = pathlib.Path(os.path.dirname(__file__)).parent.parent / "configuration.py"
 
@@ -85,11 +82,8 @@ class TestCsrfTrustedOrigins:
         act: Load the configuration module.
         assert: CSRF_TRUSTED_ORIGINS should contain all of them.
         """
-        config = _load_configuration(
-            {
-                "DJANGO_ALLOWED_HOSTS": '["host1.example.com", "host2.example.com", "host3.example.com"]'
-            }
-        )
+        hosts = '["host1.example.com", "host2.example.com", "host3.example.com"]'
+        config = _load_configuration({"DJANGO_ALLOWED_HOSTS": hosts})
         assert config["CSRF_TRUSTED_ORIGINS"] == [
             "https://host1.example.com",
             "https://host2.example.com",
