@@ -13,10 +13,15 @@ netbox/*
 *.tar.gz*
 lib/
 
-# Vale synced styles (installed via vale sync, not tracked in git)
-.vale/styles/Canonical/
-.vale/styles/PFE/
-.vale/styles/config/dictionaries/
-.vale/styles/config/vocabularies/Canonical/
-.vale/styles/config/vocabularies/PFE/
-.vale/styles/.vale-config/
+# BEGIN VALE WORKFLOW IGNORE
+.vale/styles/*
+!.vale/styles/local
+!.vale/styles/config/
+
+.vale/styles/config/*
+!.vale/styles/config/vocabularies/
+
+.vale/styles/config/vocabularies/*
+!.vale/styles/config/vocabularies/local
+# END VALE WORKFLOW IGNORE
+
