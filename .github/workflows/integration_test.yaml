@@ -10,6 +10,8 @@ jobs:
     uses: 
       canonical/operator-workflows/.github/workflows/integration_test.yaml@main
     secrets: inherit
+    permissions:
+      pull-requests: write
     with:
       modules: |
         [
