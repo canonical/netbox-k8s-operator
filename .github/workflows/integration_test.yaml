@@ -11,6 +11,7 @@ jobs:
       canonical/operator-workflows/.github/workflows/integration_test.yaml@main
     secrets: inherit
     permissions:
+      packages: write
       pull-requests: write
     with:
       modules: |
