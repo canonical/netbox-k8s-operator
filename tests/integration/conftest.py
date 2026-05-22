@@ -493,6 +493,13 @@ def _cleanup(juju: jubilant.Juju):
     for app in status.apps:
         juju.remove_application(app, force=True, destroy_storage=True)
 
+    # Wait for all applications to be fully removed so subsequent test modules
+    # do not encounter apps in a dying/removing state.
+    try:
+        juju.wait(lambda status: not status.apps, timeout=10 * 60)
+    except Exception:  # pylint: disable=broad-except
+        logger.warning("Timed out waiting for all apps to be removed during cleanup")
+
 
 @pytest.fixture(scope="session")
 def browser_context_manager() -> None:
