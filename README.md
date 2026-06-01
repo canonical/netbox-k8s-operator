@@ -40,11 +40,11 @@ The following actions are available for this charm:
 * **create-superuser**: Create a new Django superuser account.
 * **rotate-secret-key**: Rotate the secret key. Users will be forced to log in again. This might be useful if a security breach occurs.
 
-You can obtain more information on the actions [here](https://charmhub.io/netbox-k8s/actions).
+You can obtain more information on the [netbox-k8s actions](https://charmhub.io/netbox-k8s/actions).
 
 ## Learn more
 
-- [Read more](https://charmhub.io/netbox-k8s/docs)
+- [netbox-k8s documentation](https://charmhub.io/netbox-k8s/docs)
 - [Official Webpage](https://netboxlabs.com/)
 - [Troubleshooting](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)
 
