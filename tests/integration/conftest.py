@@ -272,7 +272,11 @@ def netbox_ingress_integration_fixture(
     """Integrate NetBox and gateway-api-integrator for ingress integration."""
     juju.config(
         gateway_app.name,
-        {"external-hostname": netbox_hostname, "path-routes": "/", "gateway-class": "cilium"},
+        {
+            "external-hostname": netbox_hostname,
+            "path-routes": "/",
+            "gateway-class": "cilium",
+        },
     )
     try:
         juju.integrate(
@@ -453,14 +457,24 @@ def deploy_identity_bundle_fixture(
     juju.deploy("hydra", channel="latest/edge", revision=399, trust=True)
     juju.deploy("kratos", channel="latest/edge", revision=567, trust=True)
     juju.deploy(
-        "identity-platform-login-ui-operator", channel="latest/edge", revision=200, trust=True
+        "identity-platform-login-ui-operator",
+        channel="latest/edge",
+        revision=200,
+        trust=True,
     )
     juju.deploy("self-signed-certificates", channel="1/stable", revision=317, trust=True)
-    juju.deploy("traefik-k8s", "traefik-admin", channel="latest/stable", revision=176, trust=True)
+    juju.deploy(
+        "traefik-k8s",
+        "traefik-admin",
+        channel="latest/stable",
+        revision=176,
+        trust=True,
+    )
     juju.deploy("traefik-k8s", "traefik-public", channel="latest/edge", revision=270, trust=True)
     # Integrations
     juju.integrate(
-        "hydra:hydra-endpoint-info", "identity-platform-login-ui-operator:hydra-endpoint-info"
+        "hydra:hydra-endpoint-info",
+        "identity-platform-login-ui-operator:hydra-endpoint-info",
     )
     juju.integrate("hydra:hydra-endpoint-info", "kratos:hydra-endpoint-info")
     juju.integrate("kratos:kratos-info", "identity-platform-login-ui-operator:kratos-info")
@@ -468,7 +482,8 @@ def deploy_identity_bundle_fixture(
         "hydra:ui-endpoint-info", "identity-platform-login-ui-operator:ui-endpoint-info"
     )
     juju.integrate(
-        "kratos:ui-endpoint-info", "identity-platform-login-ui-operator:ui-endpoint-info"
+        "kratos:ui-endpoint-info",
+        "identity-platform-login-ui-operator:ui-endpoint-info",
     )
     juju.integrate(f"{postgresql_app.name}:database", "hydra:pg-database")
     juju.integrate(f"{postgresql_app.name}:database", "kratos:pg-database")
@@ -477,7 +492,8 @@ def deploy_identity_bundle_fixture(
     juju.integrate("traefik-public:traefik-route", "hydra:public-route")
     juju.integrate("traefik-public:traefik-route", "kratos:public-route")
     juju.integrate(
-        "traefik-public:traefik-route", "identity-platform-login-ui-operator:public-route"
+        "traefik-public:traefik-route",
+        "identity-platform-login-ui-operator:public-route",
     )
 
     juju.config("kratos", {"enforce_mfa": False})
@@ -507,14 +523,17 @@ def browser_context_manager() -> None:
             capture_output=True,
             text=True,
         )
+    except subprocess.CalledProcessError as e:
+        pytest.fail(f"Failed to install Playwright browser: {e.stderr}")
+    try:
         subprocess.run(
             ["python", "-m", "playwright", "install-deps"],
             check=True,
             capture_output=True,
             text=True,
         )
-    except subprocess.CalledProcessError as e:
-        pytest.fail(f"Failed to install Playwright browser: {e.stderr}")
+    except subprocess.CalledProcessError:
+        logger.warning("Could not install Playwright system deps (may require sudo)")
 
 
 @pytest.fixture(scope="function", name="http")
@@ -533,4 +552,5 @@ def fixture_http_client() -> Generator[requests.Session]:
     adapter = HTTPAdapter(max_retries=retry_strategy)
     with requests.Session() as http:
         http.mount("http://", adapter)
+        http.mount("https://", adapter)
         yield http

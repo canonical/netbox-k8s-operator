@@ -22,15 +22,17 @@ links:
   issues: https://github.com/canonical/netbox-k8s-operator/issues
   source: https://github.com/canonical/netbox-k8s-operator
   website:
-  - https://github.com/canonical/netbox-k8s-operator
+    - https://github.com/canonical/netbox-k8s-operator
   documentation: https://discourse.charmhub.io/t/netbox-k8s-documentation-overview/18953
 
 extensions:
   - django-framework
 
 charm-libs:
-- lib: hydra.oauth
-  version: '0'
+  - lib: hydra.oauth
+    version: '0'
+  - lib: tls_certificates_interface.tls_certificates
+    version: '4'
 
 requires:
   postgresql:
@@ -48,7 +50,11 @@ requires:
     optional: true
   oidc:
     interface: oauth
-    optional: True
+    optional: true
+    limit: 1
+  certificates:
+    interface: tls-certificates
+    optional: true
     limit: 1
 
 config:
