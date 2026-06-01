@@ -34,7 +34,7 @@ ALLOWED_HOSTS = json.loads(os.environ.get("DJANGO_ALLOWED_HOSTS", "[]"))
 # CSRF_TRUSTED_ORIGINS must contain the same hostnames as ALLOWED_HOSTS for CSRF protection to work
 CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS if host != "*"]
 
-# when NetBox is behind a reverse proxy (e.g. Traefik ingress).
+# This is required when NetBox is behind a reverse proxy (e.g. Traefik ingress).
 # PostgreSQL database configuration. See the Django documentation for a complete list of available parameters:
 #   https://docs.djangoproject.com/en/stable/ref/settings/#databases
 
