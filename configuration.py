@@ -31,6 +31,10 @@ if "DJANGO_AWS_ENDPOINT_URL" in os.environ:
 #
 ALLOWED_HOSTS = json.loads(os.environ.get("DJANGO_ALLOWED_HOSTS", "[]"))
 
+# CSRF_TRUSTED_ORIGINS must contain the same hostnames as ALLOWED_HOSTS for CSRF protection to work
+CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS if host != "*"]
+
+# when NetBox is behind a reverse proxy (e.g. Traefik ingress).
 # PostgreSQL database configuration. See the Django documentation for a complete list of available parameters:
 #   https://docs.djangoproject.com/en/stable/ref/settings/#databases
 
@@ -296,8 +300,6 @@ if "DJANGO_OIDC_CLIENT_ID" in os.environ:
     SOCIAL_AUTH_OIDC_ACCESS_TOKEN_URL = os.environ.get("DJANGO_OIDC_ACCESS_TOKEN_URL")
     SOCIAL_AUTH_OIDC_JWKS_URI = os.environ.get("DJANGO_OIDC_JWKS_URL")
     SOCIAL_AUTH_OIDC_USERINFO_URL = os.environ.get("DJANGO_OIDC_USER_URL")
-
-
 REMOTE_AUTH_AUTO_CREATE_USER = True
 REMOTE_AUTH_DEFAULT_GROUPS = []
 REMOTE_AUTH_DEFAULT_PERMISSIONS = {}
