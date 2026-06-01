@@ -105,7 +105,7 @@ ALLOW_TOKEN_RETRIEVAL = False
 # Values are secret strings. The highest-ID pepper is used for new tokens.
 # Derived from the Django secret key so no additional secret is required.
 API_TOKEN_PEPPERS = {
-    0: os.environ['DJANGO_SECRET_KEY'],
+    0: SECRET_KEY,
 }
 
 # Enable any desired validators for local account passwords below. For a list of included validators, please see the
