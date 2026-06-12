@@ -22,6 +22,20 @@ platforms:
 extensions:
     - django-framework
 parts:
+    django-framework/install-app:
+        override-pull: |
+            craftctl default
+            # renovate: depName=netbox-community/netbox
+            NETBOX_VERSION="4.3.6"
+            curl -fsSL "https://github.com/netbox-community/netbox/archive/refs/tags/v${NETBOX_VERSION}.tar.gz" \
+                | tar -xz --strip-components=1 -C "${CRAFT_PART_SRC}"
+            # Patch paths use -p2: strips leading './' and the outer 'netbox/' layer
+            # that exists in the repo root context but not in CRAFT_PART_SRC.
+            patch -p2 -d "${CRAFT_PART_SRC}" < "${CRAFT_PART_SRC}/patches/settings.patch"
+            patch -p2 -d "${CRAFT_PART_SRC}" < "${CRAFT_PART_SRC}/patches/requirements.patch"
+            cp "${CRAFT_PART_SRC}/configuration.py" "${CRAFT_PART_SRC}/netbox/netbox/configuration.py"
+            mv "${CRAFT_PART_SRC}/upgrade.sh" "${CRAFT_PART_SRC}/migrate.sh"
+
     django-framework/dependencies:
         build-packages:
             - pkg-config
