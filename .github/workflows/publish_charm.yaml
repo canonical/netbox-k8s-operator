@@ -1,3 +1,6 @@
+# Copyright 2025 Canonical Ltd.
+# See LICENSE file for licensing details.
+
 name: Publish to edge
 
 on:
@@ -8,11 +11,12 @@ on:
 
 jobs:
   publish-to-edge:
-    uses: canonical/operator-workflows/.github/workflows/publish_charm.yaml@main
+    uses: canonical/charm-ci/.github/workflows/publish-artifacts.yml@v0.0.1-alpha.1
     permissions:
       actions: read
       contents: write
-    secrets: inherit
+    secrets:
+      CHARMHUB_TOKEN: ${{ secrets.CHARMHUB_TOKEN }}
     with:
       channel: 4/edge
-      resource-mapping: '{"netbox": "django-app-image"}'
+      integration-workflow-name: integration_test.yaml
