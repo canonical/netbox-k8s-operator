@@ -10,7 +10,7 @@ on:
 
 jobs:
   integration-test:
-    uses: alithethird/charm-ci/.github/workflows/integration-test.yml@feat/pre-build-rock-script
+    uses: canonical/charm-ci/.github/workflows/integration-test.yml@feat/pre-build-rock-script
     permissions:
       contents: read
       packages: write
