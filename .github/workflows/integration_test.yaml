@@ -10,8 +10,10 @@ on:
 
 jobs:
   integration-test:
-    uses: canonical/charm-ci/.github/workflows/integration-test.yml@v0.0.1-alpha.1
+    uses: alithethird/charm-ci/.github/workflows/integration-test.yml@feat/pre-build-rock-script
     permissions:
       contents: read
       packages: write
       actions: read
+    with:
+      pre-build-rock-script: ./download_netbox.sh
