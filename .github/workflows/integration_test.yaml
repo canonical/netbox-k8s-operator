@@ -6,11 +6,11 @@ name: Integration tests
 on:
   pull_request:
   schedule:
-  - cron: "0 15 * * SAT"
+    - cron: "0 15 * * SAT"
 
 jobs:
   integration-test:
-    uses: canonical/charm-ci/.github/workflows/integration-test.yml@feat/pre-build-rock-script
+    uses: canonical/charm-ci/.github/workflows/integration-test.yml@main
     permissions:
       contents: read
       packages: write
