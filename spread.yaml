@@ -10,7 +10,7 @@ backends:
     type: integration-test
     systems:
     - ubuntu-24.04:
-        runner: [self-hosted, xlarge]
+        runner: [self-hosted-linux-amd64-noble-large]
 environment:
   CONCIERGE: '$(HOST: echo "${CONCIERGE:-concierge.yaml}")'
   OPCLI_GIT_REF: '$(HOST: echo "${OPCLI_GIT_REF:-main}")'
