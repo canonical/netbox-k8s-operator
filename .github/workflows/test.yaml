@@ -11,6 +11,3 @@ jobs:
       pull-requests: write
     with:
       vale-style-check: false
-      self-hosted-runner: true
-      self-hosted-runner-arch: amd64
-      self-hosted-runner-label: "edge"
