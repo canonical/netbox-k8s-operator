@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      issues: write  # Required for creating issues
+      issues: write
     
     steps:
       - name: Checkout repository
@@ -24,9 +24,9 @@ jobs:
           discourse-url: 'https://discourse.charmhub.io'
           discourse-api-key: ${{ secrets.DISCOURSE_API_KEY }}
           discourse-api-user: ${{ secrets.DISCOURSE_API_USER }}
-          # Issue creation settings
+          # Keep issue signaling enabled, but avoid daily spam on a long-lived open issue.
           create-issue: 'true'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-title: 'Documentation Check Failed'
           issue-labels: 'documentation'
-          update-existing-issue: 'true'  # Update existing issues instead of creating duplicates
+          update-existing-issue: 'false'
