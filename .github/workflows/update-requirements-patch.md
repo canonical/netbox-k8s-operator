@@ -7,7 +7,7 @@ on:
     paths:
       - download_netbox.sh
 
-if: github.head_ref == 'renovate/all-minor-patch'
+if: github.head_ref == 'renovate/all-minor-patch' || github.event.pull_request.head.ref == 'renovate/all-minor-patch'
 
 permissions:
   contents: read
@@ -61,12 +61,10 @@ When a pull request bumps the NetBox version in `download_netbox.sh`, regenerate
    ```
    patch --dry-run -p1 -F0 < patches/requirements.patch
    ```
-   The patch file path is relative to the repository root, while the target file
-   path inside the patch is `./netbox/requirements.txt`, so `-p1` strips the
-   leading `./`. If the exit code is **0** (no errors, no rejects, no fuzz),
-   call `noop` with the message "requirements.patch already applies cleanly to
-   NetBox ${NETBOX_VERSION}" and stop. Treat any non-zero exit code as meaning
-   the patch needs regeneration.
+   The patch file path is relative to the repository root. If the exit code is
+   **0** (no errors, no rejects, no fuzz), call `noop` with the message
+   "requirements.patch already applies cleanly to NetBox ${NETBOX_VERSION}" and
+   stop. Treat any non-zero exit code as meaning the patch needs regeneration.
 
 5. If the patch does **not** apply cleanly, regenerate it:
    a. Place the downloaded `requirements.txt` at `./netbox/requirements.txt`
@@ -75,11 +73,11 @@ When a pull request bumps the NetBox version in `download_netbox.sh`, regenerate
    b. Append all preserved added lines (from step 2) to
       `./netbox/requirements.txt`.
    c. Run `diff -u ./netbox/requirements.txt.orig ./netbox/requirements.txt`
-      from the temporary work directory root to produce the new patch content.
-      This ensures the `---` and `+++` headers naturally reference
-      `./netbox/requirements.txt`, making the patch compatible with the `-p1`
-      flag used in `download_netbox.sh`.
-   d. Write the diff output to `patches/requirements.patch` in the repository.
+      from the temporary work directory root to produce the patch body.
+   d. Normalize the diff headers before saving so the final patch file uses:
+      `--- ./netbox/requirements.txt` and `+++ ./netbox/requirements.txt`.
+      After writing `patches/requirements.patch`, verify it with
+      `patch --dry-run -p1 -F0 < patches/requirements.patch`.
 
 6. Push the updated `patches/requirements.patch` to the pull request branch
    using `push-to-pull-request-branch`.
