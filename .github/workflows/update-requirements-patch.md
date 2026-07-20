@@ -7,8 +7,6 @@ on:
     paths:
       - download_netbox.sh
 
-if: github.head_ref == 'renovate/all-minor-patch' || github.event.pull_request.head.ref == 'renovate/all-minor-patch'
-
 permissions:
   contents: read
   issues: read
@@ -42,20 +40,23 @@ When a pull request bumps the NetBox version in `download_netbox.sh`, regenerate
 
 ## Steps
 
-1. Read `download_netbox.sh` to extract the new `NETBOX_VERSION` value.
+1. If the pull request head branch is not `renovate/all-minor-patch`, call
+   `noop` with a short explanation and stop.
 
-2. Read `patches/requirements.patch` to identify the lines that the patch
+2. Read `download_netbox.sh` to extract the new `NETBOX_VERSION` value.
+
+3. Read `patches/requirements.patch` to identify the lines that the patch
    **adds** (lines starting with `+` that are not the `+++` header line).
    These are the extra packages that must be preserved in every version of the patch.
 
-3. Download the NetBox source archive for the `NETBOX_VERSION` value from step 1:
+4. Download the NetBox source archive for the `NETBOX_VERSION` value from step 2:
    ```
    https://github.com/netbox-community/netbox/archive/refs/tags/v${NETBOX_VERSION}.tar.gz
    ```
    Extract it into a temporary directory and locate `requirements.txt` inside the
    archive root.
 
-4. Check whether the current `patches/requirements.patch` applies cleanly to the
+5. Check whether the current `patches/requirements.patch` applies cleanly to the
    downloaded file after placing it at `./netbox/requirements.txt` inside a
    temporary work directory. From that temporary work directory root, run:
    ```
@@ -66,24 +67,26 @@ When a pull request bumps the NetBox version in `download_netbox.sh`, regenerate
    "requirements.patch already applies cleanly to NetBox ${NETBOX_VERSION}" and
    stop. Treat any non-zero exit code as meaning the patch needs regeneration.
 
-5. If the patch does **not** apply cleanly, regenerate it:
+6. If the patch does **not** apply cleanly, regenerate it:
    a. Place the downloaded `requirements.txt` at `./netbox/requirements.txt`
       inside a temporary work directory, and keep a copy at
       `./netbox/requirements.txt.orig`.
-   b. Append all preserved added lines (from step 2) to
+   b. Append all preserved added lines (from step 3) to
       `./netbox/requirements.txt`.
    c. Run `diff -u ./netbox/requirements.txt.orig ./netbox/requirements.txt`
       from the temporary work directory root to produce the patch body.
-   d. Normalize the diff headers before saving so the final patch file uses:
-      `--- ./netbox/requirements.txt` and `+++ ./netbox/requirements.txt`.
-      After writing `patches/requirements.patch`, verify it with
+   d. Normalize only the **file paths** in the diff headers before saving so the
+      final patch matches the repository convention: both header paths should be
+      `./netbox/requirements.txt`, while standard diff metadata such as
+      timestamps may remain distinct. After writing
+      `patches/requirements.patch`, verify it with
       `patch --dry-run -p1 -F0 < patches/requirements.patch`.
 
-6. Push the updated `patches/requirements.patch` to the pull request branch
+7. Push the updated `patches/requirements.patch` to the pull request branch
    using `push-to-pull-request-branch`.
 
-7. Add a comment on the pull request using `add-comment` explaining that
-   `patches/requirements.patch` was regenerated for NetBox `<VERSION>` and
+8. Add a comment on the pull request using `add-comment` explaining that
+   `patches/requirements.patch` was regenerated for NetBox `${NETBOX_VERSION}` and
    listing which packages were preserved from the previous patch.
 
 ## Notes
