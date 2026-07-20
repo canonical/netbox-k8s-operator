@@ -2,8 +2,12 @@
 on:
   pull_request:
     types: [opened, synchronize]
+    branches:
+      - main
     paths:
       - download_netbox.sh
+
+if: github.head_ref == 'renovate/all-minor-patch'
 
 permissions:
   contents: read
