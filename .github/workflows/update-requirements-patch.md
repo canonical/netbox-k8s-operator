@@ -42,6 +42,8 @@ When a pull request bumps the NetBox version in `download_netbox.sh`, regenerate
 
 1. If the pull request head branch is not `renovate/all-minor-patch`, call
    `noop` with a short explanation and stop.
+   This exact branch name is intentional because the repository uses the
+   `renovate/all-minor-patch` aggregation branch for NetBox version bump PRs.
 
 2. Read `download_netbox.sh` to extract the new `NETBOX_VERSION` value.
 
