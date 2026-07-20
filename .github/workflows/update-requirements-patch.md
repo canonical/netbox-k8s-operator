@@ -62,6 +62,8 @@ When a pull request bumps the NetBox version in `download_netbox.sh`, regenerate
    ```
    patch --dry-run -p1 -F0 < patches/requirements.patch
    ```
+   Here `-F0` disables fuzz, so the patch must match exactly rather than
+   applying with loose context matching.
    The patch file path is relative to the repository root. If the exit code is
    **0** (no errors, no rejects, no fuzz), call `noop` with the message
    "requirements.patch already applies cleanly to NetBox ${NETBOX_VERSION}" and
@@ -78,7 +80,13 @@ When a pull request bumps the NetBox version in `download_netbox.sh`, regenerate
    d. Normalize only the **file paths** in the diff headers before saving so the
       final patch matches the repository convention: both header paths should be
       `./netbox/requirements.txt`, while standard diff metadata such as
-      timestamps may remain distinct. After writing
+      timestamps may remain distinct. For example, the saved header may look
+      like:
+      ```
+      --- ./netbox/requirements.txt	2026-07-20 00:00:00.000000000 +0000
+      +++ ./netbox/requirements.txt	2026-07-20 00:00:01.000000000 +0000
+      ```
+      After writing
       `patches/requirements.patch`, verify it with
       `patch --dry-run -p1 -F0 < patches/requirements.patch`.
 
