@@ -48,23 +48,25 @@ When a pull request bumps the NetBox version in `download_netbox.sh`, regenerate
    **adds** (lines starting with `+` that are not the `+++` header line).
    These are the extra packages that must be preserved in every version of the patch.
 
-3. Download the NetBox source archive for the new version:
+3. Download the NetBox source archive for the `NETBOX_VERSION` value from step 1:
    ```
-   https://github.com/netbox-community/netbox/archive/refs/tags/v<VERSION>.tar.gz
+   https://github.com/netbox-community/netbox/archive/refs/tags/v${NETBOX_VERSION}.tar.gz
    ```
    Extract it into a temporary directory and locate `requirements.txt` inside the
    archive root.
 
 4. Check whether the current `patches/requirements.patch` applies cleanly to the
-   downloaded `requirements.txt` by running:
+   downloaded file after placing it at `./netbox/requirements.txt` inside a
+   temporary work directory. From that temporary work directory root, run:
    ```
    patch --dry-run -p1 -F0 < patches/requirements.patch
    ```
-   against the downloaded file (with the file placed at `./netbox/requirements.txt`
-   relative to the working directory, so `-p1` strips the leading `./`). If the
-   exit code is **0** (no errors, no rejects, no fuzz), call `noop` with the
-   message "requirements.patch already applies cleanly to NetBox <VERSION>" and
-   stop. Treat any non-zero exit code as meaning the patch needs regeneration.
+   The patch file path is relative to the repository root, while the target file
+   path inside the patch is `./netbox/requirements.txt`, so `-p1` strips the
+   leading `./`. If the exit code is **0** (no errors, no rejects, no fuzz),
+   call `noop` with the message "requirements.patch already applies cleanly to
+   NetBox ${NETBOX_VERSION}" and stop. Treat any non-zero exit code as meaning
+   the patch needs regeneration.
 
 5. If the patch does **not** apply cleanly, regenerate it:
    a. Place the downloaded `requirements.txt` at `./netbox/requirements.txt`
