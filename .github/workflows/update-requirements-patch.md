@@ -52,20 +52,28 @@ When a pull request bumps the NetBox version in `download_netbox.sh`, regenerate
    archive root.
 
 4. Check whether the current `patches/requirements.patch` applies cleanly to the
-   downloaded `requirements.txt` using `patch --dry-run -p1`. If it applies
-   without errors, call `noop` with the message "requirements.patch already
-   applies cleanly to NetBox <VERSION>" and stop.
+   downloaded `requirements.txt` by running:
+   ```
+   patch --dry-run -p1 -F0 < patches/requirements.patch
+   ```
+   against the downloaded file (with the file placed at `./netbox/requirements.txt`
+   relative to the working directory, so `-p1` strips the leading `./`). If the
+   exit code is **0** (no errors, no rejects, no fuzz), call `noop` with the
+   message "requirements.patch already applies cleanly to NetBox <VERSION>" and
+   stop. Treat any non-zero exit code as meaning the patch needs regeneration.
 
 5. If the patch does **not** apply cleanly, regenerate it:
-   a. Copy the downloaded `requirements.txt` to a file called
-      `requirements.txt.orig`.
-   b. Append all preserved added lines (from step 2) to `requirements.txt`.
-   c. Run `diff -u requirements.txt.orig requirements.txt` to produce the new
-      patch content. The `---` line should reference the original path
-      `./netbox/requirements.txt` and the `+++` line should also reference
-      `./netbox/requirements.txt` so the patch is compatible with the `-p1`
-      flag used by `download_netbox.sh`.
-   d. Write the output to `patches/requirements.patch` in the repository.
+   a. Place the downloaded `requirements.txt` at `./netbox/requirements.txt`
+      inside a temporary work directory, and keep a copy at
+      `./netbox/requirements.txt.orig`.
+   b. Append all preserved added lines (from step 2) to
+      `./netbox/requirements.txt`.
+   c. Run `diff -u ./netbox/requirements.txt.orig ./netbox/requirements.txt`
+      from the temporary work directory root to produce the new patch content.
+      This ensures the `---` and `+++` headers naturally reference
+      `./netbox/requirements.txt`, making the patch compatible with the `-p1`
+      flag used in `download_netbox.sh`.
+   d. Write the diff output to `patches/requirements.patch` in the repository.
 
 6. Push the updated `patches/requirements.patch` to the pull request branch
    using `push-to-pull-request-branch`.
