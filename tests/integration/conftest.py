@@ -4,7 +4,6 @@
 """Fixtures for the NetBox charm integration tests."""
 
 import logging
-import os.path
 import subprocess
 from collections.abc import Generator
 from typing import cast
@@ -14,13 +13,11 @@ import kubernetes
 import pytest
 import requests
 from minio import Minio
-from pytest import Config
 from requests import HTTPError
 from requests.adapters import HTTPAdapter
 from saml_test_helper import SamlK8sTestHelper
 from urllib3.util.retry import Retry
 
-from tests.conftest import NETBOX_IMAGE_PARAM
 from tests.integration.types import App
 
 logger = logging.getLogger(__name__)
@@ -44,22 +41,15 @@ def netbox_hostname_fixture() -> str:
 
 
 @pytest.fixture(scope="module", name="netbox_app_image")
-def netbox_app_image_fixture(pytestconfig: Config) -> str:
-    """Get value from parameter netbox-image."""
-    netbox_app_image = pytestconfig.getoption(NETBOX_IMAGE_PARAM)
-    assert netbox_app_image, f"{NETBOX_IMAGE_PARAM} must be set"
-    return netbox_app_image
+def netbox_app_image_fixture(resource_images: dict) -> str:
+    """Get NetBox app image from opcli resource images."""
+    return resource_images["django-app-image"]
 
 
 @pytest.fixture(scope="module", name="netbox_charm")
-def netbox_charm_fixture(pytestconfig: Config) -> str:
-    """Get value from parameter charm-file."""
-    charm = pytestconfig.getoption("--charm-file")
-    assert charm, "--charm-file must be set"
-    if not os.path.exists(charm):
-        logger.info("Using parent directory for charm file")
-        charm = os.path.join("..", charm)
-    return charm
+def netbox_charm_fixture(charm_path: str) -> str:
+    """Get charm path from opcli."""
+    return charm_path
 
 
 @pytest.fixture(scope="module", name="saml_helper")
@@ -390,7 +380,7 @@ def netbox_barebones_fixture(
         "django-app-image": netbox_app_image,
     }
     juju.deploy(
-        f"./{netbox_charm}",
+        netbox_charm,
         resources=resources,
         config={
             "django-debug": False,
