@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - download_netbox.sh
+  bots: [renovate[bot]]
 
 permissions:
   contents: read
