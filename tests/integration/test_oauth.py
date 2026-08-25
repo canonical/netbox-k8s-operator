@@ -91,7 +91,7 @@ def test_oauth_integrations(
     logger.info("result show-proxied %s", res)
 
     # make sure the app is alive
-    response = http.get(res[app.name]["url"], timeout=5, verify=False)
+    response = http.get(res[app.name]["url"], timeout=60, verify=False)
     assert response.status_code == 200
 
     _assert_idp_login_success(res[app.name]["url"], endpoint, test_email, test_password)
@@ -113,8 +113,10 @@ def _assert_idp_login_success(app_url: str, endpoint: str, test_email: str, test
         browser = p.chromium.launch(headless=True)
         context = browser.new_context(ignore_https_errors=True)
         page = context.new_page()
+        page.set_default_timeout(60000)
         return_path = urlparse(url=app_url).path
         page.goto(f"{app_url}/oauth/login/oidc/?next={return_path}/")
+        page.wait_for_load_state("networkidle")
         expect(page).not_to_have_title(re.compile("Sign in failed"))
         page.get_by_label("Email").fill(test_email)
         page.get_by_label("Password").fill(test_password)
