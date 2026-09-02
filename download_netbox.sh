@@ -4,7 +4,7 @@
 
 # This script downloads and extracts the NetBox source code.
 # renovate: depName=netbox-community/netbox
-NETBOX_VERSION="4.3.6"
+NETBOX_VERSION="4.6.0"
 wget https://github.com/netbox-community/netbox/archive/refs/tags/v${NETBOX_VERSION}.tar.gz
 
 # Clean up any previous download and keep the rockcraft.yaml file
