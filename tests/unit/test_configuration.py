@@ -7,6 +7,9 @@ import importlib.util
 import os
 import pathlib
 import sys
+from unittest.mock import Mock, patch
+
+import pytest
 
 CONFIG_PATH = pathlib.Path(os.path.dirname(__file__)).parent.parent / "configuration.py"
 
@@ -21,15 +24,17 @@ def _load_configuration(env: dict[str, str]) -> dict:
         The module's namespace as a dictionary.
     """
     module_name = f"_test_config_{abs(hash(frozenset(env.items())))}"
-    for key, value in env.items():
-        os.environ[key] = value
-    os.environ["DJANGO_SECRET_KEY"] = "test-secret-key-12345"
-    spec = importlib.util.spec_from_file_location(module_name, CONFIG_PATH)
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[module_name] = module
-    spec.loader.exec_module(module)
+    with patch.dict(
+        os.environ,
+        {"DJANGO_SECRET_KEY": "test-secret-key-12345", **env},
+        clear=True,
+    ):
+        spec = importlib.util.spec_from_file_location(module_name, CONFIG_PATH)
+        assert spec is not None
+        assert spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = module
+        spec.loader.exec_module(module)
     return vars(module)
 
 
@@ -88,4 +93,107 @@ class TestCsrfTrustedOrigins:
             "https://host1.example.com",
             "https://host2.example.com",
             "https://host3.example.com",
+        ]
+
+
+class TestOidcGroupMapping:
+    """Tests for OIDC group mapping settings and pipeline handler."""
+
+    def test_group_sync_disabled_by_default(self):
+        """
+        arrange: Do not configure an OIDC groups claim.
+        act: Load the NetBox configuration.
+        assert: Group synchronization and automatic group creation are disabled.
+        """
+        config = _load_configuration({})
+
+        assert config["SOCIAL_AUTH_OIDC_GROUPS_CLAIM"] == ""
+        assert config["REMOTE_AUTH_AUTO_CREATE_GROUPS"] is False
+        assert config["REMOTE_AUTH_GROUP_SYNC_ENABLED"] is False
+
+    def test_group_sync_settings(self):
+        """
+        arrange: Configure an OIDC claim and privileged groups.
+        act: Load the NetBox configuration.
+        assert: Group sync is enabled and comma-separated group lists are normalized.
+        """
+        config = _load_configuration(
+            {
+                "DJANGO_OIDC_GROUPS_CLAIM": "groups",
+                "DJANGO_OIDC_SUPERUSER_GROUPS": "netbox-admins, platform-admins ",
+                "DJANGO_OIDC_STAFF_GROUPS": "netbox-admins,netbox-operators",
+            }
+        )
+
+        assert config["REMOTE_AUTH_AUTO_CREATE_GROUPS"] is True
+        assert config["REMOTE_AUTH_GROUP_SYNC_ENABLED"] is True
+        assert config["REMOTE_AUTH_SUPERUSER_GROUPS"] == [
+            "netbox-admins",
+            "platform-admins",
+        ]
+        assert config["REMOTE_AUTH_STAFF_GROUPS"] == [
+            "netbox-admins",
+            "netbox-operators",
+        ]
+        assert "netbox.configuration.oidc_groups_handler" in config["SOCIAL_AUTH_PIPELINE"]
+
+    def test_group_handler_synchronizes_claim(self, monkeypatch):
+        """
+        arrange: Enable group synchronization and provide a fake NetBox authentication backend.
+        act: Run the OIDC groups pipeline handler with two groups.
+        assert: The backend synchronizes both groups for the authenticated user.
+        """
+        config = _load_configuration({"DJANGO_OIDC_GROUPS_CLAIM": "groups"})
+        backend = Mock()
+
+        authentication = type(
+            "AuthenticationModule",
+            (),
+            {"RemoteUserBackend": Mock(return_value=backend)},
+        )
+        monkeypatch.setitem(sys.modules, "netbox.authentication", authentication)
+
+        user = object()
+        config["oidc_groups_handler"](user, {"groups": ["team-a", "team-b"]})
+
+        backend.configure_groups.assert_called_once_with(user, ["team-a", "team-b"])
+
+    @pytest.mark.parametrize(
+        "response",
+        [
+            {},
+            {"groups": "team-a"},
+            {"groups": ["team-a", ""]},
+            {"groups": ["team-a", 123]},
+        ],
+    )
+    def test_group_handler_rejects_invalid_claim(self, response):
+        """
+        arrange: Enable OIDC group sync with a malformed or missing groups claim.
+        act: Run the OIDC groups pipeline handler.
+        assert: The handler rejects the claim instead of changing access.
+        """
+        config = _load_configuration({"DJANGO_OIDC_GROUPS_CLAIM": "groups"})
+
+        with pytest.raises(ValueError, match="OIDC groups claim|OIDC response"):
+            config["oidc_groups_handler"](object(), response)
+
+    def test_oidc_scopes_are_space_separated(self):
+        """
+        arrange: Configure the charm's documented space-separated OIDC scopes.
+        act: Load the NetBox configuration.
+        assert: The scopes are exposed to python-social-auth as a list.
+        """
+        config = _load_configuration(
+            {
+                "DJANGO_OIDC_CLIENT_ID": "client-id",
+                "DJANGO_OIDC_SCOPES": "openid profile email groups",
+            }
+        )
+
+        assert config["SOCIAL_AUTH_OIDC_SCOPE"] == [
+            "openid",
+            "profile",
+            "email",
+            "groups",
         ]

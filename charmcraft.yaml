@@ -61,6 +61,18 @@ config:
       type: string
       description: List of scopes separated by spaces.
       default: "openid profile email"
+    oidc-groups-claim:
+      type: string
+      description: OIDC claim containing the list of groups to synchronize. Empty disables synchronization.
+      default: ""
+    oidc-superuser-groups:
+      type: string
+      description: Comma-separated OIDC groups whose members receive NetBox superuser access.
+      default: ""
+    oidc-staff-groups:
+      type: string
+      description: Comma-separated OIDC groups whose members receive NetBox staff access.
+      default: ""
 
 parts:
   icon:

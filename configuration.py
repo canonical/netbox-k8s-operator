@@ -278,7 +278,9 @@ if "DJANGO_OIDC_CLIENT_ID" in os.environ:
     SOCIAL_AUTH_LOGIN_URL = os.environ.get("DJANGO_OIDC_REDIRECT_PATH")
     SOCIAL_AUTH_OIDC_ENDPOINT = os.environ.get("DJANGO_OIDC_API_BASE_URL")
     SOCIAL_AUTH_OIDC_KEY = os.environ.get("DJANGO_OIDC_CLIENT_ID")
-    SOCIAL_AUTH_OIDC_SCOPE = os.environ.get("DJANGO_OIDC_SCOPES").split(",") if os.environ.get("OIDC_SCOPES") else ["openid", "profile", "email"]
+    SOCIAL_AUTH_OIDC_SCOPE = os.environ.get(
+        "DJANGO_OIDC_SCOPES", "openid profile email"
+    ).split()
     SOCIAL_AUTH_OIDC_SECRET = os.environ.get("DJANGO_OIDC_CLIENT_SECRET")
     SOCIAL_AUTH_OIDC_USERNAME_KEY = "email"
     SOCIAL_AUTH_VERIFY_SSL = False
@@ -287,7 +289,59 @@ if "DJANGO_OIDC_CLIENT_ID" in os.environ:
     SOCIAL_AUTH_OIDC_JWKS_URI = os.environ.get("DJANGO_OIDC_JWKS_URL")
     SOCIAL_AUTH_OIDC_USERINFO_URL = os.environ.get("DJANGO_OIDC_USER_URL")
 
+
+def _comma_separated_env(name):
+    """Return a normalized list from a comma-separated environment variable."""
+    return [value.strip() for value in os.environ.get(name, "").split(",") if value.strip()]
+
+
+SOCIAL_AUTH_OIDC_GROUPS_CLAIM = os.environ.get("DJANGO_OIDC_GROUPS_CLAIM", "")
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.user.create_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'netbox.configuration.oidc_groups_handler',
+    'netbox.authentication.user_default_groups_handler',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+)
+
+
+def oidc_groups_handler(user, response, **_kwargs):
+    """Synchronize a user's NetBox groups with the configured OIDC claim."""
+    if not SOCIAL_AUTH_OIDC_GROUPS_CLAIM:
+        return
+
+    try:
+        remote_groups = response[SOCIAL_AUTH_OIDC_GROUPS_CLAIM]
+    except KeyError as exc:
+        raise ValueError(
+            f"OIDC response does not contain the configured groups claim "
+            f"{SOCIAL_AUTH_OIDC_GROUPS_CLAIM!r}"
+        ) from exc
+
+    if not isinstance(remote_groups, (list, tuple)):
+        raise ValueError(
+            f"OIDC groups claim {SOCIAL_AUTH_OIDC_GROUPS_CLAIM!r} must contain a list"
+        )
+    if not all(isinstance(group, str) and group for group in remote_groups):
+        raise ValueError(
+            f"OIDC groups claim {SOCIAL_AUTH_OIDC_GROUPS_CLAIM!r} contains an invalid group name"
+        )
+
+    from netbox.authentication import RemoteUserBackend
+
+    RemoteUserBackend().configure_groups(user, remote_groups)
+
+
 REMOTE_AUTH_AUTO_CREATE_USER = True
+REMOTE_AUTH_AUTO_CREATE_GROUPS = bool(SOCIAL_AUTH_OIDC_GROUPS_CLAIM)
+REMOTE_AUTH_GROUP_SYNC_ENABLED = bool(SOCIAL_AUTH_OIDC_GROUPS_CLAIM)
+REMOTE_AUTH_SUPERUSER_GROUPS = _comma_separated_env("DJANGO_OIDC_SUPERUSER_GROUPS")
+REMOTE_AUTH_STAFF_GROUPS = _comma_separated_env("DJANGO_OIDC_STAFF_GROUPS")
 REMOTE_AUTH_DEFAULT_GROUPS = []
 REMOTE_AUTH_DEFAULT_PERMISSIONS = {}
 
