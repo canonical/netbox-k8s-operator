@@ -19,13 +19,11 @@ from charms.tls_certificates_interface.v4.tls_certificates import (
     TLSCertificatesRequiresV4,
 )
 
-# Pebble service name used by the django-framework extension.
-_PEBBLE_SERVICE_NAME = "django"
-
 logger = logging.getLogger(__name__)
 
 CA_CERT_PATH = "/app/ca-certificates.crt"
 CERTIFICATES_RELATION_NAME = "certificates"
+SYSTEM_CA_CERT_PATH = "/etc/ssl/certs/ca-certificates.crt"
 
 
 class NetboxCharm(paas_charm.django.Charm):
@@ -52,6 +50,10 @@ class NetboxCharm(paas_charm.django.Charm):
             self._certs.on.certificate_available,
             self._on_certificate_available,
         )
+        self.framework.observe(
+            self.on[CERTIFICATES_RELATION_NAME].relation_broken,
+            self._on_certificates_relation_broken,
+        )
 
     def _on_certificate_available(self, _event: CertificateAvailableEvent) -> None:
         """Handle certificate available event.
@@ -60,6 +62,11 @@ class NetboxCharm(paas_charm.django.Charm):
         so it can use the updated CA bundle for HTTPS connections.
         """
         logger.info("Certificate available via tls-certificates relation")
+        self.restart()
+
+    def _on_certificates_relation_broken(self, _event: ops.RelationBrokenEvent) -> None:
+        """Remove custom CA trust after the certificates relation is broken."""
+        logger.info("Certificates relation removed")
         self.restart()
 
     def restart(self, rerun_migrations: bool = False) -> None:
@@ -88,13 +95,13 @@ class NetboxCharm(paas_charm.django.Charm):
         ca_certs = self._collect_ca_certificates()
         if not ca_certs:
             logger.info("No CA certificates found in relation data")
+            self._remove_ca_certificates(container)
             return
 
         # Read the system CA bundle from the container
         system_ca_bundle = ""
-        system_ca_path = "/etc/ssl/certs/ca-certificates.crt"
-        if container.exists(system_ca_path):
-            system_ca_bundle = container.pull(system_ca_path).read()
+        if container.exists(SYSTEM_CA_CERT_PATH):
+            system_ca_bundle = container.pull(SYSTEM_CA_CERT_PATH).read()
 
         # Combine system CAs with relation CAs
         combined = system_ca_bundle.rstrip("\n")
@@ -114,26 +121,37 @@ class NetboxCharm(paas_charm.django.Charm):
         # in the Pebble layer (not just in configuration.py) because the
         # CA cert file may not exist when Django first starts and the env
         # vars set at Python import time would be too late.
+        self._set_ca_environment(container, CA_CERT_PATH)
+        logger.info(
+            "Added Pebble layer with REQUESTS_CA_BUNDLE=%s",
+            CA_CERT_PATH,
+        )
+
+    def _remove_ca_certificates(self, container: ops.Container) -> None:
+        """Remove the custom CA bundle and restore the system trust store."""
+        if container.exists(CA_CERT_PATH):
+            container.remove_path(CA_CERT_PATH)
+        self._set_ca_environment(container, SYSTEM_CA_CERT_PATH)
+        logger.info("Removed custom CA bundle from %s", CA_CERT_PATH)
+
+    def _set_ca_environment(self, container: ops.Container, ca_cert_path: str) -> None:
+        """Configure the workload service to use a CA certificate bundle."""
         ca_env_layer = ops.pebble.Layer(
             {
                 "services": {
-                    _PEBBLE_SERVICE_NAME: {
+                    self._workload_config.service_name: {
                         "override": "merge",
                         "environment": {
-                            "REQUESTS_CA_BUNDLE": CA_CERT_PATH,
-                            "SSL_CERT_FILE": CA_CERT_PATH,
+                            "REQUESTS_CA_BUNDLE": ca_cert_path,
+                            "SSL_CERT_FILE": ca_cert_path,
                         },
                     },
                 },
             }
         )
         container.add_layer("ca-certs", ca_env_layer, combine=True)
-        logger.info(
-            "Added Pebble layer with REQUESTS_CA_BUNDLE=%s",
-            CA_CERT_PATH,
-        )
 
-    def _collect_ca_certificates(self) -> set:
+    def _collect_ca_certificates(self) -> set[str]:
         """Collect CA certificates from the tls-certificates relation.
 
         Retrieves assigned certificates from the TLSCertificatesRequiresV4
@@ -142,20 +160,14 @@ class NetboxCharm(paas_charm.django.Charm):
         Returns:
             Set of CA certificate PEM strings.
         """
-        ca_certs: set = set()
-        try:
-            assigned_certs, _ = self._certs.get_assigned_certificates()
-            for cert in assigned_certs:
-                if cert and cert.ca:
-                    ca_pem = str(cert.ca)
-                    if ca_pem.strip():
-                        ca_certs.add(ca_pem)
-                        logger.info("Extracted CA certificate from relation")
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            logger.warning(
-                "Error retrieving certificates from relation: %s",
-                e,
-            )
+        ca_certs: set[str] = set()
+        assigned_certs, _ = self._certs.get_assigned_certificates()
+        for cert in assigned_certs:
+            if cert and cert.ca:
+                ca_pem = str(cert.ca)
+                if ca_pem.strip():
+                    ca_certs.add(ca_pem)
+                    logger.info("Extracted CA certificate from relation")
 
         if ca_certs:
             logger.info(

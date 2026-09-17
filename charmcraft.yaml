@@ -69,6 +69,11 @@ config:
       default: "openid profile email"
 
 parts:
+  cryptography-build-deps:
+    plugin: nil
+    build-packages:
+      - libssl-dev
+      - pkg-config
   icon:
     plugin: dump
     source: .
