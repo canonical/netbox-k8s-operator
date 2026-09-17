@@ -5,6 +5,8 @@
 
 """Netbox Charm entrypoint."""
 
+# pyright: reportMissingImports=false
+
 import logging
 import typing
 
@@ -18,6 +20,8 @@ from charms.tls_certificates_interface.v4.tls_certificates import (
     Mode,
     TLSCertificatesRequiresV4,
 )
+
+from ca_trust import build_ca_bundle, create_ca_layer
 
 logger = logging.getLogger(__name__)
 
@@ -103,13 +107,11 @@ class NetboxCharm(paas_charm.django.Charm):
         if container.exists(SYSTEM_CA_CERT_PATH):
             system_ca_bundle = container.pull(SYSTEM_CA_CERT_PATH).read()
 
-        # Combine system CAs with relation CAs
-        combined = system_ca_bundle.rstrip("\n")
-        for cert in sorted(ca_certs):
-            combined += "\n\n" + cert.strip()
-        combined += "\n"
-
-        container.push(CA_CERT_PATH, combined, make_dirs=True)
+        container.push(
+            CA_CERT_PATH,
+            build_ca_bundle(system_ca_bundle, ca_certs),
+            make_dirs=True,
+        )
         logger.info(
             "Pushed combined CA bundle to %s (%d custom CAs)",
             CA_CERT_PATH,
@@ -136,19 +138,7 @@ class NetboxCharm(paas_charm.django.Charm):
 
     def _set_ca_environment(self, container: ops.Container, ca_cert_path: str) -> None:
         """Configure the workload service to use a CA certificate bundle."""
-        ca_env_layer = ops.pebble.Layer(
-            {
-                "services": {
-                    self._workload_config.service_name: {
-                        "override": "merge",
-                        "environment": {
-                            "REQUESTS_CA_BUNDLE": ca_cert_path,
-                            "SSL_CERT_FILE": ca_cert_path,
-                        },
-                    },
-                },
-            }
-        )
+        ca_env_layer = create_ca_layer(self._workload_config.service_name, ca_cert_path)
         container.add_layer("ca-certs", ca_env_layer, combine=True)
 
     def _collect_ca_certificates(self) -> set[str]:
