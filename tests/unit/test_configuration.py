@@ -7,6 +7,7 @@ import importlib.util
 import os
 import pathlib
 import sys
+from types import ModuleType
 from unittest.mock import Mock, patch
 
 import pytest
@@ -167,7 +168,7 @@ class TestOidcGroupMapping:
             {"groups": ["team-a", 123]},
         ],
     )
-    def test_group_handler_rejects_invalid_claim(self, response):
+    def test_group_handler_rejects_invalid_claim(self, response, monkeypatch):
         """
         arrange: Enable OIDC group sync with a malformed or missing groups claim.
         act: Run the OIDC groups pipeline handler.
@@ -175,7 +176,16 @@ class TestOidcGroupMapping:
         """
         config = _load_configuration({"DJANGO_OIDC_GROUPS_CLAIM": "groups"})
 
-        with pytest.raises(ValueError, match="OIDC groups claim|OIDC response"):
+        class PermissionDeniedError(Exception):
+            """Stand in for Django's handled authentication exception."""
+
+        exceptions = ModuleType("django.core.exceptions")
+        setattr(exceptions, "PermissionDenied", PermissionDeniedError)
+        monkeypatch.setitem(sys.modules, "django", ModuleType("django"))
+        monkeypatch.setitem(sys.modules, "django.core", ModuleType("django.core"))
+        monkeypatch.setitem(sys.modules, "django.core.exceptions", exceptions)
+
+        with pytest.raises(PermissionDeniedError, match="OIDC groups claim|OIDC response"):
             config["oidc_groups_handler"](object(), response)
 
     def test_oidc_scopes_are_space_separated(self):

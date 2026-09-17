@@ -322,6 +322,13 @@ SOCIAL_AUTH_PIPELINE = (
 )
 
 
+def _deny_oidc_group_claim(message):
+    """Reject an invalid OIDC groups claim without causing a server error."""
+    from django.core.exceptions import PermissionDenied
+
+    raise PermissionDenied(message)
+
+
 def oidc_groups_handler(user, response, **_kwargs):
     """Synchronize a user's NetBox groups with the configured OIDC claim."""
     if not SOCIAL_AUTH_OIDC_GROUPS_CLAIM:
@@ -329,18 +336,18 @@ def oidc_groups_handler(user, response, **_kwargs):
 
     try:
         remote_groups = response[SOCIAL_AUTH_OIDC_GROUPS_CLAIM]
-    except KeyError as exc:
-        raise ValueError(
+    except KeyError:
+        _deny_oidc_group_claim(
             f"OIDC response does not contain the configured groups claim "
             f"{SOCIAL_AUTH_OIDC_GROUPS_CLAIM!r}"
-        ) from exc
+        )
 
     if not isinstance(remote_groups, (list, tuple)):
-        raise ValueError(
+        _deny_oidc_group_claim(
             f"OIDC groups claim {SOCIAL_AUTH_OIDC_GROUPS_CLAIM!r} must contain a list"
         )
     if not all(isinstance(group, str) and group for group in remote_groups):
-        raise ValueError(
+        _deny_oidc_group_claim(
             f"OIDC groups claim {SOCIAL_AUTH_OIDC_GROUPS_CLAIM!r} contains an invalid group name"
         )
 
