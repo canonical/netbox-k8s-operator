@@ -28,6 +28,7 @@ header:
     - '.trivyignore'
     - '.jujuignore'
     - '.gitignore'
+    - '.gitattributes'
     - '.licenserc.yaml'
     - 'CODEOWNERS'
     - 'LICENSE'
