@@ -1,0 +1,20 @@
+# Copyright 2025 Canonical Ltd.
+# See LICENSE file for licensing details.
+
+version: 1
+rocks:
+  - name: netbox
+    rockcraft-yaml: netbox/rockcraft.yaml
+    platforms:
+      - arch: amd64
+charms:
+  - name: netbox-k8s
+    charmcraft-yaml: charmcraft.yaml
+    channel: 4/edge
+    resources:
+      django-app-image:
+        type: oci-image
+        rock: netbox
+    platforms:
+      - arch: amd64
+snaps: []

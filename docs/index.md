@@ -41,7 +41,7 @@ for more information.
 * [Join our online chat](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)
 * [Contribute](https://charmhub.io/netbox-k8s/docs/how-to-contribute)
 * [Getting Started](https://charmhub.io/netbox-k8s/docs/tutorial-getting-started)
-* [Juju SDK documentation](https://juju.is/docs/sdk) for more information about developing and improving charms.
+* [Juju SDK documentation](https://canonical.com/juju/docs/ops/latest/) for more information about developing and improving charms.
 
 ## Contributing to this documentation
 

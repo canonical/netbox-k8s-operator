@@ -20,51 +20,54 @@ platforms:
 # To ensure the django-framework extension works properly, your Django application
 # should have an `wsgi.py` file with an `application` object as the WSGI entrypoint.
 extensions:
-    - django-framework
+  - django-framework
 parts:
-    django-framework/dependencies:
-        build-packages:
-            - pkg-config
-            - libxmlsec1-dev
-            - libpq-dev
-        stage-packages:
-            # needed for saml
-            - libxmlsec1
-            - libxmlsec1-openssl
-            # needed for postgresql (psycopg[c])
-            - libpq5
-            - ca-certificates
-        override-build: |-
-            rm -f pyproject.toml
-            craftctl default
-        python-requirements:
-          - requirements.txt
-    cron:
-      stage-packages:
-        - cron
-      plugin: nil
+  django-framework/dependencies:
+    build-packages:
+      - pkg-config
+      - libxmlsec1-dev
+      - libpq-dev
+    stage-packages:
+      # needed for saml
+      - libxmlsec1
+      - libxmlsec1-openssl
+      # needed for postgresql (psycopg[c])
+      - libpq5
+    override-build: |-
+      rm -f pyproject.toml
+      craftctl default
+    python-requirements:
+      - requirements.txt
+    stage:
+      # Avoid conflict with the ca-certificates.crt provided by the
+      # django-framework/runtime part.
+      - -etc/ssl/certs/ca-certificates.crt
+  cron:
+    stage-packages:
+      - cron
+    plugin: nil
 
-    cron-tasks:
-      plugin: dump
-      source: cron.d
-      organize:
-        housekeeping: etc/cron.d/housekeeping
-        syncdatasource: etc/cron.d/syncdatasource
-      permissions:
-        - mode: "644"
+  cron-tasks:
+    plugin: dump
+    source: cron.d
+    organize:
+      housekeeping: etc/cron.d/housekeeping
+      syncdatasource: etc/cron.d/syncdatasource
+    permissions:
+      - mode: "644"
 
-    netbox-post-process:
-        after:
-            - django-framework/dependencies
-            - django-framework/install-app
-        plugin: nil
-        override-prime: |-
-            # At this point, the original configuration does not work correctly.
-            # Some missing env vars like DJANGO_SECRET_KEY...
-            NETBOX_CONFIGURATION=netbox.configuration_testing PYTHONUSERBASE=${CRAFT_PRIME} python3 ${CRAFT_PRIME}/django/app/manage.py collectstatic --no-input
-            # Reports and scripts are written by the _daemon_ user.
-            chown 584792:584792 django/app/reports
-            chown 584792:584792 django/app/scripts
+  netbox-post-process:
+    after:
+      - django-framework/dependencies
+      - django-framework/install-app
+    plugin: nil
+    override-prime: |-
+      # At this point, the original configuration does not work correctly.
+      # Some missing env vars like DJANGO_SECRET_KEY...
+      NETBOX_CONFIGURATION=netbox.configuration_testing PYTHONUSERBASE=${CRAFT_PRIME} python3 ${CRAFT_PRIME}/django/app/manage.py collectstatic --no-input
+      # Reports and scripts are written by the _daemon_ user.
+      chown 584792:584792 django/app/reports
+      chown 584792:584792 django/app/scripts
 
 services:
   # With the scheduler prefix it will just run in one unit
