@@ -11,7 +11,7 @@ import string
 import jubilant
 import pytest
 import requests
-from minio import Minio
+from botocore.client import BaseClient
 
 from tests.integration.helpers import get_new_admin_token
 from tests.integration.types import App
@@ -26,8 +26,7 @@ logger = logging.getLogger(__name__)
 def test_netbox_storage(
     netbox_app: App,
     s3_netbox_configuration: dict,
-    minio_app: App,
-    s3_netbox_credentials: dict,
+    s3_client: BaseClient,
     juju: jubilant.Juju,
 ) -> None:
     """
@@ -37,15 +36,8 @@ def test_netbox_storage(
         in S3.
     """
     status = juju.status()
-    minio_ip = status.apps[minio_app.name].units[minio_app.name + "/0"].address
     unit_ip = status.apps[netbox_app.name].units[netbox_app.name + "/0"].address
 
-    minio_client = Minio(
-        f"{minio_ip}:9000",
-        access_key=s3_netbox_credentials["access-key"],
-        secret_key=s3_netbox_credentials["secret-key"],
-        secure=False,
-    )
     juju.wait(
         jubilant.all_active,
         timeout=600,
@@ -55,8 +47,7 @@ def test_netbox_storage(
 
     # Save the current number of objects in the S3 bucket.
     bucket_name = s3_netbox_configuration["bucket"]
-    object_list = list(minio_client.list_objects(bucket_name=bucket_name))
-    previous_keycount = len(object_list) if object_list else 0
+    previous_keycount = s3_client.list_objects_v2(Bucket=bucket_name)["KeyCount"]
 
     # Create a site.
     headers_with_auth = {
@@ -99,5 +90,5 @@ def test_netbox_storage(
     assert res.status_code == 201
 
     # check that there is a new file in S3.
-    key_count = len(list(minio_client.list_objects(bucket_name=bucket_name)))
+    key_count = s3_client.list_objects_v2(Bucket=bucket_name)["KeyCount"]
     assert key_count == previous_keycount + 1
