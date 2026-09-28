@@ -47,7 +47,10 @@ def test_netbox_storage(
 
     # Save the current number of objects in the S3 bucket.
     bucket_name = s3_netbox_configuration["bucket"]
-    previous_keycount = s3_client.list_objects_v2(Bucket=bucket_name)["KeyCount"]
+    previous_keycount = sum(
+        page["KeyCount"]
+        for page in s3_client.get_paginator("list_objects_v2").paginate(Bucket=bucket_name)
+    )
 
     # Create a site.
     headers_with_auth = {
@@ -90,5 +93,8 @@ def test_netbox_storage(
     assert res.status_code == 201
 
     # check that there is a new file in S3.
-    key_count = s3_client.list_objects_v2(Bucket=bucket_name)["KeyCount"]
+    key_count = sum(
+        page["KeyCount"]
+        for page in s3_client.get_paginator("list_objects_v2").paginate(Bucket=bucket_name)
+    )
     assert key_count == previous_keycount + 1
