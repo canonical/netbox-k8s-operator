@@ -14,3 +14,4 @@ def pytest_addoption(parser: Parser) -> None:
     """
     parser.addoption("--kube-config", action="store", default="~/.kube/config")
     parser.addoption("--localstack-address", action="store")
+    parser.addoption("--s3-address", action="store")

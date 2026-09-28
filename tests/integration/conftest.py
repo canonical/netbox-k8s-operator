@@ -4,15 +4,18 @@
 """Fixtures for the NetBox charm integration tests."""
 
 import logging
+import socket
 import subprocess
 from collections.abc import Generator
 from typing import cast
 
+import boto3
 import jubilant
 import kubernetes
 import pytest
 import requests
-from minio import Minio
+from botocore.client import BaseClient
+from botocore.config import Config as BotoConfig
 from requests import HTTPError
 from requests.adapters import HTTPAdapter
 from saml_test_helper import SamlK8sTestHelper
@@ -25,13 +28,13 @@ logger = logging.getLogger(__name__)
 # pylint things `juju`` is redefined, but it's a fixture
 # pylint: disable=redefined-outer-name
 
-MINIO_APP_NAME = "minio"
 NETBOX_APP_NAME = "netbox-k8s"
 GATEWAY_APP_NAME = "gateway-api-integrator"
 POSTGRESQL_APP_NAME = "postgresql-k8s"
 REDIS_APP_NAME = "redis-k8s"
 SAML_APP_NAME = "saml-integrator"
 S3_INTEGRATOR_APP_NAME = "s3-integrator"
+MICROCEPH_PORT = 7480
 
 
 @pytest.fixture(scope="module", name="netbox_hostname")
@@ -158,16 +161,14 @@ def netbox_saml_integration_fixture(
 
 
 @pytest.fixture(scope="module", name="s3_netbox_configuration")
-def s3_netbox_configuration_fixture(juju: jubilant.Juju, minio_app: App) -> dict:
+def s3_netbox_configuration_fixture(s3_address: str) -> dict:
     """Return the S3 configuration to use.
 
     Returns:
         The S3 configuration as a dict.
     """
-    status = juju.status()
-    unit_ip = status.apps[minio_app.name].units[minio_app.name + "/0"].address
     return {
-        "endpoint": f"http://{unit_ip}:9000",
+        "endpoint": f"http://{s3_address}:{MICROCEPH_PORT}",
         "bucket": "netboxbucket",
         "path": "/",
         "region": "us-east-1",
@@ -183,6 +184,35 @@ def s3_netbox_credentials_fixture() -> dict:
         The S3 credentials as a dict.
     """
     return {"access-key": "test-access-key", "secret-key": "test-secret-key"}
+
+
+def _host_ip() -> str:
+    """Return the host IP that is reachable from Kubernetes workloads."""
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+        sock.connect(("8.8.8.8", 80))
+        return sock.getsockname()[0]
+
+
+@pytest.fixture(scope="module", name="s3_address")
+def s3_address_fixture(pytestconfig: pytest.Config) -> str:
+    """Return the address of the MicroCeph RGW service."""
+    return pytestconfig.getoption("--s3-address") or _host_ip()
+
+
+@pytest.fixture(scope="module", name="s3_client")
+def s3_client_fixture(
+    s3_netbox_configuration: dict,
+    s3_netbox_credentials: dict,
+) -> BaseClient:
+    """Return an S3 client configured for MicroCeph."""
+    return boto3.client(
+        "s3",
+        endpoint_url=s3_netbox_configuration["endpoint"],
+        region_name=s3_netbox_configuration["region"],
+        aws_access_key_id=s3_netbox_credentials["access-key"],
+        aws_secret_access_key=s3_netbox_credentials["secret-key"],
+        config=BotoConfig(s3={"addressing_style": "path"}, proxies={}),
+    )
 
 
 @pytest.fixture(scope="session")
@@ -219,24 +249,6 @@ def juju(request: pytest.FixtureRequest) -> Generator[jubilant.Juju, None, None]
         yield juju
         show_debug_log(juju)
         return
-
-
-@pytest.fixture(scope="module", name="minio_app")
-def minio_app_fixture(juju: jubilant.Juju, s3_netbox_credentials):
-    """Deploy and set up minio and s3-integrator needed for s3-like storage backend."""
-    if juju.status().apps.get(MINIO_APP_NAME):
-        logger.info("%s already deployed", MINIO_APP_NAME)
-        return App(MINIO_APP_NAME)
-
-    juju.deploy(
-        MINIO_APP_NAME,
-        channel="ckf-1.10/stable",
-        config=s3_netbox_credentials,
-        trust=True,
-    )
-
-    juju.wait(lambda status: status.apps[MINIO_APP_NAME].is_active, timeout=60 * 30)
-    return App(MINIO_APP_NAME)
 
 
 @pytest.fixture(scope="module", name="gateway_app")
@@ -292,11 +304,10 @@ def netbox_ingress_integration_fixture(
 @pytest.fixture(scope="module", name="s3_integrator_app")
 def s3_integrator_app_fixture(
     juju: jubilant.Juju,
-    minio_app: App,
     s3_netbox_configuration: dict,
     s3_netbox_credentials: dict,
 ) -> App:
-    """Deploy and set up s3-integrator"""
+    """Deploy and configure s3-integrator for MicroCeph."""
     if juju.status().apps.get(S3_INTEGRATOR_APP_NAME):
         logger.info("%s already deployed", S3_INTEGRATOR_APP_NAME)
         return App(S3_INTEGRATOR_APP_NAME)
@@ -308,23 +319,7 @@ def s3_integrator_app_fixture(
         lambda status: jubilant.all_blocked(status, S3_INTEGRATOR_APP_NAME),
         timeout=120,
     )
-    status = juju.status()
-    minio_addr = status.apps[minio_app.name].units[minio_app.name + "/0"].address
 
-    mc_client = Minio(
-        f"{minio_addr}:9000",
-        access_key=s3_netbox_credentials["access-key"],
-        secret_key=s3_netbox_credentials["secret-key"],
-        secure=False,
-    )
-
-    # create tempo bucket
-    bucket_name = s3_netbox_configuration["bucket"]
-    found = mc_client.bucket_exists(bucket_name)
-    if not found:
-        mc_client.make_bucket(bucket_name)
-
-    # configure s3-integrator
     juju.config(
         "s3-integrator",
         s3_netbox_configuration,
@@ -344,11 +339,23 @@ def postgresql_app_fixture(
         logger.info("%s already deployed", POSTGRESQL_APP_NAME)
         return App(POSTGRESQL_APP_NAME)
 
+    juju_major = juju.version().major
+    if juju_major >= 4:
+        channel = "16/edge"
+        base = "ubuntu@24.04"
+        force = True
+    else:
+        channel = "14/stable"
+        base = "ubuntu@22.04"
+        force = False
+
     juju.deploy(
         POSTGRESQL_APP_NAME,
-        channel="14/stable",
-        base="ubuntu@22.04",
+        channel=channel,
+        base=base,
+        config={"profile": "testing"},
         trust=True,
+        force=force,
     )
     return App(POSTGRESQL_APP_NAME)
 
