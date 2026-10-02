@@ -4,7 +4,7 @@
 [project]
 name = "netbox-k8s"
 version = "0.0.1"
-requires-python = ">=3.14"
+requires-python = ">=3.12"
 
 # Dependencies of the charm code
 # You should list the dependencies of the code in src/, including any charm libraries from PyPI.
