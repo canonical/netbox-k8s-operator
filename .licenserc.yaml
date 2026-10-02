@@ -20,6 +20,7 @@ header:
     - '**/*.md'
     - '**/*.md.j2'
     - '**/*.txt'
+    - '**/uv.lock'
     - '**/.codespellignore'
     - '**/.dockerignore'
     - '**/.flake8'

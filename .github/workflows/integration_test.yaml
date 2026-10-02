@@ -17,6 +17,7 @@ jobs:
       actions: read
     with:
       pre-build-rock-script: ./download_netbox.sh
+      rockcraft-channel: latest/edge
   required_status_checks:
     name: Required Integration Test Status Checks
     runs-on: ubuntu-latest
