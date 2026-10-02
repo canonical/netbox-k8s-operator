@@ -13,8 +13,6 @@ requires-python = ">=3.14"
 # 'charm-libs' block in charmcraft.yaml, run `charmcraft fetch-libs` to download the libraries,
 # then inspect the libraries for dependencies specified in PYDEPS. List those dependencies here.
 dependencies = [
-    "kubernetes>=36.0.3",
-    "minio>=7.2.20",
     "paas-charm>=2.0.dev1,<3",
 ]
 [dependency-groups]
@@ -71,8 +69,8 @@ lint.ignore = [
     "D409",
     "D413",
 ]
-lint.per-file-ignores = {"tests/*" = ["D100","D101","D102","D103","D104"]}
 extend-exclude = ["__pycache__", "*.egg_info"]
+lint.per-file-ignores = {"tests/*" = ["D100","D101","D102","D103","D104"]}
 
 [tool.ruff.lint.mccabe]
 max-complexity = 10
