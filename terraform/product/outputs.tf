@@ -5,7 +5,6 @@ output "metadata" {
   description = "Metadata of the product deployment."
   value = {
     version     = "1.0.0"
-    risk        = var.risk
     deployed_at = terraform_data.deployed_at.output
     updated_at  = timestamp()
   }
