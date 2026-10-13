@@ -28,6 +28,7 @@ def test_netbox_storage(
     s3_netbox_configuration: dict,
     s3_client: BaseClient,
     juju: jubilant.Juju,
+    http: requests.Session,
 ) -> None:
     """
     arrange: Build and deploy the NetBox charm.
@@ -43,6 +44,8 @@ def test_netbox_storage(
         timeout=600,
     )
     base_url = f"http://{unit_ip}:8000"
+    response = http.get(f"{base_url}/api/status/", timeout=60)
+    assert response.status_code == 200
     token = get_new_admin_token(juju, netbox_app, base_url)
 
     # Save the current number of objects in the S3 bucket.
