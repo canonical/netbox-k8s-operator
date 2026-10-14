@@ -10,6 +10,18 @@
 import json
 import os
 
+# If the charm has pushed a combined CA bundle (system CAs + custom CAs from the
+# certificates relation), configure the requests library to use it.
+# This is necessary for OIDC SSL verification with self-signed or custom CA certificates.
+_CA_CERT_PATH = '/app/ca-certificates.crt'
+if os.path.exists(_CA_CERT_PATH):
+    os.environ['REQUESTS_CA_BUNDLE'] = _CA_CERT_PATH
+    # SSL_CERT_FILE is read by Python's ssl module (and by urllib3 underneath requests),
+    # which is used by social_core for the OpenID Connect discovery endpoint fetch.
+    # REQUESTS_CA_BUNDLE alone is not sufficient because the .well-known/openid-configuration
+    # request goes through ssl.create_default_context() which only reads SSL_CERT_FILE.
+    os.environ['SSL_CERT_FILE'] = _CA_CERT_PATH
+
 # see https://github.com/netbox-community/netbox/issues/15427
 if 'DJANGO_AWS_ENDPOINT_URL' in os.environ:
     os.environ['AWS_ENDPOINT_URL'] = os.environ['DJANGO_AWS_ENDPOINT_URL']
@@ -19,10 +31,10 @@ if 'DJANGO_AWS_ENDPOINT_URL' in os.environ:
 #
 ALLOWED_HOSTS = json.loads(os.environ.get("DJANGO_ALLOWED_HOSTS", "[]"))
 
-# CSRF_TRUSTED_ORIGINS must contain the same hostnames as ALLOWED_HOSTS for CSRF protection to work
+# CSRF_TRUSTED_ORIGINS must contain the same hostnames as ALLOWED_HOSTS for CSRF protection
+# to work, especially when NetBox is behind a reverse proxy (e.g. Traefik ingress).
+# Django does not accept wildcard origins here, so "*" is intentionally excluded.
 CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS if host != "*"]
-
-# when NetBox is behind a reverse proxy (e.g. Traefik ingress).
 # PostgreSQL database configuration. See the Django documentation for a complete list of available parameters:
 #   https://docs.djangoproject.com/en/stable/ref/settings/#databases
 
@@ -281,7 +293,7 @@ if "DJANGO_OIDC_CLIENT_ID" in os.environ:
     SOCIAL_AUTH_OIDC_SCOPE = os.environ.get("DJANGO_OIDC_SCOPES").split(",") if os.environ.get("OIDC_SCOPES") else ["openid", "profile", "email"]
     SOCIAL_AUTH_OIDC_SECRET = os.environ.get("DJANGO_OIDC_CLIENT_SECRET")
     SOCIAL_AUTH_OIDC_USERNAME_KEY = "email"
-    SOCIAL_AUTH_VERIFY_SSL = False
+    SOCIAL_AUTH_VERIFY_SSL = True
     SOCIAL_AUTH_OIDC_AUTHORIZATION_URL = os.environ.get("DJANGO_OIDC_AUTHORIZE_URL")
     SOCIAL_AUTH_OIDC_ACCESS_TOKEN_URL = os.environ.get("DJANGO_OIDC_ACCESS_TOKEN_URL")
     SOCIAL_AUTH_OIDC_JWKS_URI = os.environ.get("DJANGO_OIDC_JWKS_URL")
