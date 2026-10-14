@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Add OIDC group synchronization with configurable staff and superuser groups.
 * Add `CSRF_TRUSTED_ORIGINS` setting to the configuration file to prevent
   login failures when NetBox is behind a reverse proxy.
 
