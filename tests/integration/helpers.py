@@ -60,5 +60,5 @@ def get_new_admin_token(juju: jubilant.Juju, netbox_app: App, netbox_base_url: s
         authorization = "Bearer " + token
     else:
         authorization = f"Token {response['token']}"
-    logger.info("Admin Token: %s", authorization)
+    logger.info("Created admin token for integration test")
     return authorization
