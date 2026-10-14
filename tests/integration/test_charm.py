@@ -77,14 +77,14 @@ def test_netbox_check_cronjobs(
     """
     unit_ip = juju.status().apps[netbox_app.name].units[netbox_app.name + "/0"].address
     base_url = f"http://{unit_ip}:8000"
-    token = get_new_admin_token(juju, netbox_app, base_url)
+    authorization = get_new_admin_token(juju, netbox_app, base_url)
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",
     }
 
     # Create a datasource
-    headers_with_auth = headers | {"Authorization": f"TOKEN {token}"}
+    headers_with_auth = headers | {"Authorization": authorization}
     url = f"{base_url}/api/core/data-sources/"
     data_source_name = "".join((secrets.choice(string.ascii_letters) for i in range(8)))
     data_source = {
