@@ -29,6 +29,11 @@ description: |
 
 extensions:
   - django-framework
+
+charm-libs:
+  - lib: tls_certificates_interface.tls_certificates
+    version: '4'
+
 requires:
   postgresql:
     interface: postgresql_client
@@ -39,6 +44,11 @@ requires:
   redis:
     interface: redis
     limit: 1
+    optional: true
+  valkey:
+    interface: valkey_client
+    limit: 1
+    optional: true
   saml:
     interface: saml
     limit: 1

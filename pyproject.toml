@@ -13,9 +13,11 @@ requires-python = ">=3.12"
 # 'charm-libs' block in charmcraft.yaml, run `charmcraft fetch-libs` to download the libraries,
 # then inspect the libraries for dependencies specified in PYDEPS. List those dependencies here.
 dependencies = [
+    "cryptography>=43.0.0",
     "kubernetes>=36.0.3",
     "minio>=7.2.20",
-    "paas-charm>=2.0.dev1,<3",
+    "paas-charm>=2.0.dev4,<3",
+    "pydantic>=2,<3",
 ]
 [dependency-groups]
 # PYDEPS from libraries that the charm uses.
