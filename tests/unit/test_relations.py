@@ -9,7 +9,6 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
-import paas_charm.django
 import pytest
 import yaml
 from ops.testing import Harness
@@ -21,7 +20,6 @@ from relations import (
     CA_CERT_PATH,
     SYSTEM_CA_CERT_PATH,
     CertificatesRelation,
-    RedisRelation,
     ValkeyRelation,
 )
 
@@ -74,14 +72,6 @@ def get_valkey(harness: Harness[NetboxCharm]) -> ValkeyRelation:
     )
 
 
-def get_redis(harness: Harness[NetboxCharm]) -> RedisRelation:
-    return next(
-        relation
-        for relation in harness.charm._custom_relations
-        if isinstance(relation, RedisRelation)
-    )
-
-
 def get_certificates(harness: Harness[NetboxCharm]) -> CertificatesRelation:
     return next(
         relation
@@ -113,41 +103,11 @@ def provide_valkey(
 def test_root_charm_registers_custom_relations(harness: Harness[NetboxCharm]) -> None:
     assert {relation.relation_name for relation in harness.charm._custom_relations} == {
         "certificates",
-        "redis",
         "valkey",
     }
     assert harness.charm._valkey is None
-
-
-def test_redis_legacy_endpoint_and_removal(harness: Harness[NetboxCharm]) -> None:
-    relation_id = harness.add_relation("redis", "redis-k8s")
-    harness.add_relation_unit(relation_id, "redis-k8s/0")
-    harness.update_relation_data(relation_id, "redis-k8s", {"leader-host": "redis-primary"})
-    redis = get_redis(harness)
-    with pytest.raises(RelationDataError):
-        redis.ensure_ready()
-    harness.update_relation_data(
-        relation_id, "redis-k8s/0", {"hostname": "redis-unit", "port": "6379"}
-    )
-    redis.ensure_ready()
-    assert redis.gen_environment() == {
-        "REDIS_DB_HOSTNAME": "redis-primary",
-        "REDIS_DB_PORT": "6379",
-        "REDIS_DB_USERNAME": "",
-        "REDIS_DB_PASSWORD": "",
-    }
-    harness.remove_relation(relation_id)
-    assert redis.gen_environment() == {}
-
-
-@pytest.mark.parametrize("port", ["", "None", "abc", "0", "65536"])
-def test_redis_waits_for_valid_port(harness: Harness[NetboxCharm], port: str) -> None:
-    relation_id = harness.add_relation("redis", "redis-k8s")
-    harness.add_relation_unit(relation_id, "redis-k8s/0")
-    harness.update_relation_data(relation_id, "redis-k8s/0", {"hostname": "redis", "port": port})
-    assert get_redis(harness).gen_environment() == {}
-    with pytest.raises(RelationDataError):
-        get_redis(harness).ensure_ready()
+    assert get_valkey(harness).required
+    assert "redis" not in harness.charm.meta.requires
 
 
 def test_valkey_reads_secrets_and_removal(harness: Harness[NetboxCharm]) -> None:
@@ -267,18 +227,16 @@ def test_certificates_wait_for_container(harness: Harness[NetboxCharm]) -> None:
     assert get_certificates(harness).gen_environment() == {}
 
 
-@pytest.mark.parametrize("endpoints", [[], ["redis"], ["valkey"], ["redis", "valkey"]])
-def test_requires_exactly_one_cache(harness: Harness[NetboxCharm], endpoints: list[str]) -> None:
-    for endpoint in endpoints:
-        harness.add_relation(endpoint, f"{endpoint}-provider")
-    with (
-        patch.object(paas_charm.django.Charm, "is_ready", return_value=True),
-        patch.object(harness.charm, "_stop_all_and_set_blocked") as stop,
-    ):
-        assert harness.charm.is_ready() is (len(endpoints) == 1)
-        assert stop.call_count == (0 if len(endpoints) == 1 else 1)
-
-
-def test_framework_readiness_is_preserved(harness: Harness[NetboxCharm]) -> None:
-    with patch.object(paas_charm.django.Charm, "is_ready", return_value=False):
-        assert not harness.charm.is_ready()
+def test_valkey_is_required_for_framework_readiness(harness: Harness[NetboxCharm]) -> None:
+    assert list(harness.charm._missing_custom_relations()) == ["valkey"]
+    relation_id = harness.add_relation("valkey", "valkey-k8s")
+    with pytest.raises(RelationDataError):
+        list(harness.charm._missing_custom_relations())
+    provide_valkey(
+        harness,
+        relation_id,
+        {"endpoints": "host:6379", "username": "user", "password": "pw"},
+    )
+    assert list(harness.charm._missing_custom_relations()) == []
+    harness.remove_relation(relation_id)
+    assert list(harness.charm._missing_custom_relations()) == ["valkey"]

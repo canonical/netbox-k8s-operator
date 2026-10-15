@@ -95,68 +95,6 @@ class CertificatesRelation(CustomRelation):
         return {"REQUESTS_CA_BUNDLE": path, "SSL_CERT_FILE": path}
 
 
-class RedisRelation(CustomRelation):
-    """Preserve the legacy Redis endpoint supported before the v2 migration."""
-
-    relation_name = "redis"
-
-    def setup(self, on_change: OnChange) -> None:
-        """Observe Redis endpoint updates and removal.
-
-        Args:
-            on_change: Framework reconcile callback.
-        """
-        self._on_change = on_change
-        self._broken = False
-        self.framework.observe(
-            self.charm.on[self.relation_name].relation_changed, self._on_relation_changed
-        )
-        self.framework.observe(
-            self.charm.on[self.relation_name].relation_broken, self._on_relation_broken
-        )
-
-    def _on_relation_changed(self, _event: ops.RelationChangedEvent) -> None:
-        """Reconcile when the Redis provider changes."""
-        self._on_change()
-
-    def _on_relation_broken(self, _event: ops.RelationBrokenEvent) -> None:
-        """Remove the departing cache's environment and reconcile."""
-        self._broken = True
-        self._on_change()
-
-    def ensure_ready(self) -> None:
-        """Require a valid Redis hostname and port.
-
-        Raises:
-            RelationDataError: If the Redis provider has not supplied connection data.
-        """
-        if not self.gen_environment():
-            raise RelationDataError("Redis relation data is not ready", self.relation_name)
-
-    def gen_environment(self) -> dict[str, str]:
-        """Map legacy Redis relation data to NetBox's existing environment.
-
-        Returns:
-            Redis connection variables, or an empty mapping while data is incomplete.
-        """
-        relation = self.model.get_relation(self.relation_name)
-        if self._broken or not relation or not relation.active or not relation.app:
-            return {}
-        app_data = relation.data[relation.app]
-        for unit in sorted(relation.units, key=lambda unit: unit.name):
-            data = relation.data[unit]
-            hostname = app_data.get("leader-host") or data.get("hostname")
-            port = data.get("port", "")
-            if hostname and port.isdecimal() and 0 < int(port) <= 65535:
-                return {
-                    "REDIS_DB_HOSTNAME": hostname,
-                    "REDIS_DB_PORT": port,
-                    "REDIS_DB_USERNAME": "",
-                    "REDIS_DB_PASSWORD": data.get("password", ""),
-                }
-        return {}
-
-
 class ValkeyRelation(CustomRelation):
     """Expose Valkey credentials using the Redis variables consumed by NetBox."""
 

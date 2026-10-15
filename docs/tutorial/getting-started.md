@@ -2,7 +2,7 @@
 
 ## What you’ll do
 - Deploy the NetBox K8s charm.
-- Integrate with Redis using the redis-k8s charm.
+- Integrate with the Valkey charm.
 - Integrate with the PostgreSQL K8s charm.
 - Integrate with S3 for storage.
 - Expose the NetBox charm with Traefik k8s.
@@ -31,14 +31,14 @@ juju add-model netbox-tutorial
 
 ## Deploy
 
-Deploy the NetBox K8s charm, with all its mandatory requirements (PostgreSQL, Redis and S3).
+Deploy the NetBox K8s charm, with all its mandatory requirements (PostgreSQL, Valkey and S3).
 
 ```
 juju deploy netbox-k8s
 ```
 
 At this point NetBox K8s should be blocked as there is no S3 integration for
-storage, Redis or PostgreSQL.
+storage, Valkey or PostgreSQL.
 
 Set the allowed hosts. In this example every host is allowed. For a production environment
 only the used hosts should be allowed.
@@ -46,16 +46,16 @@ only the used hosts should be allowed.
 juju config netbox-k8s django-allowed-hosts='*'
 ```
 
-### Redis
+### Valkey
 
-NetBox K8s requires Redis to work. You can deploy Redis with redis-k8s:
+NetBox K8s requires Valkey to work. Deploy the Valkey charm with:
 ```
-juju deploy redis-k8s --channel=latest/edge
+juju deploy valkey --channel=9/edge --trust
 ```
 
-Integrate redis-k8s with NetBox K8s with:
+Integrate Valkey with NetBox K8s with:
 ```
-juju integrate redis-k8s netbox-k8s
+juju integrate valkey netbox-k8s:valkey
 ```
 
 ### Deploy PostgreSQL

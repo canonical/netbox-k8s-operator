@@ -41,14 +41,9 @@ requires:
   s3:
     interface: s3
     limit: 1
-  redis:
-    interface: redis
-    limit: 1
-    optional: true
   valkey:
     interface: valkey_client
     limit: 1
-    optional: true
   saml:
     interface: saml
     limit: 1

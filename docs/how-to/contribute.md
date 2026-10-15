@@ -88,12 +88,12 @@ juju deploy ./netbox-k8s_ubuntu-22.04-amd64.charm \
 
 ### Configure
 
-NetBox requires a Redis integration to work correctly. This can be
+NetBox requires a Valkey integration to work correctly. This can be
 done with:
 
 ```bash
-juju deploy redis-k8s --channel=latest/edge
-juju integrate redis-k8s netbox-k8s
+juju deploy valkey --channel=9/edge --trust
+juju integrate valkey netbox-k8s:valkey
 ```
 
 NetBox is built using Django. It is necessary to set the

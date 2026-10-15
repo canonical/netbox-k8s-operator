@@ -4,8 +4,7 @@ See [Integrations](https://charmhub.io/netbox-k8s/integrations).
 
 ## Cache
 
-Integrate either the existing `redis` endpoint (`redis` interface) or the
-`valkey` endpoint (`valkey_client` interface), but not both. Both supply
+The required `valkey` endpoint (`valkey_client` interface) supplies
 `REDIS_DB_HOSTNAME`, `REDIS_DB_PORT`, `REDIS_DB_USERNAME`, and
 `REDIS_DB_PASSWORD` to NetBox. The tasks and caching databases remain 0 and 1.
 Valkey credentials are resolved through the provider's Juju secrets.
