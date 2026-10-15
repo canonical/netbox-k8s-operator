@@ -1544,6 +1544,8 @@ jobs:
             await main();
 
   safe_outputs:
+    noop:
+      report-as-issue: false
     needs:
       - activation
       - agent
