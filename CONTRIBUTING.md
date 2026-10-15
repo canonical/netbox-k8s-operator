@@ -153,7 +153,7 @@ the MicroK8s registry:
 ```bash
 cd netbox-k8s-operator/netbox
 rockcraft pack
-skopeo --insecure-policy copy --dest-tls-verify=false oci-archive:netbox_4.3.6_amd64.rock docker://localhost:32000/netbox:latest
+skopeo --insecure-policy copy --dest-tls-verify=false oci-archive:netbox_4.6.0_amd64.rock docker://localhost:32000/netbox:latest
 cd ..
 ```
 

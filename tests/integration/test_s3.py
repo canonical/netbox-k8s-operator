@@ -46,7 +46,7 @@ def test_netbox_storage(
     base_url = f"http://{unit_ip}:8000"
     response = http.get(f"{base_url}/api/status/", timeout=60)
     assert response.status_code == 200
-    token = get_new_admin_token(juju, netbox_app, base_url)
+    authorization = get_new_admin_token(juju, netbox_app, base_url)
 
     # Save the current number of objects in the S3 bucket.
     bucket_name = s3_netbox_configuration["bucket"]
@@ -59,7 +59,7 @@ def test_netbox_storage(
     headers_with_auth = {
         "Accept": "application/json",
         "Content-Type": "application/json",
-        "Authorization": f"TOKEN {token}",
+        "Authorization": authorization,
     }
     url = f"{base_url}/api/dcim/sites/"
     site = {
@@ -91,7 +91,7 @@ def test_netbox_storage(
         files=files,
         data=payload,
         timeout=5,
-        headers={"Authorization": f"TOKEN {token}"},
+        headers={"Authorization": authorization},
     )
     assert res.status_code == 201
 
