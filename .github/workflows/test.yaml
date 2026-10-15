@@ -11,3 +11,4 @@ jobs:
       pull-requests: write
     with:
       vale-style-check: false
+      with-uv: true
