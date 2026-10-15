@@ -36,6 +36,7 @@ unit = [
 ]
 # Dependencies of integration tests
 integration = [
+    "boto3",
     "jubilant>=1.8,<2",
     "pytest",
     "pytest-jubilant>=2.0.1,<3",
