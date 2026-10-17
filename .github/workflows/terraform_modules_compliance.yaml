@@ -1,0 +1,21 @@
+# Copyright 2026 Canonical Ltd.
+# See LICENSE file for licensing details.
+
+name: Terraform modules compliance
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '**/terraform/**'
+      - '.github/workflows/terraform_modules_compliance.yaml'
+
+jobs:
+  terraform-compliance:
+    uses: canonical/operator-workflows/.github/workflows/terraform_modules_compliance.yaml@efdd72c768efaca41f992322fa51a830e90f4990  # main
+    with:
+      terraform-directories: >-
+        ["terraform/charm", "terraform/product",
+        "terraform/product/modules/oauth-external-idp-integrator",
+        "terraform/product/modules/redis-k8s",
+        "terraform/product/modules/s3-integrator"]
