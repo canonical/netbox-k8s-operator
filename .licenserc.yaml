@@ -39,4 +39,5 @@ header:
     - 'cron.d/**'
     - 'lib/**'
     - 'icon.svg'
+    - '**/MAJOR_VERSION'
   comment: on-failure
