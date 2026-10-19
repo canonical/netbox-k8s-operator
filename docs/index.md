@@ -26,7 +26,7 @@ deployment into multiple environments for testing of changes.
 
 | | |
 | --- | --- |
-| **Get started** | [Deploy NetBox with Juju](tutorial/getting-started.md) \| [Try NetBox locally with Multipass](tutorial/testing-netbox.md) |
+| **Get started** | [Deploy NetBox with Juju](tutorial/getting-started.md) |
 | **Operations** | [Upgrade NetBox](how-to/upgrade.md) \| [Actions](reference/actions.md) \| [Relation endpoints](reference/integrations.md) |
 | **High availability** | [Configure scripts and reports](how-to/configure-scripts-reports.md) |
 | **Design** | [Charm architecture](reference/charm-architecture.md) |
@@ -38,8 +38,7 @@ This documentation uses the
 [Diátaxis documentation structure](https://diataxis.fr/).
 
 * **Tutorials** take you step-by-step through
-  [deploying NetBox with Juju](tutorial/getting-started.md) or
-  [trying NetBox locally with Multipass](tutorial/testing-netbox.md).
+  [deploying NetBox with Juju](tutorial/getting-started.md).
 * **How-to guides** assume basic familiarity with the charm and cover specific
   tasks, such as [configuring OIDC](how-to/configure-oidc.md),
   [using scripts and reports with high availability](how-to/configure-scripts-reports.md),
@@ -90,7 +89,6 @@ missing, please [file a bug](https://github.com/canonical/netbox-k8s-operator/is
 
 1. [Tutorial](tutorial)
   1. [Getting Started](tutorial/getting-started.md)
-  1. [Testing NetBox](tutorial/testing-netbox.md)
 1. [How To](how-to)
   1. [Contribute](how-to/contribute.md)
   2. [Configure OIDC](how-to/configure-oidc.md)
