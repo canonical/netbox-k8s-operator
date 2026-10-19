@@ -27,6 +27,7 @@ safe-outputs:
       - patches/requirements.patch
   add-comment:
   noop:
+    report-as-issue: false
 
 ---
 
