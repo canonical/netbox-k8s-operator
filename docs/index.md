@@ -7,10 +7,10 @@ A Juju charm deploying and managing
 Kubernetes. NetBox is the go-to solution for modeling and documenting network
 infrastructure for thousands of organizations worldwide.
 
-This charm simplifies initial deployment and "day N" operations of
+This charm simplifies initial deployment and operations of
 NetBox on Kubernetes, such as integration with SSO, access to S3 for
 file storage and more. It allows for deployment on many
-different Kubernetes platforms, from [MicroK8s](https://microk8s.io)
+different Kubernetes platforms, from [MicroK8s](https://canonical.com/microk8s)
 to [Charmed Kubernetes](https://ubuntu.com/kubernetes) to public cloud
 Kubernetes offerings.
 
@@ -24,14 +24,13 @@ deployment into multiple environments for testing of changes.
 
 ## In this documentation
 
-| Topic | Guides and reference |
+| | |
 | --- | --- |
 | **Get started** | [Deploy NetBox with Juju](tutorial/getting-started.md) \| [Try NetBox locally with Multipass](tutorial/testing-netbox.md) |
-| **Operations** | [Upgrade NetBox](how-to/upgrade.md) \| [Actions](reference/actions.md) |
+| **Operations** | [Upgrade NetBox](how-to/upgrade.md) \| [Actions](reference/actions.md) \| [Relation endpoints](reference/integrations.md) |
 | **High availability** | [Configure scripts and reports](how-to/configure-scripts-reports.md) |
-| **Security** | [Configure OIDC authentication](how-to/configure-oidc.md) |
-| **Integrations** | [Relation endpoints](reference/integrations.md) |
 | **Design** | [Charm architecture](reference/charm-architecture.md) |
+| **Security** | [Configure OIDC authentication](how-to/configure-oidc.md) |
 
 ## How this documentation is organised
 
