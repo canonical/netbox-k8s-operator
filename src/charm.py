@@ -15,11 +15,6 @@ class NetboxCharm(paas_charm.django.Charm):
 
     custom_relations = [CertificatesRelation, ValkeyRelation]
 
-    def _init_valkey(self, requires: dict[str, ops.RelationMeta]) -> None:
-        """Let the custom relation own Valkey instead of the built-in adapter."""
-        # paas-charm 2.0.dev4 otherwise creates a second requirer for this endpoint.
-        return None
-
 
 if __name__ == "__main__":
     ops.main(NetboxCharm)

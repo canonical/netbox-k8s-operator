@@ -41,7 +41,7 @@ requires:
   s3:
     interface: s3
     limit: 1
-  valkey:
+  valkey_netbox:
     interface: valkey_client
     limit: 1
   saml:

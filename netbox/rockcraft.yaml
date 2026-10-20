@@ -1,13 +1,11 @@
-# Copyright 2026 Canonical Ltd.
-# See LICENSE file for licensing details.
-
-# See https://documentation.ubuntu.com/rockcraft/latest/reference/extensions/django-framework
+# See https://documentation.ubuntu.com/rockcraft/1/reference/extensions/django-framework
 # For questions or help, visit https://matrix.to/#/#12-factor-charms:ubuntu.com
 
 name: netbox
-# see https://documentation.ubuntu.com/rockcraft/latest/explanation/bases/
+# see https://documentation.ubuntu.com/rockcraft/1/explanation/bases/
 # for more information about bases and using 'bare' bases for chiselled rocks
-base: ubuntu@26.04 # build-base is required when the base is bare
+base: bare # as an alternative, an ubuntu base can be used
+build-base: ubuntu@26.04 # build-base is required when the base is bare
 version: "4.7.3" # just for humans. Semantic versioning is recommended
 summary: A summary of your Django application # 79 char long summary
 description: |
@@ -20,6 +18,21 @@ description: |
 platforms:
   amd64:
 
+# to ensure the django-framework extension functions properly, your Django project
+# should have a structure similar to the following with ./netbox/netbox/wsgi.py
+# being the WSGI entry point and contain an application object.
+# +-- netbox
+# |   |-- netbox
+# |   |   |-- wsgi.py
+# |   |   +-- ...
+# |   |-- manage.py
+# |   |-- migrate.sh
+# |   +-- some_app
+# |       |-- views.py
+# |       +-- ...
+# |-- requirements.txt
+# +-- rockcraft.yaml
+
 extensions:
   - django-framework
 
@@ -29,12 +42,6 @@ parts:
       - pkg-config
       - libxmlsec1-dev
       - libpq-dev
-    stage-packages:
-      # needed for saml (ubuntu@26.04 ships SONAME-versioned packages)
-      - libxmlsec1-1
-      - libxmlsec1-openssl1
-      # needed for postgresql (psycopg[c])
-      - libpq5
     # The django-framework extension's own override-build must run (it writes
     # the .gunicorn-constraints.txt file consumed by the python plugin), so
     # drop pyproject.toml from the pulled source tree instead of overriding
@@ -49,6 +56,14 @@ parts:
       # Avoid conflict with the ca-certificates.crt provided by the
       # django-framework/runtime part.
       - -etc/ssl/certs/ca-certificates.crt
+  deps:
+    plugin: nil
+    stage-packages:
+      # needed for saml (ubuntu@26.04 ships SONAME-versioned packages)
+      - libxmlsec1-1
+      - libxmlsec1-openssl1
+      # needed for postgresql (psycopg[c])
+      - libpq5
   cron:
     stage-packages:
       - cron

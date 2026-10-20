@@ -421,7 +421,7 @@ def netbox_app_fixture(
             f"{postgresql_app.name}",
         )
         juju.integrate(
-            f"{netbox_barebones.name}:valkey",
+            f"{netbox_barebones.name}:valkey_netbox",
             f"{valkey_app.name}",
         )
     except jubilant.CLIError as e:

@@ -98,7 +98,7 @@ class CertificatesRelation(CustomRelation):
 class ValkeyRelation(CustomRelation):
     """Expose Valkey credentials using the Redis variables consumed by NetBox."""
 
-    relation_name = "valkey"
+    relation_name = "valkey_netbox"
 
     def setup(self, on_change: OnChange) -> None:
         """Wire the Valkey requirer and refresh the workload after cache changes.
