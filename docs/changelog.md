@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Stop rock builds when source preparation fails and restore the additional
+  dependencies required by NetBox 4.7.3, including WhiteNoise.
 * Add OIDC group synchronization with configurable staff and superuser groups.
 * Add `CSRF_TRUSTED_ORIGINS` setting to the configuration file to prevent
   login failures when NetBox is behind a reverse proxy.
