@@ -69,6 +69,13 @@
   "ignorePaths": [],
   "packageRules": [
     {
+      "description": "Keep PostgreSQL 14 compatibility; NetBox 4.7 requires PostgreSQL 15 or later.",
+      "matchPackageNames": [
+        "netbox-community/netbox"
+      ],
+      "allowedVersions": "<4.7.0"
+    },
+    {
       "enabled": true,
       "matchDatasources": [
         "docker"

@@ -3,7 +3,6 @@
 
 """Helper functions for integration tests."""
 
-import logging
 import secrets
 import string
 
@@ -11,8 +10,6 @@ import jubilant
 import requests
 
 from tests.integration.types import App
-
-logger = logging.getLogger(__name__)
 
 
 def get_new_admin_token(juju: jubilant.Juju, netbox_app: App, netbox_base_url: str) -> str:
@@ -36,7 +33,7 @@ def get_new_admin_token(juju: jubilant.Juju, netbox_app: App, netbox_base_url: s
     assert action_create_user.status == "completed"
     password = action_create_user.results["password"]
 
-    # Get a token to work with the API
+    # Request a v1 token to match the callers' Token authorization scheme.
     url = f"{netbox_base_url}/api/users/tokens/provision/"
     headers = {
         "Accept": "application/json",
@@ -44,7 +41,7 @@ def get_new_admin_token(juju: jubilant.Juju, netbox_app: App, netbox_base_url: s
     }
     res = requests.post(
         url,
-        json={"username": username, "password": password},
+        json={"username": username, "password": password, "version": 1},
         timeout=5,
         headers=headers,
     )

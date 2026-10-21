@@ -19,6 +19,8 @@ jobs:
       pre-build-rock-script: ./download_netbox.sh
       rockcraft-channel: latest/candidate
       charmcraft-channel: latest/edge
+      # The registry cache omits the preparation script, patches, and configuration.
+      upload-image: artifact
   required_status_checks:
     name: Required Integration Test Status Checks
     runs-on: ubuntu-latest

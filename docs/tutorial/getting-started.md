@@ -5,7 +5,7 @@
 - Integrate with the Valkey charm.
 - Integrate with the PostgreSQL K8s charm.
 - Integrate with S3 for storage.
-- Expose the NetBox charm with Traefik k8s.
+- Expose the NetBox charm with Gateway API Integrator.
 - Create a super user.
 
 Through the process, you'll verify the workload state, and log in to
@@ -15,7 +15,11 @@ your NetBox instance.
 - Juju 3.x installed.
 - Juju controller that can create a model of type Kubernetes.
 - Read/write access to a S3 compatible server with a bucket created.
-- Configuration compatible with the traefik-k8s charms. In the case of MicroK8s this can be achieved with the `metallb` add-on.
+- A Kubernetes cluster with a Gateway API controller, a GatewayClass, and
+  load-balancer addresses reachable from your browser. The example below uses
+  the `ck-gateway` GatewayClass provided by Canonical Kubernetes 1.32 or later.
+  See the [Gateway API Integrator tutorial](https://canonical.com/juju/docs/gateway-api-integrator-charm/latest/tutorial/getting-started/)
+  for environment setup instructions.
 
 For more information about how to install Juju, see [Get started with Juju](https://documentation.ubuntu.com/juju/3.6/tutorial).
 
@@ -84,25 +88,54 @@ juju integrate s3-integrator netbox-k8s
 
 See the [s3-integrator charmhub page](https://charmhub.io/s3-integrator) for more information.
 
-### Deploy `traefik-k8s` 
+### Deploy `gateway-api-integrator`
 
-You need to enable MetalLb if using MicroK8s. See the [traefik-k8s charmhub page](https://charmhub.io/traefik-k8s) for more information.
+Gateway API Integrator creates Gateway API resources to route traffic to NetBox.
+Deploy it with trust so it can manage these Kubernetes resources:
 
-With the next example, you can configure Traefik using path mode routing:
 ```
-juju deploy traefik-k8s --channel edge --trust
-juju config traefik-k8s external_hostname=<netbox_hostname>
-juju config traefik-k8s routing_mode=path
-juju integrate traefik-k8s netbox-k8s
+juju deploy gateway-api-integrator --channel=1/edge --trust
+juju config gateway-api-integrator gateway-class=ck-gateway external-hostname=<netbox_hostname>
 ```
 
-If the host `netbox_hostname` can be resolved to the correct IP (the load balancer IP),
-you should be able to browse NetBox in the URL http://netbox_hostname/netbox-tutorial-netbox-k8s
+Replace `<netbox_hostname>` with the hostname you will use to access NetBox.
+If you use a different Gateway API controller, replace `ck-gateway` with the
+GatewayClass available in your cluster.
 
-You can check the endpoints behind the proxy with the command:
+The charm enforces HTTPS by default and will remain blocked until a certificate
+provider is integrated. For this tutorial, deploy and integrate
+`self-signed-certificates`:
+
 ```
-juju run traefik-k8s/0 show-proxied-endpoints --format=yaml
+juju deploy self-signed-certificates
+juju integrate self-signed-certificates:certificates gateway-api-integrator:certificates
 ```
+
+Self-signed certificates are for testing only. For a production deployment,
+use a certificate provider trusted by your clients.
+
+Connect NetBox to the gateway using the `ingress` interface:
+
+```
+juju integrate netbox-k8s:ingress gateway-api-integrator:gateway
+```
+
+Run `juju status --relations` and wait for the applications to become active.
+The Gateway API Integrator status message shows the gateway address. Configure
+DNS, or add an entry in your local hosts file, so that `<netbox_hostname>`
+resolves to that address.
+
+Check the URL exposed for NetBox:
+
+```
+juju run gateway-api-integrator/0 get-proxied-endpoints --format=yaml
+```
+
+Open the NetBox URL from the action output in your browser. With the
+`netbox-tutorial` model used here, it should be
+`https://<netbox_hostname>/netbox-tutorial-netbox-k8s`.
+Your browser will show a certificate warning because the tutorial uses a
+self-signed certificate.
 
 ## Create superuser
 To be able to login to NetBox, you can create a super user with the next command:
