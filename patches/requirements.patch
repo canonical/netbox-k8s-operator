@@ -2,8 +2,8 @@
 +++ ./netbox/requirements.txt	2025-08-20 15:55:09.000000000 +0300
 @@ -44,3 +44,17 @@
  tablib==3.10.0
- tzdata==2026.5
- zensical==0.0.69
+ tzdata==2026.3
+ zensical==0.0.57
 +# Required to serve assets with Gunicorn
 +whitenoise==6.6.0
 +# Optional requirements in NetBox
