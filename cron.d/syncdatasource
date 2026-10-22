@@ -1,2 +1,0 @@
-# Run through Pebble to inherit the Django environment while dropping job privileges.
-*/5 * * * * root PEBBLE_SOCKET=/charm/container/pebble.socket pebble exec --user=_daemon_ -w=/app --context=django -- /bin/python3 manage.py syncdatasource --all >> "/proc/$(cat /run/crond.pid)/fd/2" 2>&1

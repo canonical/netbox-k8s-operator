@@ -1,6 +1,6 @@
 --- ./netbox/requirements.txt	2026-07-20 00:00:00.000000000 +0000
 +++ ./netbox/requirements.txt	2026-07-20 00:00:01.000000000 +0000
-@@ -44,3 +44,19 @@
+@@ -44,3 +44,21 @@
  tablib==3.10.0
  tzdata==2026.5
  zensical==0.0.69
@@ -20,3 +20,5 @@
 +--no-binary=xmlsec
 +boto3==1.34.108
 +dulwich==0.22.1
++# Scheduled NetBox maintenance
++APScheduler==3.11.3

@@ -67,26 +67,6 @@ parts:
       - libxmlsec1-openssl1
       # needed for postgresql (psycopg[c])
       - libpq5
-  cron:
-    plugin: nil
-    stage-packages:
-      - cron
-
-  cron-accounts:
-    plugin: nil
-    stage-packages:
-      - base-passwd_data
-      - base-files_base
-
-  cron-tasks:
-    plugin: dump
-    source: cron.d
-    organize:
-      housekeeping: etc/cron.d/housekeeping
-      syncdatasource: etc/cron.d/syncdatasource
-    permissions:
-      - mode: "644"
-
   netbox-post-process:
     after:
       - django-framework.dependencies
@@ -101,14 +81,14 @@ parts:
       chown 584792:584792 app/scripts
 
 services:
-  # With the scheduler prefix it will just run in one unit
+  # Keep the existing service name; the scheduler suffix limits it to unit zero.
   cron-scheduler:
     override: merge
-    summary: "Cron Service"
-    command: "/usr/sbin/cron -f"
+    summary: "NetBox maintenance scheduler"
+    command: "/bin/python3 /app/scheduler.py"
     startup: enabled
-    user-id: 0
-    group-id: 0
+    user: _daemon_
+    working-dir: /app
   netbox-rq-worker:
     override: merge
     summary: "NetBox Request Queue Worker"
