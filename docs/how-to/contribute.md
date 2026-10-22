@@ -119,6 +119,10 @@ the configuration option `django-allowed-hosts` like:
 juju config netbox-k8s django-allowed-hosts='*'
 ```
 
+Application logs use the INFO level by default. Set `django-debug=true` only when
+debugging: it also enables verbose SQL logs, which can exceed Juju log limits
+during database migrations on a fresh deployment.
+
 The NetBox charm requires a `postgresql_client` interface to work.
 Thanks to Juju, this can be easily configured with:
 ```bash
