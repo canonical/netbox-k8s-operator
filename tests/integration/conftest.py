@@ -46,7 +46,7 @@ def netbox_hostname_fixture() -> str:
 @pytest.fixture(scope="module", name="netbox_app_image")
 def netbox_app_image_fixture(resource_images: dict) -> str:
     """Get NetBox app image from opcli resource images."""
-    return resource_images["django-app-image"]
+    return resource_images["app-image"]
 
 
 @pytest.fixture(scope="module", name="netbox_charm")
@@ -389,7 +389,7 @@ def netbox_barebones_fixture(
         return App(NETBOX_APP_NAME)
 
     resources = {
-        "django-app-image": netbox_app_image,
+        "app-image": netbox_app_image,
     }
     juju.deploy(
         netbox_charm,

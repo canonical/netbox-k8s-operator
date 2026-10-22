@@ -148,7 +148,7 @@ def _wait_for_ca_cert(juju: jubilant.Juju, app_name: str, timeout: int = 300):
     ca_cert_path = "/app/ca-certificates.crt"
     deadline = time.monotonic() + timeout
 
-    container = "django-app"
+    container = "app"
     while time.monotonic() < deadline:
         # Check if the file already exists in the container
         try:
@@ -268,7 +268,7 @@ def _push_ca_bundle(
         pem_certs: List of PEM certificate strings to append.
         dest_path: Path inside the container to write the bundle.
     """
-    container = "django-app"
+    container = "app"
     # Read the system CA bundle
     system_ca = ""
     try:
