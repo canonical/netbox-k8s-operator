@@ -19,7 +19,7 @@ patch --batch --fuzz=0 -p1 <patches/requirements.patch
 # Update the rockcraft.yaml with the correct version
 sed -i "s/^version: \".*\"/version: \"${NETBOX_VERSION}\"/" netbox/rockcraft.yaml
 
-cp scheduler.py netbox/netbox/scheduler.py
+cp -r cron.d netbox/
 cp configuration.py netbox/netbox/netbox/configuration.py
 
 mv netbox/upgrade.sh netbox/migrate.sh

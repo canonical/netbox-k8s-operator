@@ -67,6 +67,21 @@ parts:
       - libxmlsec1-openssl1
       # needed for postgresql (psycopg[c])
       - libpq5
+  cron:
+    plugin: go
+    source: https://github.com/aptible/supercronic.git
+    source-tag: v0.2.51
+    build-snaps:
+      - go/latest/stable
+
+  cron-tasks:
+    plugin: dump
+    source: cron.d
+    organize:
+      crontab: etc/netbox/crontab
+    permissions:
+      - mode: "644"
+
   netbox-post-process:
     after:
       - django-framework.dependencies
@@ -85,7 +100,7 @@ services:
   cron-scheduler:
     override: merge
     summary: "NetBox maintenance scheduler"
-    command: "/bin/python3 /app/scheduler.py"
+    command: "/bin/supercronic /etc/netbox/crontab"
     startup: enabled
     user: _daemon_
     working-dir: /app

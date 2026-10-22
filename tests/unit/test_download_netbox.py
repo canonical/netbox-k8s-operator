@@ -58,11 +58,11 @@ def test_source_preparation_stops_on_failure(tmp_path: Path, failed_command: str
     expected = ["wget", "tar", "patch"]
     assert calls.read_text().splitlines() == expected[: expected.index(failed_command) + 1]
     assert recipe.read_text() == 'version: "original"\n'
-    assert not (netbox / "netbox/scheduler.py").exists()
+    assert not (netbox / "cron.d").exists()
 
 
 def test_source_preparation_includes_scheduler(tmp_path: Path):
-    """Prepare a local NetBox archive with the real requirements patch and scheduler."""
+    """Prepare a local NetBox archive with the real patch and Supercronic schedules."""
     root = SCRIPT.parent
     source = tmp_path / "source"
     (source / "netbox/netbox").mkdir(parents=True)
@@ -85,8 +85,9 @@ def test_source_preparation_includes_scheduler(tmp_path: Path):
     (tmp_path / "patches/requirements.patch").write_text(
         (root / "patches/requirements.patch").read_text()
     )
-    for name in ("scheduler.py", "configuration.py"):
-        (tmp_path / name).write_text((root / name).read_text())
+    (tmp_path / "configuration.py").write_text((root / "configuration.py").read_text())
+    (tmp_path / "cron.d").mkdir()
+    (tmp_path / "cron.d/crontab").write_text((root / "cron.d/crontab").read_text())
 
     result = subprocess.run(
         ["bash", str(SCRIPT)],
@@ -98,10 +99,10 @@ def test_source_preparation_includes_scheduler(tmp_path: Path):
     )
 
     assert result.returncode == 0, result.stderr
-    assert (tmp_path / "netbox/netbox/scheduler.py").read_text() == (
-        root / "scheduler.py"
+    assert (tmp_path / "netbox/cron.d/crontab").read_text() == (
+        root / "cron.d/crontab"
     ).read_text()
     assert (tmp_path / "netbox/netbox/netbox/configuration.py").exists()
     assert (tmp_path / "netbox/migrate.sh").exists()
-    assert "APScheduler==3.11.3" in (tmp_path / "netbox/requirements.txt").read_text()
-    assert not (tmp_path / "netbox/cron.d").exists()
+    assert "APScheduler" not in (tmp_path / "netbox/requirements.txt").read_text()
+    assert not (tmp_path / "netbox/netbox/scheduler.py").exists()
