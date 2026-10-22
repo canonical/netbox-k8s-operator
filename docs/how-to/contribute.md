@@ -45,12 +45,26 @@ Kubernetes knows how to pull them from the MicroK8s repository. Note that the Mi
 registry needs to be enabled using `microk8s enable registry`. More details regarding 
 the OCI images below. The following commands can then be used to run the tests:
 
+Before running checks, install Charmcraft from `latest/edge` and fetch the charm libraries:
+
+```shell
+CHARMCRAFT_ENABLE_EXPERIMENTAL_EXTENSIONS=1 charmcraft fetch-libs
+```
+
 * `tox`: Runs all of the basic checks (`lint`, `unit`, `static`, and `coverage-report`).
 * `tox -e fmt`: Runs formatting using `black` and `isort`.
 * `tox -e lint`: Runs a range of static code analysis to check the code.
 * `tox -e static`: Runs other checks such as `bandit` for security issues.
 * `tox -e unit`: Runs the unit tests.
 * `tox -e integration`: Runs the integration tests.
+
+Integration tests create a temporary Juju model by default. Use `--model` to test an
+existing model, `--use-existing` to use the current model, or `--keep-models` to keep
+temporary models after the tests:
+
+```shell
+tox -e integration -- tests/integration/test_charm.py --model netbox-dev
+```
 
 ## Build charm
 
@@ -88,12 +102,12 @@ juju deploy ./netbox-k8s_ubuntu-22.04-amd64.charm \
 
 ### Configure
 
-NetBox requires a Redis integration to work correctly. This can be
+NetBox requires a Valkey integration to work correctly. This can be
 done with:
 
 ```bash
-juju deploy redis-k8s --channel=latest/edge
-juju integrate redis-k8s netbox-k8s
+juju deploy valkey --channel=9/edge --trust
+juju integrate valkey netbox-k8s:valkey
 ```
 
 NetBox is built using Django. It is necessary to set the
@@ -104,6 +118,10 @@ the configuration option `django-allowed-hosts` like:
 ```bash
 juju config netbox-k8s django-allowed-hosts='*'
 ```
+
+Application logs use the INFO level by default. Set `django-debug=true` only when
+debugging: it also enables verbose SQL logs, which can exceed Juju log limits
+during database migrations on a fresh deployment.
 
 The NetBox charm requires a `postgresql_client` interface to work.
 Thanks to Juju, this can be easily configured with:

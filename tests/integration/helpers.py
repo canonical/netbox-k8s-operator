@@ -45,6 +45,14 @@ def get_new_admin_token(juju: jubilant.Juju, netbox_app: App, netbox_base_url: s
         timeout=5,
         headers=headers,
     )
-    assert res.status_code == 201, f"Token provisioning failed: HTTP {res.status_code}"
-    token = res.json()["token"]
+    assert res.status_code == 201
+    response = res.json()
+    # NetBox 4.5+ uses v2 tokens by default. A v2 token has a short public `key`
+    # (12 chars) and a separate `token` secret (40 chars). Authentication requires
+    # the combined form "nbt_{key}.{token}" while v1 tokens use the plaintext directly.
+    version = response.get("version", 1)
+    if version == 2:
+        token = f"nbt_{response['key']}.{response['token']}"
+    else:
+        token = response["token"]
     return token

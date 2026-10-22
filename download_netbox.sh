@@ -6,7 +6,7 @@ set -euo pipefail
 
 # This script downloads and extracts the NetBox source code.
 # renovate: depName=netbox-community/netbox
-NETBOX_VERSION="4.6.10"
+NETBOX_VERSION="4.7.3"
 wget https://github.com/netbox-community/netbox/archive/refs/tags/v${NETBOX_VERSION}.tar.gz
 
 # Clean up any previous download and keep the rockcraft.yaml file
@@ -19,9 +19,7 @@ patch --batch --fuzz=0 -p1 <patches/requirements.patch
 # Update the rockcraft.yaml with the correct version
 sed -i "s/^version: \".*\"/version: \"${NETBOX_VERSION}\"/" netbox/rockcraft.yaml
 
-# Set up the cron job
 cp -r cron.d netbox/
-
 cp configuration.py netbox/netbox/netbox/configuration.py
 
 mv netbox/upgrade.sh netbox/migrate.sh
