@@ -45,12 +45,26 @@ Kubernetes knows how to pull them from the MicroK8s repository. Note that the Mi
 registry needs to be enabled using `microk8s enable registry`. More details regarding 
 the OCI images below. The following commands can then be used to run the tests:
 
+Before running checks, install Charmcraft from `latest/edge` and fetch the charm libraries:
+
+```shell
+CHARMCRAFT_ENABLE_EXPERIMENTAL_EXTENSIONS=1 charmcraft fetch-libs
+```
+
 * `tox`: Runs all of the basic checks (`lint`, `unit`, `static`, and `coverage-report`).
 * `tox -e fmt`: Runs formatting using `black` and `isort`.
 * `tox -e lint`: Runs a range of static code analysis to check the code.
 * `tox -e static`: Runs other checks such as `bandit` for security issues.
 * `tox -e unit`: Runs the unit tests.
 * `tox -e integration`: Runs the integration tests.
+
+Integration tests create a temporary Juju model by default. Use `--model` to test an
+existing model, `--use-existing` to use the current model, or `--keep-models` to keep
+temporary models after the tests:
+
+```shell
+tox -e integration -- tests/integration/test_charm.py --model netbox-dev
+```
 
 ## Build charm
 

@@ -55,5 +55,4 @@ def get_new_admin_token(juju: jubilant.Juju, netbox_app: App, netbox_base_url: s
         token = f"nbt_{response['key']}.{response['token']}"
     else:
         token = response["token"]
-    logger.info("Admin Token: %s", token)
     return token
