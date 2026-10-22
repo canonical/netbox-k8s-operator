@@ -18,8 +18,9 @@ There is only one container for each unit of NetBox K8s that runs the following
 services managed by Pebble:
 - `django`: runs `gunicorn`.
 - `cron-scheduler`: runs `housekeeping` daily and `syncdatasource` every five minutes
-  using Supercronic on unit zero. The scheduler and its jobs run as `_daemon_`
-  in `/app`, inherit the framework-provided environment, and log output through Pebble.
+  using Ubuntu's `cron` on unit zero. The daemon runs as root to manage its PID
+  file and system schedules. Jobs use Pebble to run as `_daemon_` in `/app` with
+  the Django service environment, and send output to Pebble logs for the scheduler.
 - `statsd_exporter`: exposes `gunicorn` metrics.
 
 The NetBox K8s charm is designed for a high availability (HA) environment.
