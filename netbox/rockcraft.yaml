@@ -80,7 +80,12 @@ parts:
     organize:
       crontab: etc/netbox/crontab
     permissions:
-      - mode: "644"
+      - path: etc
+        mode: "755"
+      - path: etc/netbox
+        mode: "755"
+      - path: etc/netbox/crontab
+        mode: "644"
 
   netbox-post-process:
     after:

@@ -3,6 +3,7 @@
 
 """Tests for the unprivileged Supercronic scheduler."""
 
+from fnmatch import fnmatch
 from pathlib import Path
 from unittest.mock import Mock
 
@@ -36,11 +37,39 @@ def test_scheduler_runs_without_root_or_python_runner():
         "plugin": "dump",
         "source": "cron.d",
         "organize": {"crontab": "etc/netbox/crontab"},
-        "permissions": [{"mode": "644"}],
+        "permissions": [
+            {"path": "etc", "mode": "755"},
+            {"path": "etc/netbox", "mode": "755"},
+            {"path": "etc/netbox/crontab", "mode": "644"},
+        ],
     }
     assert recipe["services"]["netbox-rq-worker"]["user"] == "_daemon_"
     assert "APScheduler" not in (ROOT / "patches/requirements.patch").read_text()
     assert not (ROOT / "scheduler.py").exists()
+
+
+def test_schedule_paths_are_readable_and_traversable(tmp_path: Path):
+    recipe = yaml.safe_load((ROOT / "netbox/rockcraft.yaml").read_text())
+    permissions = recipe["parts"]["cron-tasks"]["permissions"]
+    directories = [tmp_path / "etc", tmp_path / "etc/netbox"]
+    directories[-1].mkdir(parents=True)
+    crontab = directories[-1] / "crontab"
+    content = (ROOT / "cron.d/crontab").read_text()
+    crontab.write_text(content)
+
+    try:
+        for path in [crontab, *reversed(directories)]:
+            for permission in permissions:
+                if fnmatch(str(path.relative_to(tmp_path)), permission.get("path", "*")):
+                    path.chmod(int(permission["mode"], 8))
+
+        for directory in directories:
+            assert directory.stat().st_mode & 0o777 == 0o755
+        assert crontab.stat().st_mode & 0o777 == 0o644
+        assert crontab.read_text() == content
+    finally:
+        for directory in directories:
+            directory.chmod(0o755)
 
 
 @pytest.mark.parametrize("unit_number", [0, 1])

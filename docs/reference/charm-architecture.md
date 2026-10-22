@@ -25,7 +25,8 @@ services managed by Pebble:
   inherit it while running in `/app`. Schedules use UTC: housekeeping runs at
   midnight and data source synchronization runs every five minutes. Each job
   runs at most once concurrently. Supercronic is built from its pinned upstream
-  release, and the schedules are installed at `/etc/netbox/crontab`. Command
+  release, and the schedules are installed at `/etc/netbox/crontab`. Schedule
+  directories use mode `0755` and the file uses `0644`, so `_daemon_` can read it. Command
   output and failures go directly to Pebble logs, and a failed command does not
   prevent later scheduled runs. Supercronic waits for active jobs on shutdown.
 - `statsd_exporter`: exposes `gunicorn` metrics.
