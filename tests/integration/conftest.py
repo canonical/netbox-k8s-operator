@@ -345,8 +345,8 @@ def postgresql_app_fixture(
         base = "ubuntu@24.04"
         force = True
     else:
-        channel = "14/stable"
-        base = "ubuntu@22.04"
+        channel = "16/edge"
+        base = "ubuntu@24.04"
         force = False
 
     juju.deploy(
