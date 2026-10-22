@@ -68,16 +68,17 @@ parts:
       # needed for postgresql (psycopg[c])
       - libpq5
   cron:
-    stage-packages:
-      - cron
-    plugin: nil
+    plugin: go
+    source: https://github.com/aptible/supercronic.git
+    source-tag: v0.2.51
+    build-snaps:
+      - go/latest/stable
 
   cron-tasks:
     plugin: dump
     source: cron.d
     organize:
-      housekeeping: etc/cron.d/housekeeping
-      syncdatasource: etc/cron.d/syncdatasource
+      crontab: etc/netbox/crontab
     permissions:
       - mode: "644"
 
@@ -99,8 +100,10 @@ services:
   cron-scheduler:
     override: merge
     summary: "Cron Service"
-    command: "/usr/sbin/cron -f"
+    command: "/bin/supercronic /etc/netbox/crontab"
     startup: enabled
+    user: _daemon_
+    working-dir: /app
   netbox-rq-worker:
     override: merge
     summary: "NetBox Request Queue Worker"

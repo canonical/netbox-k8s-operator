@@ -17,7 +17,9 @@ For the static assets, `gunicorn` is used with the help of the [WhiteNoiseMiddle
 There is only one container for each unit of NetBox K8s that runs the following
 services managed by Pebble:
 - `django`: runs `gunicorn`.
-- `cron`: periodically runs the `housekeeping` and `syncdatasource` management commands.
+- `cron-scheduler`: runs `housekeeping` daily and `syncdatasource` every five minutes
+  using Supercronic on unit zero. The scheduler and its jobs run as `_daemon_`
+  in `/app`, inherit the framework-provided environment, and log output through Pebble.
 - `statsd_exporter`: exposes `gunicorn` metrics.
 
 The NetBox K8s charm is designed for a high availability (HA) environment.
