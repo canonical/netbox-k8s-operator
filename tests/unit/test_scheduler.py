@@ -16,9 +16,15 @@ def test_cron_daemon_runs_as_root():
     service = recipe["services"]["cron-scheduler"]
 
     assert service["command"] == "/usr/sbin/cron -f"
-    assert service["user"] == "root"
+    assert service["user-id"] == 0
+    assert service["group-id"] == 0
+    assert "user" not in service
     assert service["startup"] == "enabled"
     assert recipe["parts"]["cron"] == {"plugin": "nil", "stage-packages": ["cron"]}
+    assert recipe["parts"]["cron-accounts"] == {
+        "plugin": "nil",
+        "stage-packages": ["base-passwd_data", "base-files_base"],
+    }
     assert recipe["parts"]["cron-tasks"]["organize"] == {
         "housekeeping": "etc/cron.d/housekeeping",
         "syncdatasource": "etc/cron.d/syncdatasource",

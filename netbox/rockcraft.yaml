@@ -72,6 +72,12 @@ parts:
     stage-packages:
       - cron
 
+  cron-accounts:
+    plugin: nil
+    stage-packages:
+      - base-passwd_data
+      - base-files_base
+
   cron-tasks:
     plugin: dump
     source: cron.d
@@ -101,7 +107,8 @@ services:
     summary: "Cron Service"
     command: "/usr/sbin/cron -f"
     startup: enabled
-    user: root
+    user-id: 0
+    group-id: 0
   netbox-rq-worker:
     override: merge
     summary: "NetBox Request Queue Worker"
