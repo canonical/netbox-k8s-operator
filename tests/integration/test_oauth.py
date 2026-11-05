@@ -7,6 +7,7 @@ import json
 import logging
 import re
 import time
+from unittest.mock import Mock, call, patch
 from urllib.parse import urlparse
 
 import jubilant
@@ -328,13 +329,17 @@ def _assert_idp_login_success(app_url: str, endpoint: str, test_email: str, test
     Raises:
         AssertionError: If the OIDC callback does not redirect to the home page.
     """
+    app_url = app_url.rstrip("/")
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         context = browser.new_context(ignore_https_errors=True)
         page = context.new_page()
         page.set_default_timeout(60000)
         return_path = urlparse(url=app_url).path
-        page.goto(f"{app_url}/oauth/login/oidc/?next={return_path}/")
+        response = page.goto(f"{app_url}/{endpoint}/?next={return_path}/")
+        assert response is not None and response.ok
+        # NetBox starts SSO with a CSRF-protected POST, not a direct GET to social:begin.
+        page.locator('form[action$="/oauth/begin/oidc/"]').get_by_role("button").click()
         page.wait_for_load_state("networkidle")
         expect(page).not_to_have_title(re.compile("Sign in failed"))
         page.get_by_label("Email").fill(test_email)
@@ -355,3 +360,40 @@ def _assert_idp_login_success(app_url: str, endpoint: str, test_email: str, test
         # The user is logged in.
         assert test_email in page.content()
         assert "Log Out" in page.content()
+
+
+@pytest.mark.parametrize(
+    "app_url",
+    [
+        "https://netbox.example.com",
+        "https://netbox.example.com/",
+        "https://netbox.example.com/model-netbox",
+        "https://netbox.example.com/model-netbox/",
+    ],
+)
+def test_oidc_login_uses_netbox_form(app_url: str):
+    """Start OIDC through the login form, preserving the ingress prefix and return path."""
+    app_url_normalized = app_url.rstrip("/")
+    return_path = urlparse(app_url_normalized).path
+    with (
+        patch(f"{__name__}.sync_playwright") as playwright,
+        patch(f"{__name__}.expect"),
+    ):
+        page = Mock()
+        browser = playwright.return_value.__enter__.return_value.chromium.launch.return_value
+        browser.new_context.return_value.new_page.return_value = page
+        page.content.return_value = "<title>Home | NetBox</title>test@example.com Log Out"
+
+        _assert_idp_login_success(app_url, "login", "test@example.com", "test-password")
+
+    page.assert_has_calls(
+        [
+            call.goto(f"{app_url_normalized}/login/?next={return_path}/"),
+            call.locator('form[action$="/oauth/begin/oidc/"]'),
+            call.locator().get_by_role("button"),
+            call.locator().get_by_role().click(),
+            call.wait_for_load_state("networkidle"),
+            call.get_by_label("Email"),
+            call.get_by_label().fill("test@example.com"),
+        ]
+    )
