@@ -96,6 +96,24 @@ class CertificatesRelation(CustomRelation):
         return {"REQUESTS_CA_BUNDLE": path, "SSL_CERT_FILE": path}
 
 
+def ensure_single_cache(charm: ops.CharmBase, relation_name: str, other_name: str) -> None:
+    """Reject the cache integration if the other cache integration is also present.
+
+    Args:
+        charm: The charm owning the relations.
+        relation_name: The cache relation being validated.
+        other_name: The alternative cache relation.
+
+    Raises:
+        RelationDataError: If both cache integrations are present.
+    """
+    if any(relation.active for relation in charm.model.relations.get(other_name, [])):
+        raise RelationDataError(
+            f"only one of the {relation_name} and {other_name} integrations is supported",
+            relation_name,
+        )
+
+
 def redis_environment(endpoint: str) -> dict[str, str]:
     """Translate a Redis-compatible endpoint to the variables consumed by NetBox.
 
@@ -157,8 +175,9 @@ class RedisRelation(CustomRelation):
         """Validate Redis connection data.
 
         Raises:
-            RelationDataError: If the Redis data is absent or invalid.
+            RelationDataError: If the Redis data is absent or invalid, or Valkey is also related.
         """
+        ensure_single_cache(self.charm, self.relation_name, ValkeyRelation.relation_name)
         if self._broken or not self.gen_environment():
             raise RelationDataError("Redis relation data is not ready", self.relation_name)
 
@@ -217,8 +236,10 @@ class ValkeyRelation(CustomRelation):
         """Validate Valkey connection data, including unsupported TLS.
 
         Raises:
-            RelationDataError: If the Valkey data is absent, invalid, or unsupported.
+            RelationDataError: If the Valkey data is absent, invalid, unsupported, or Redis is
+                also related.
         """
+        ensure_single_cache(self.charm, self.relation_name, RedisRelation.relation_name)
         if self._broken or not self._valkey.to_relation_data():
             raise RelationDataError("Valkey relation data is not ready", self.relation_name)
         if not self.gen_environment():

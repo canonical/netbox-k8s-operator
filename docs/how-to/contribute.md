@@ -53,9 +53,9 @@ CHARMCRAFT_ENABLE_EXPERIMENTAL_EXTENSIONS=1 charmcraft fetch-libs
 ```
 
 * `tox`: Runs all of the basic checks (`lint`, `unit`, `static`, and `coverage-report`).
-* `tox -e fmt`: Runs formatting using `black` and `isort`.
-* `tox -e lint`: Runs a range of static code analysis to check the code.
-* `tox -e static`: Runs other checks such as `bandit` for security issues.
+* `tox -e format`: Runs formatting using `ruff`.
+* `tox -e lint`: Runs `codespell`, `ruff` and `pyright` to check the code.
+* `tox -e static`: Runs `pyright` static type checks on the source and tests.
 * `tox -e unit`: Runs the unit tests.
 * `tox -e integration`: Runs the integration tests.
 

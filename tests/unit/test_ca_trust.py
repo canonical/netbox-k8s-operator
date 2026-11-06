@@ -26,4 +26,3 @@ def test_build_ca_bundle_without_system_bundle() -> None:
     bundle = build_ca_bundle("", {"CUSTOM CA"})
 
     assert bundle == "CUSTOM CA\n"
-

@@ -359,4 +359,3 @@ def _assert_idp_login_success(app_url: str, endpoint: str, test_email: str, test
         # The user is logged in.
         assert test_email in page.content()
         assert "Log Out" in page.content()
-
