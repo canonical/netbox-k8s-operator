@@ -4,6 +4,8 @@
 """Unit tests for the NetBox Django configuration module."""
 
 import importlib.util
+import io
+import logging
 import os
 import pathlib
 import sys
@@ -95,6 +97,35 @@ class TestCsrfTrustedOrigins:
             "https://host2.example.com",
             "https://host3.example.com",
         ]
+
+
+@pytest.mark.parametrize("debug", [None, "false", "true"])
+def test_logging_respects_django_debug(debug: str | None):
+    config = _load_configuration({} if debug is None else {"DJANGO_DEBUG": debug})
+    level = "DEBUG" if debug == "true" else "INFO"
+    logging_config = config["LOGGING"]
+    assert logging_config["handlers"]["console"]["level"] == level
+
+    for name in ("django", "netbox"):
+        assert logging_config["loggers"][name]["level"] == level
+        output = io.StringIO()
+        handler = logging.StreamHandler(output)
+        handler.setLevel(logging_config["handlers"]["console"]["level"])
+        logger = logging.Logger(name, level=getattr(logging, level))
+        logger.addHandler(handler)
+
+        logger.debug("SQL " + "x" * 200_000)
+        logger.info("Migration completed")
+        logger.warning("Migration warning")
+        logger.error("Migration error")
+
+        messages = output.getvalue()
+        assert ("SQL " in messages) == (debug == "true")
+        assert "Migration completed" in messages
+        assert "Migration warning" in messages
+        assert "Migration error" in messages
+        if debug != "true":
+            assert len(messages.encode()) < 128 * 1024
 
 
 class TestOidcGroupMapping:

@@ -1,0 +1,5 @@
+cryptography>=43.0.0
+kubernetes>=36.0.3
+minio>=7.2.20
+paas-charm<3,>=2.0.dev4
+pydantic<3,>=2
