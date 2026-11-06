@@ -1,11 +1,15 @@
-# Copyright 2025 Canonical Ltd.
+# Copyright 2026 Canonical Ltd.
 # See LICENSE file for licensing details.
 
+# See https://documentation.ubuntu.com/rockcraft/1/reference/extensions/django-framework
+# For questions or help, visit https://matrix.to/#/#12-factor-charms:ubuntu.com
+
 name: netbox
-# see https://documentation.ubuntu.com/rockcraft/en/1.13.0/explanation/bases/
+# see https://documentation.ubuntu.com/rockcraft/1/explanation/bases/
 # for more information about bases and using 'bare' bases for chiselled rocks
-base: ubuntu@24.04 # the base environment for this Django application
-version: "4.6.10" # just for humans. Semantic versioning is recommended
+base: bare # as an alternative, an ubuntu base can be used
+build-base: ubuntu@26.04 # build-base is required when the base is bare
+version: "4.7.3" # just for humans. Semantic versioning is recommended
 summary: A summary of your Django application # 79 char long summary
 description: |
   This is netbox's description. You have a paragraph or two to tell the
@@ -17,69 +21,98 @@ description: |
 platforms:
   amd64:
 
-# To ensure the django-framework extension works properly, your Django application
-# should have an `wsgi.py` file with an `application` object as the WSGI entrypoint.
+# to ensure the django-framework extension functions properly, your Django project
+# should have a structure similar to the following with ./netbox/netbox/wsgi.py
+# being the WSGI entry point and contain an application object.
+# +-- netbox
+# |   |-- netbox
+# |   |   |-- wsgi.py
+# |   |   +-- ...
+# |   |-- manage.py
+# |   |-- migrate.sh
+# |   +-- some_app
+# |       |-- views.py
+# |       +-- ...
+# |-- requirements.txt
+# +-- rockcraft.yaml
+
 extensions:
   - django-framework
+
 parts:
-  django-framework/dependencies:
+  django-framework.dependencies:
     build-packages:
       - pkg-config
       - libxmlsec1-dev
       - libpq-dev
-    stage-packages:
-      # needed for saml
-      - libxmlsec1
-      - libxmlsec1-openssl
-      # needed for postgresql (psycopg[c])
-      - libpq5
-    override-build: |-
-      rm -f pyproject.toml
+    # The django-framework extension's own override-build must run (it writes
+    # the .gunicorn-constraints.txt file consumed by the python plugin), so
+    # drop pyproject.toml from the pulled source tree instead of overriding
+    # build. Without this the python plugin would also `pip install .` the
+    # NetBox source tree itself.
+    override-pull: |-
       craftctl default
+      rm -f pyproject.toml
     python-requirements:
       - requirements.txt
     stage:
       # Avoid conflict with the ca-certificates.crt provided by the
       # django-framework/runtime part.
       - -etc/ssl/certs/ca-certificates.crt
-  cron:
-    stage-packages:
-      - cron
+  deps:
     plugin: nil
+    stage-packages:
+      # needed for saml (ubuntu@26.04 ships SONAME-versioned packages)
+      - libxmlsec1-1
+      - libxmlsec1-openssl1
+      # needed for postgresql (psycopg[c])
+      - libpq5
+  cron:
+    plugin: go
+    source: https://github.com/aptible/supercronic.git
+    source-tag: v0.2.51
+    build-snaps:
+      - go/latest/stable
 
   cron-tasks:
     plugin: dump
     source: cron.d
     organize:
-      housekeeping: etc/cron.d/housekeeping
-      syncdatasource: etc/cron.d/syncdatasource
+      crontab: etc/netbox/crontab
     permissions:
-      - mode: "644"
+      - path: etc
+        mode: "755"
+      - path: etc/netbox
+        mode: "755"
+      - path: etc/netbox/crontab
+        mode: "644"
 
   netbox-post-process:
     after:
-      - django-framework/dependencies
-      - django-framework/install-app
+      - django-framework.dependencies
+      - django-framework.install-app
     plugin: nil
     override-prime: |-
       # At this point, the original configuration does not work correctly.
       # Some missing env vars like DJANGO_SECRET_KEY...
-      NETBOX_CONFIGURATION=netbox.configuration_testing PYTHONUSERBASE=${CRAFT_PRIME} python3 ${CRAFT_PRIME}/django/app/manage.py collectstatic --no-input
+      NETBOX_CONFIGURATION=netbox.configuration_testing PYTHONUSERBASE=${CRAFT_PRIME} python3 ${CRAFT_PRIME}/app/manage.py collectstatic --no-input
       # Reports and scripts are written by the _daemon_ user.
-      chown 584792:584792 django/app/reports
-      chown 584792:584792 django/app/scripts
+      chown 584792:584792 app/reports
+      chown 584792:584792 app/scripts
 
 services:
-  # With the scheduler prefix it will just run in one unit
+  # Keep the existing service name; the scheduler suffix limits it to unit zero.
   cron-scheduler:
     override: merge
-    summary: "Cron Service"
-    command: "/usr/sbin/cron -f"
+    summary: "NetBox maintenance scheduler"
+    command: "/bin/supercronic /etc/netbox/crontab"
     startup: enabled
+    user: _daemon_
+    working-dir: /app
   netbox-rq-worker:
     override: merge
     summary: "NetBox Request Queue Worker"
     command: "/bin/python3 manage.py rqworker high default low"
     startup: enabled
     user: _daemon_
-    working-dir: /django/app
+    working-dir: /app

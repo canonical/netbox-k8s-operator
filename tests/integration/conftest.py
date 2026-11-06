@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 NETBOX_APP_NAME = "netbox-k8s"
 GATEWAY_APP_NAME = "gateway-api-integrator"
 POSTGRESQL_APP_NAME = "postgresql-k8s"
-REDIS_APP_NAME = "redis-k8s"
+VALKEY_APP_NAME = "valkey"
 SAML_APP_NAME = "saml-integrator"
 S3_INTEGRATOR_APP_NAME = "s3-integrator"
 MICROCEPH_PORT = 7480
@@ -46,7 +46,7 @@ def netbox_hostname_fixture() -> str:
 @pytest.fixture(scope="module", name="netbox_app_image")
 def netbox_app_image_fixture(resource_images: dict) -> str:
     """Get NetBox app image from opcli resource images."""
-    return resource_images["django-app-image"]
+    return resource_images["app-image"]
 
 
 @pytest.fixture(scope="module", name="netbox_charm")
@@ -345,8 +345,8 @@ def postgresql_app_fixture(
         base = "ubuntu@24.04"
         force = True
     else:
-        channel = "14/stable"
-        base = "ubuntu@22.04"
+        channel = "16/edge"
+        base = "ubuntu@24.04"
         force = False
 
     juju.deploy(
@@ -360,20 +360,21 @@ def postgresql_app_fixture(
     return App(POSTGRESQL_APP_NAME)
 
 
-@pytest.fixture(scope="module", name="redis_app")
-def redis_app_fixture(
+@pytest.fixture(scope="module", name="valkey_app")
+def valkey_app_fixture(
     juju: jubilant.Juju,
 ):
-    """Deploy and set up postgresql charm needed for the NetBox charm."""
-    if juju.status().apps.get(REDIS_APP_NAME):
-        logger.info("%s already deployed", REDIS_APP_NAME)
-        return App(REDIS_APP_NAME)
+    """Deploy the Valkey charm needed for NetBox."""
+    if juju.status().apps.get(VALKEY_APP_NAME):
+        logger.info("%s already deployed", VALKEY_APP_NAME)
+        return App(VALKEY_APP_NAME)
 
     juju.deploy(
-        REDIS_APP_NAME,
-        channel="edge",
+        VALKEY_APP_NAME,
+        channel="9/edge",
+        trust=True,
     )
-    return App(REDIS_APP_NAME)
+    return App(VALKEY_APP_NAME)
 
 
 @pytest.fixture(scope="module", name="netbox_barebones")
@@ -388,7 +389,7 @@ def netbox_barebones_fixture(
         return App(NETBOX_APP_NAME)
 
     resources = {
-        "django-app-image": netbox_app_image,
+        "app-image": netbox_app_image,
     }
     juju.deploy(
         netbox_charm,
@@ -405,7 +406,7 @@ def netbox_barebones_fixture(
 def netbox_app_fixture(
     juju: jubilant.Juju,
     netbox_barebones: App,
-    redis_app: App,
+    valkey_app: App,
     postgresql_app: App,
     s3_integrator_app: App,
 ) -> App:
@@ -420,8 +421,8 @@ def netbox_app_fixture(
             f"{postgresql_app.name}",
         )
         juju.integrate(
-            f"{netbox_barebones.name}:redis",
-            f"{redis_app.name}",
+            f"{netbox_barebones.name}:valkey_netbox",
+            f"{valkey_app.name}",
         )
     except jubilant.CLIError as e:
         if "already exists" in str(e):
@@ -433,7 +434,7 @@ def netbox_app_fixture(
             status,
             s3_integrator_app.name,
             postgresql_app.name,
-            redis_app.name,
+            valkey_app.name,
             netbox_barebones.name,
         ),
         timeout=15 * 60,

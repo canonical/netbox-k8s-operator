@@ -11,3 +11,5 @@ jobs:
       pull-requests: write
     with:
       vale-style-check: false
+      with-uv: true
+      pre-run-script: tests/prepare.sh

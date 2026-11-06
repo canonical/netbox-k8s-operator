@@ -153,7 +153,7 @@ the MicroK8s registry:
 ```bash
 cd netbox-k8s-operator/netbox
 rockcraft pack
-skopeo --insecure-policy copy --dest-tls-verify=false oci-archive:netbox_4.3.6_amd64.rock docker://localhost:32000/netbox:latest
+skopeo --insecure-policy copy --dest-tls-verify=false oci-archive:netbox_4.7.3_amd64.rock docker://localhost:32000/netbox:latest
 cd ..
 ```
 
@@ -171,7 +171,6 @@ juju add-model charm-dev
 # Enable DEBUG logging
 juju model-config logging-config="<root>=INFO;unit=DEBUG"
 # Deploy the charm
-juju deploy ./netbox-k8s_ubuntu-22.04-amd64.charm --resource django-app-image=localhost:32000/netbox:latest
+juju deploy ./netbox-k8s_ubuntu-26.04-amd64.charm --resource app-image=localhost:32000/netbox:latest
 ```
-
 

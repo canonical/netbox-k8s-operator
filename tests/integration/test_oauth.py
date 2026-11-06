@@ -148,7 +148,7 @@ def _wait_for_ca_cert(juju: jubilant.Juju, app_name: str, timeout: int = 300):
     ca_cert_path = "/app/ca-certificates.crt"
     deadline = time.monotonic() + timeout
 
-    container = "django-app"
+    container = "app"
     while time.monotonic() < deadline:
         # Check if the file already exists in the container
         try:
@@ -268,7 +268,7 @@ def _push_ca_bundle(
         pem_certs: List of PEM certificate strings to append.
         dest_path: Path inside the container to write the bundle.
     """
-    container = "django-app"
+    container = "app"
     # Read the system CA bundle
     system_ca = ""
     try:
@@ -328,13 +328,17 @@ def _assert_idp_login_success(app_url: str, endpoint: str, test_email: str, test
     Raises:
         AssertionError: If the OIDC callback does not redirect to the home page.
     """
+    app_url = app_url.rstrip("/")
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         context = browser.new_context(ignore_https_errors=True)
         page = context.new_page()
         page.set_default_timeout(60000)
         return_path = urlparse(url=app_url).path
-        page.goto(f"{app_url}/oauth/login/oidc/?next={return_path}/")
+        response = page.goto(f"{app_url}/{endpoint}/?next={return_path}/")
+        assert response is not None and response.ok
+        # NetBox starts SSO with a CSRF-protected POST, not a direct GET to social:begin.
+        page.locator('form[action$="/oauth/begin/oidc/"]').get_by_role("button").click()
         page.wait_for_load_state("networkidle")
         expect(page).not_to_have_title(re.compile("Sign in failed"))
         page.get_by_label("Email").fill(test_email)
@@ -355,3 +359,4 @@ def _assert_idp_login_success(app_url: str, endpoint: str, test_email: str, test
         # The user is logged in.
         assert test_email in page.content()
         assert "Log Out" in page.content()
+
