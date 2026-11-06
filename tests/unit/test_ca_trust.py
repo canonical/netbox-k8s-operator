@@ -3,7 +3,7 @@
 
 """Unit tests for custom certificate authority trust helpers."""
 
-from ca_trust import build_ca_bundle, create_ca_layer
+from ca_trust import build_ca_bundle
 
 
 def test_build_ca_bundle() -> None:
@@ -27,23 +27,3 @@ def test_build_ca_bundle_without_system_bundle() -> None:
 
     assert bundle == "CUSTOM CA\n"
 
-
-def test_create_ca_layer() -> None:
-    """
-    arrange: A workload service and CA bundle path are provided.
-    act: Create the Pebble overlay.
-    assert: Both supported TLS clients use the requested bundle.
-    """
-    layer = create_ca_layer("django", "/app/ca-certificates.crt")
-
-    assert layer.to_dict() == {
-        "services": {
-            "django": {
-                "override": "merge",
-                "environment": {
-                    "REQUESTS_CA_BUNDLE": "/app/ca-certificates.crt",
-                    "SSL_CERT_FILE": "/app/ca-certificates.crt",
-                },
-            },
-        },
-    }

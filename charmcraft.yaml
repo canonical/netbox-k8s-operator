@@ -12,20 +12,22 @@ type: charm
 base: ubuntu@26.04
 charm-user: non-root
 
-# the platforms this charm should be built on and run on.
-# you can check your architecture with `dpkg --print-architecture`
 platforms:
   amd64:
-  # arm64:
-  # ppc64el:
-  # s390x:
 
-# (Required)
-summary: A very short one-line summary of the Django application.
-
-# (Required)
+summary: NetBox is a solution for modeling and documenting network infrastructure.
 description: |
-  A comprehensive overview of your Django application.
+  NetBox is the go-to solution for modeling and documenting network
+  infrastructure for thousands of organizations worldwide. As a successor
+  to legacy IPAM and DCIM applications, NetBox provides a cohesive,
+  extensive, and accessible data model for all things networked.
+
+links:
+  issues: https://github.com/canonical/netbox-k8s-operator/issues
+  source: https://github.com/canonical/netbox-k8s-operator
+  website:
+    - https://github.com/canonical/netbox-k8s-operator
+  documentation: https://discourse.charmhub.io/t/netbox-k8s-documentation-overview/18953
 
 extensions:
   - django-framework

@@ -59,14 +59,14 @@ juju deploy valkey --channel=9/edge --trust
 
 Integrate Valkey with NetBox K8s with:
 ```
-juju integrate valkey netbox-k8s:valkey
+juju integrate valkey netbox-k8s:valkey_netbox
 ```
 
 ### Deploy PostgreSQL
 
 NetBox K8s requires PostgreSQL to work. Deploy and integrate with:
 ```
-juju deploy postgresql-k8s --channel 14/stable --trust
+juju deploy postgresql-k8s --channel 16/stable --trust
 juju integrate postgresql-k8s netbox-k8s
 ```
 

@@ -137,7 +137,7 @@ runcmd:
 
     
     juju config netbox django-allowed-hosts='*'
-    juju integrate valkey netbox:valkey
+    juju integrate valkey netbox:valkey_netbox
     juju integrate postgresql-k8s netbox
 
     juju config traefik-k8s routing_mode=path

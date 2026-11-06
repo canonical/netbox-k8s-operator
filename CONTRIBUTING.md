@@ -171,6 +171,6 @@ juju add-model charm-dev
 # Enable DEBUG logging
 juju model-config logging-config="<root>=INFO;unit=DEBUG"
 # Deploy the charm
-juju deploy ./netbox-k8s_ubuntu-22.04-amd64.charm --resource django-app-image=localhost:32000/netbox:latest
+juju deploy ./netbox-k8s_ubuntu-26.04-amd64.charm --resource app-image=localhost:32000/netbox:latest
 ```
 

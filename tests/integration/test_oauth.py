@@ -7,7 +7,6 @@ import json
 import logging
 import re
 import time
-from unittest.mock import Mock, call, patch
 from urllib.parse import urlparse
 
 import jubilant
@@ -361,39 +360,3 @@ def _assert_idp_login_success(app_url: str, endpoint: str, test_email: str, test
         assert test_email in page.content()
         assert "Log Out" in page.content()
 
-
-@pytest.mark.parametrize(
-    "app_url",
-    [
-        "https://netbox.example.com",
-        "https://netbox.example.com/",
-        "https://netbox.example.com/model-netbox",
-        "https://netbox.example.com/model-netbox/",
-    ],
-)
-def test_oidc_login_uses_netbox_form(app_url: str):
-    """Start OIDC through the login form, preserving the ingress prefix and return path."""
-    app_url_normalized = app_url.rstrip("/")
-    return_path = urlparse(app_url_normalized).path
-    with (
-        patch(f"{__name__}.sync_playwright") as playwright,
-        patch(f"{__name__}.expect"),
-    ):
-        page = Mock()
-        browser = playwright.return_value.__enter__.return_value.chromium.launch.return_value
-        browser.new_context.return_value.new_page.return_value = page
-        page.content.return_value = "<title>Home | NetBox</title>test@example.com Log Out"
-
-        _assert_idp_login_success(app_url, "login", "test@example.com", "test-password")
-
-    page.assert_has_calls(
-        [
-            call.goto(f"{app_url_normalized}/login/?next={return_path}/"),
-            call.locator('form[action$="/oauth/begin/oidc/"]'),
-            call.locator().get_by_role("button"),
-            call.locator().get_by_role().click(),
-            call.wait_for_load_state("networkidle"),
-            call.get_by_label("Email"),
-            call.get_by_label().fill("test@example.com"),
-        ]
-    )

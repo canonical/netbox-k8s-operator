@@ -9,7 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-* Pin NetBox to 4.6.10 to retain PostgreSQL 14 compatibility.
+* Migrate NetBox from 4.6 to 4.7 (4.7.3). **Breaking:** NetBox 4.7 requires
+  PostgreSQL 16 (`postgresql-k8s` channel `16`).
+* Move the charm and rock to Ubuntu 26.04.
+* Replace the Redis integration with Valkey (`valkey_netbox` endpoint,
+  `valkey_client` interface).
+* Rename the OCI resource `django-app-image` to `app-image`.
+* Replace Ubuntu `cron` with Supercronic, running unprivileged.
 * Stop rock builds when source preparation fails and restore the additional
   dependencies required by NetBox, including WhiteNoise.
 * Add OIDC group synchronization with configurable staff and superuser groups.

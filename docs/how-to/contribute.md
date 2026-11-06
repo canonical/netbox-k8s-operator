@@ -48,6 +48,7 @@ the OCI images below. The following commands can then be used to run the tests:
 Before running checks, install Charmcraft from `latest/edge` and fetch the charm libraries:
 
 ```shell
+sudo snap install charmcraft --classic --channel=latest/edge
 CHARMCRAFT_ENABLE_EXPERIMENTAL_EXTENSIONS=1 charmcraft fetch-libs
 ```
 
@@ -96,8 +97,8 @@ juju add-model netbox-dev
 # Enable DEBUG logging
 juju model-config logging-config="<root>=INFO;unit=DEBUG"
 # Deploy the charm (assuming you're on amd64)
-juju deploy ./netbox-k8s_ubuntu-22.04-amd64.charm \
-  --resource django-app-image=localhost:32000/netbox:latest
+juju deploy ./netbox-k8s_ubuntu-26.04-amd64.charm \
+  --resource app-image=localhost:32000/netbox:latest
 ```
 
 ### Configure
@@ -107,7 +108,7 @@ done with:
 
 ```bash
 juju deploy valkey --channel=9/edge --trust
-juju integrate valkey netbox-k8s:valkey
+juju integrate valkey netbox-k8s:valkey_netbox
 ```
 
 NetBox is built using Django. It is necessary to set the
@@ -126,7 +127,7 @@ during database migrations on a fresh deployment.
 The NetBox charm requires a `postgresql_client` interface to work.
 Thanks to Juju, this can be easily configured with:
 ```bash
-juju deploy postgresql-k8s --channel 14/stable --trust
+juju deploy postgresql-k8s --channel 16/stable --trust
 juju wait-for application postgresql-k8s
 juju integrate postgresql-k8s netbox-k8s
 ```
