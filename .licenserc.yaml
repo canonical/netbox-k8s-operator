@@ -37,6 +37,8 @@ header:
     - 'pyproject.toml'
     - 'zap_rules.tsv'
     - 'patches/**'
+    - 'cron.d/housekeeping'
+    - 'cron.d/syncdatasource'
     - 'lib/**'
     - 'icon.svg'
   comment: on-failure
