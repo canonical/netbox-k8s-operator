@@ -7,6 +7,7 @@ import logging
 from urllib.parse import urlsplit
 
 import ops
+from charms.redis_k8s.v0.redis import RedisRequires
 from charms.tls_certificates_interface.v4.tls_certificates import (
     CertificateRequestAttributes,
     Mode,
@@ -95,6 +96,87 @@ class CertificatesRelation(CustomRelation):
         return {"REQUESTS_CA_BUNDLE": path, "SSL_CERT_FILE": path}
 
 
+def redis_environment(endpoint: str) -> dict[str, str]:
+    """Translate a Redis-compatible endpoint to the variables consumed by NetBox.
+
+    Args:
+        endpoint: Endpoint as ``host:port`` or ``redis://host:port``.
+
+    Returns:
+        Redis connection variables, or an empty mapping if the endpoint is invalid.
+    """
+    try:
+        parsed = urlsplit(endpoint if "://" in endpoint else f"redis://{endpoint}")
+        port = parsed.port
+    except ValueError:
+        logger.warning("Provider supplied an invalid endpoint")
+        return {}
+    if (
+        not parsed.hostname
+        or not port
+        or parsed.scheme not in ("redis", "valkey")
+        or parsed.username
+        or parsed.path
+        or parsed.query
+        or parsed.fragment
+    ):
+        logger.warning("Provider supplied an invalid Redis-compatible endpoint")
+        return {}
+    return {"REDIS_DB_HOSTNAME": parsed.hostname, "REDIS_DB_PORT": str(port)}
+
+
+class RedisRelation(CustomRelation):
+    """Expose the legacy Redis relation using the variables consumed by NetBox."""
+
+    relation_name = "redis"
+
+    def setup(self, on_change: OnChange) -> None:
+        """Wire the Redis requirer and refresh the workload after cache changes.
+
+        Args:
+            on_change: Framework reconcile callback.
+        """
+        self._on_change = on_change
+        self._broken = False
+        self._redis = RedisRequires(self.charm, relation_name=self.relation_name)
+        self.framework.observe(self.charm.on.redis_relation_updated, self._on_relation_updated)
+        self.framework.observe(
+            self.charm.on[self.relation_name].relation_broken, self._on_relation_broken
+        )
+
+    def _on_relation_updated(self, _event: ops.EventBase) -> None:
+        """Restart with the latest endpoint."""
+        self._on_change()
+
+    def _on_relation_broken(self, _event: ops.RelationBrokenEvent) -> None:
+        """Discard the departing relation's endpoint and reconcile."""
+        self._broken = True
+        self._on_change()
+
+    def ensure_ready(self) -> None:
+        """Validate Redis connection data.
+
+        Raises:
+            RelationDataError: If the Redis data is absent or invalid.
+        """
+        if self._broken or not self.gen_environment():
+            raise RelationDataError("Redis relation data is not ready", self.relation_name)
+
+    def gen_environment(self) -> dict[str, str]:
+        """Translate the Redis endpoint to the variables consumed by NetBox.
+
+        Returns:
+            Redis connection variables, or an empty mapping until the endpoint is ready.
+        """
+        if self._broken:
+            return {}
+        url = self._redis.url
+        # The Redis library temporarily publishes a None port while the relation is created.
+        if not url or url.endswith(":None"):
+            return {}
+        return redis_environment(url)
+
+
 class ValkeyRelation(CustomRelation):
     """Expose Valkey credentials using the Redis variables consumed by NetBox."""
 
@@ -157,27 +239,11 @@ class ValkeyRelation(CustomRelation):
             return {}
         if not data or not data.endpoints:
             return {}
-        endpoint = str(data.endpoints)
-        try:
-            parsed = urlsplit(endpoint if "://" in endpoint else f"redis://{endpoint}")
-            port = parsed.port
-        except ValueError:
-            logger.warning("Valkey provider supplied an invalid endpoint")
-            return {}
-        if (
-            not parsed.hostname
-            or not port
-            or parsed.scheme not in ("redis", "valkey")
-            or parsed.username
-            or parsed.path
-            or parsed.query
-            or parsed.fragment
-        ):
-            logger.warning("Valkey provider supplied an invalid Redis-compatible endpoint")
+        environment = redis_environment(str(data.endpoints))
+        if not environment:
             return {}
         return {
-            "REDIS_DB_HOSTNAME": parsed.hostname,
-            "REDIS_DB_PORT": str(port),
+            **environment,
             "REDIS_DB_USERNAME": data.username or "",
             "REDIS_DB_PASSWORD": data.password or "",
         }

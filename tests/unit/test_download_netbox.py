@@ -67,7 +67,7 @@ def test_source_preparation_includes_scheduler(tmp_path: Path):
     source = tmp_path / "source"
     (source / "netbox/netbox").mkdir(parents=True)
     (source / "requirements.txt").write_text(
-        "# requirements\n" * 43 + "tablib==3.10.0\ntzdata==2026.5\nzensical==0.0.69\n"
+        "# requirements\n" * 43 + "tablib==3.10.0\ntzdata==2026.3\nzensical==0.0.57\n"
     )
     (source / "upgrade.sh").write_text("#!/bin/bash\n")
     archive = tmp_path / "archive.tar.gz"

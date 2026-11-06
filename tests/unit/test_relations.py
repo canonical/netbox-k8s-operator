@@ -20,6 +20,7 @@ from relations import (
     CA_CERT_PATH,
     SYSTEM_CA_CERT_PATH,
     CertificatesRelation,
+    RedisRelation,
     ValkeyRelation,
 )
 
@@ -72,6 +73,21 @@ def get_valkey(harness: Harness[NetboxCharm]) -> ValkeyRelation:
     )
 
 
+def get_redis(harness: Harness[NetboxCharm]) -> RedisRelation:
+    return next(
+        relation
+        for relation in harness.charm._custom_relations
+        if isinstance(relation, RedisRelation)
+    )
+
+
+def provide_redis(harness: Harness[NetboxCharm], hostname: str = "redis-host", port: str = "6379"):
+    relation_id = harness.add_relation("redis", "redis-k8s")
+    harness.add_relation_unit(relation_id, "redis-k8s/0")
+    harness.update_relation_data(relation_id, "redis-k8s/0", {"hostname": hostname, "port": port})
+    return relation_id
+
+
 def get_certificates(harness: Harness[NetboxCharm]) -> CertificatesRelation:
     return next(
         relation
@@ -103,11 +119,12 @@ def provide_valkey(
 def test_root_charm_registers_custom_relations(harness: Harness[NetboxCharm]) -> None:
     assert {relation.relation_name for relation in harness.charm._custom_relations} == {
         "certificates",
+        "redis",
         "valkey_netbox",
     }
     assert harness.charm._valkey is None
-    assert get_valkey(harness).required
-    assert "redis" not in harness.charm.meta.requires
+    assert not get_valkey(harness).required
+    assert not get_redis(harness).required
 
 
 def test_valkey_reads_secrets_and_removal(harness: Harness[NetboxCharm]) -> None:
@@ -227,8 +244,8 @@ def test_certificates_wait_for_container(harness: Harness[NetboxCharm]) -> None:
     assert get_certificates(harness).gen_environment() == {}
 
 
-def test_valkey_is_required_for_framework_readiness(harness: Harness[NetboxCharm]) -> None:
-    assert list(harness.charm._missing_custom_relations()) == ["valkey_netbox"]
+def test_cache_integration_is_required(harness: Harness[NetboxCharm]) -> None:
+    assert list(harness.charm._missing_custom_relations()) == ["redis or valkey_netbox"]
     relation_id = harness.add_relation("valkey_netbox", "valkey-k8s")
     with pytest.raises(RelationDataError):
         list(harness.charm._missing_custom_relations())
@@ -239,4 +256,32 @@ def test_valkey_is_required_for_framework_readiness(harness: Harness[NetboxCharm
     )
     assert list(harness.charm._missing_custom_relations()) == []
     harness.remove_relation(relation_id)
-    assert list(harness.charm._missing_custom_relations()) == ["valkey_netbox"]
+    assert list(harness.charm._missing_custom_relations()) == ["redis or valkey_netbox"]
+
+
+def test_redis_environment_and_removal(harness: Harness[NetboxCharm]) -> None:
+    relation_id = provide_redis(harness)
+    redis = get_redis(harness)
+    redis.ensure_ready()
+    assert redis.gen_environment() == {"REDIS_DB_HOSTNAME": "redis-host", "REDIS_DB_PORT": "6379"}
+    assert list(harness.charm._missing_custom_relations()) == []
+    harness.remove_relation(relation_id)
+    assert redis.gen_environment() == {}
+    assert list(harness.charm._missing_custom_relations()) == ["redis or valkey_netbox"]
+
+
+def test_redis_without_port_is_not_ready(harness: Harness[NetboxCharm]) -> None:
+    provide_redis(harness, port="None")
+    assert get_redis(harness).gen_environment() == {}
+    with pytest.raises(RelationDataError):
+        list(harness.charm._missing_custom_relations())
+
+
+def test_redis_and_valkey_together_are_rejected(harness: Harness[NetboxCharm]) -> None:
+    provide_redis(harness)
+    valkey_id = harness.add_relation("valkey_netbox", "valkey-k8s")
+    provide_valkey(
+        harness, valkey_id, {"endpoints": "host:6379", "username": "user", "password": "pw"}
+    )
+    with pytest.raises(RelationDataError, match="only one of"):
+        list(harness.charm._missing_custom_relations())
