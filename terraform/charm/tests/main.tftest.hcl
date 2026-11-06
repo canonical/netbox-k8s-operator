@@ -15,12 +15,8 @@ run "basic_deploy_charm" {
     revision = 3
   }
 
-  module {
-    source = "./charm"
-  }
-
   assert {
-    condition     = output.app_name == "netbox-k8s"
-    error_message = "netbox-k8s app_name did not match expected"
+    condition     = output.application.name == "netbox-k8s"
+    error_message = "netbox-k8s application name did not match expected"
   }
 }

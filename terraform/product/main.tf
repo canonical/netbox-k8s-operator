@@ -5,6 +5,15 @@ data "juju_model" "netbox_k8s" {
   uuid = var.model_uuid
 }
 
+# Stable timestamp of the first apply, used for the "metadata" output.
+resource "terraform_data" "deployed_at" {
+  input = timestamp()
+
+  lifecycle {
+    ignore_changes = [input]
+  }
+}
+
 module "netbox_k8s" {
   source      = "../charm"
   app_name    = var.netbox_k8s.app_name
@@ -57,13 +66,13 @@ resource "juju_integration" "netbox_redis" {
   model_uuid = data.juju_model.netbox_k8s.uuid
 
   application {
-    name     = module.netbox_k8s.app_name
-    endpoint = module.netbox_k8s.requires.redis
+    name     = module.netbox_k8s.application.name
+    endpoint = module.netbox_k8s.requires.redis.endpoint
   }
 
   application {
-    name     = module.redis_k8s.app_name
-    endpoint = module.redis_k8s.provides.redis
+    name     = module.redis_k8s.application.name
+    endpoint = module.redis_k8s.provides.redis.endpoint
   }
 }
 
@@ -71,13 +80,13 @@ resource "juju_integration" "netbox_s3" {
   model_uuid = data.juju_model.netbox_k8s.uuid
 
   application {
-    name     = module.netbox_k8s.app_name
-    endpoint = module.netbox_k8s.requires.s3
+    name     = module.netbox_k8s.application.name
+    endpoint = module.netbox_k8s.requires.s3.endpoint
   }
 
   application {
-    name     = module.s3.app_name
-    endpoint = module.s3.provides.s3_credentials
+    name     = module.s3.application.name
+    endpoint = module.s3.provides.s3_credentials.endpoint
   }
 }
 
@@ -85,12 +94,12 @@ resource "juju_integration" "netbox_oidc" {
   model_uuid = data.juju_model.netbox_k8s.uuid
 
   application {
-    name     = module.netbox_k8s.app_name
-    endpoint = module.netbox_k8s.requires.oidc
+    name     = module.netbox_k8s.application.name
+    endpoint = module.netbox_k8s.requires.oidc.endpoint
   }
 
   application {
-    name     = module.oauth_external_idp_integrator.app_name
-    endpoint = module.oauth_external_idp_integrator.provides.oauth
+    name     = module.oauth_external_idp_integrator.application.name
+    endpoint = module.oauth_external_idp_integrator.provides.oauth.endpoint
   }
 }

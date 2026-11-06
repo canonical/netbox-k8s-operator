@@ -1,18 +1,24 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-output "app_name" {
-  description = "Name of the deployed application."
-  value       = juju_application.oauth_external_idp_integrator.name
-}
-
-output "requires" {
-  value = {
-  }
+output "application" {
+  description = "The deployed application object."
+  value       = juju_application.oauth_external_idp_integrator
 }
 
 output "provides" {
+  description = "Map of the provided integration endpoints."
   value = {
-    oauth = "oauth"
+    oauth = {
+      kind       = "endpoint"
+      name       = juju_application.oauth_external_idp_integrator.name
+      endpoint   = "oauth"
+      controller = null
+    }
   }
+}
+
+output "requires" {
+  description = "Map of the required integration endpoints."
+  value       = {}
 }
