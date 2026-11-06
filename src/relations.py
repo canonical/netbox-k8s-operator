@@ -201,6 +201,14 @@ class ValkeyRelation(CustomRelation):
 
     relation_name = "valkey_netbox"
 
+    @property
+    def required(self) -> bool:
+        """Required unless the legacy Redis integration provides the cache."""
+        return not any(
+            relation.active
+            for relation in self.charm.model.relations.get(RedisRelation.relation_name, [])
+        )
+
     def setup(self, on_change: OnChange) -> None:
         """Wire the Valkey requirer and refresh the workload after cache changes.
 

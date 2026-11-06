@@ -12,7 +12,7 @@ your data. Also note:
 
 * The OCI resource is renamed from `django-app-image` to `app-image`.
 * The `redis` integration is still supported. The new `valkey_netbox` integration
-  can be used instead, but only one of the two can be integrated at a time.
+  can be used instead, but exactly one of the two must be integrated.
 
 ## Minor version upgrade 
 

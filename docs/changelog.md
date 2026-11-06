@@ -12,8 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Pin NetBox to 4.6.10 to retain PostgreSQL 14 compatibility.
 * Move the charm and rock to Ubuntu 26.04 and migrate to paas-charm v2.
 * Add a Valkey integration (`valkey_netbox` endpoint, `valkey_client`
-  interface) alongside the `redis` integration. The charm is blocked if both
-  are integrated at the same time.
+  interface) alongside the `redis` integration. The charm is blocked unless
+  exactly one of them is integrated.
 * Rename the OCI resource `django-app-image` to `app-image`.
 * Replace Ubuntu `cron` with Supercronic, running unprivileged.
 * Stop rock builds when source preparation fails and restore the additional

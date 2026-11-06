@@ -123,7 +123,7 @@ def test_root_charm_registers_custom_relations(harness: Harness[NetboxCharm]) ->
         "valkey_netbox",
     }
     assert harness.charm._valkey is None
-    assert not get_valkey(harness).required
+    assert get_valkey(harness).required
     assert not get_redis(harness).required
 
 
@@ -245,7 +245,7 @@ def test_certificates_wait_for_container(harness: Harness[NetboxCharm]) -> None:
 
 
 def test_valkey_readiness_through_framework(harness: Harness[NetboxCharm]) -> None:
-    assert list(harness.charm._missing_custom_relations()) == []
+    assert list(harness.charm._missing_custom_relations()) == ["valkey_netbox"]
     relation_id = harness.add_relation("valkey_netbox", "valkey-k8s")
     with pytest.raises(RelationDataError):
         list(harness.charm._missing_custom_relations())
@@ -256,7 +256,7 @@ def test_valkey_readiness_through_framework(harness: Harness[NetboxCharm]) -> No
     )
     assert list(harness.charm._missing_custom_relations()) == []
     harness.remove_relation(relation_id)
-    assert list(harness.charm._missing_custom_relations()) == []
+    assert list(harness.charm._missing_custom_relations()) == ["valkey_netbox"]
 
 
 def test_redis_environment_and_removal(harness: Harness[NetboxCharm]) -> None:
@@ -267,7 +267,7 @@ def test_redis_environment_and_removal(harness: Harness[NetboxCharm]) -> None:
     assert list(harness.charm._missing_custom_relations()) == []
     harness.remove_relation(relation_id)
     assert redis.gen_environment() == {}
-    assert list(harness.charm._missing_custom_relations()) == []
+    assert list(harness.charm._missing_custom_relations()) == ["valkey_netbox"]
 
 
 def test_redis_without_port_is_not_ready(harness: Harness[NetboxCharm]) -> None:
@@ -296,3 +296,33 @@ def test_redis_and_valkey_together_are_rejected(harness: Harness[NetboxCharm]) -
         "REDIS_DB_USERNAME": "user",
         "REDIS_DB_PASSWORD": "pw",
     }
+
+
+def test_cache_state_neither_related_blocks_on_valkey(harness: Harness[NetboxCharm]) -> None:
+    assert get_valkey(harness).required
+    assert list(harness.charm._missing_custom_relations()) == ["valkey_netbox"]
+
+
+def test_cache_state_redis_only_is_ready(harness: Harness[NetboxCharm]) -> None:
+    provide_redis(harness)
+    assert not get_valkey(harness).required
+    assert list(harness.charm._missing_custom_relations()) == []
+
+
+def test_cache_state_valkey_only_is_ready(harness: Harness[NetboxCharm]) -> None:
+    valkey_id = harness.add_relation("valkey_netbox", "valkey-k8s")
+    provide_valkey(
+        harness, valkey_id, {"endpoints": "host:6379", "username": "user", "password": "pw"}
+    )
+    assert get_valkey(harness).required
+    assert list(harness.charm._missing_custom_relations()) == []
+
+
+def test_cache_state_both_related_is_rejected(harness: Harness[NetboxCharm]) -> None:
+    provide_redis(harness)
+    valkey_id = harness.add_relation("valkey_netbox", "valkey-k8s")
+    provide_valkey(
+        harness, valkey_id, {"endpoints": "host:6379", "username": "user", "password": "pw"}
+    )
+    with pytest.raises(RelationDataError, match="only one of"):
+        list(harness.charm._missing_custom_relations())
