@@ -20,6 +20,7 @@ header:
     - '**/*.md'
     - '**/*.md.j2'
     - '**/*.txt'
+    - '**/uv.lock'
     - '**/.codespellignore'
     - '**/.dockerignore'
     - '**/.flake8'
@@ -36,7 +37,8 @@ header:
     - 'pyproject.toml'
     - 'zap_rules.tsv'
     - 'patches/**'
-    - 'cron.d/**'
+    - 'cron.d/housekeeping'
+    - 'cron.d/syncdatasource'
     - 'lib/**'
     - 'icon.svg'
   comment: on-failure

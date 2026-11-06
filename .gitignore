@@ -25,3 +25,4 @@ lib/
 !.vale/styles/config/vocabularies/local
 # END VALE WORKFLOW IGNORE
 
+*.egg-info/

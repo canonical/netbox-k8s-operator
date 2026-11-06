@@ -4,6 +4,16 @@
 
 NetBox supports direct upgrades to any newer release with one exception: major version upgrades. You must be on the latest minor release of your current version before upgrading to the next major version.
 
+## Upgrading to the Ubuntu 26.04 charm
+
+This release moves the charm and rock to Ubuntu 26.04. The charm base cannot change
+with `juju refresh`, so deploy the new charm alongside the existing one and migrate
+your data. Also note:
+
+* The OCI resource is renamed from `django-app-image` to `app-image`.
+* The `redis` integration is still supported. The new `valkey_netbox` integration
+  can be used instead, but exactly one of the two must be integrated.
+
 ## Minor version upgrade 
 
 To refresh the charm within the current channel (e.g., getting the latest patch or minor version):
