@@ -29,6 +29,17 @@ module "redis_k8s" {
   units       = var.redis_k8s.units
 }
 
+module "valkey" {
+  source     = "./modules/valkey"
+  app_name   = var.valkey.app_name
+  channel    = var.valkey.channel
+  config     = var.valkey.config
+  model_uuid = data.juju_model.netbox_k8s.uuid
+  revision   = var.valkey.revision
+  base       = var.valkey.base
+  units      = var.valkey.units
+}
+
 module "s3" {
   source      = "./modules/s3-integrator"
   app_name    = var.s3.app_name
@@ -64,6 +75,20 @@ resource "juju_integration" "netbox_redis" {
   application {
     name     = module.redis_k8s.app_name
     endpoint = module.redis_k8s.provides.redis
+  }
+}
+
+resource "juju_integration" "netbox_valkey" {
+  model_uuid = data.juju_model.netbox_k8s.uuid
+
+  application {
+    name     = module.netbox_k8s.app_name
+    endpoint = module.netbox_k8s.requires.valkey
+  }
+
+  application {
+    name     = module.valkey.app_name
+    endpoint = module.valkey.provides.valkey_client
   }
 }
 

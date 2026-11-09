@@ -31,6 +31,19 @@ variable "redis_k8s" {
   })
 }
 
+variable "valkey" {
+  type = object({
+    app_name = optional(string, "valkey")
+    channel  = optional(string, "9/edge")
+    config   = optional(map(string), {})
+    revision = optional(number, null)
+    base     = optional(string, "ubuntu@26.04")
+    units    = optional(number, 1)
+    storage  = optional(map(string), {})
+  })
+  default = {}
+}
+
 variable "s3" {
   type = object({
     app_name    = optional(string, "s3-integrator")

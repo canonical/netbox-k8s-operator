@@ -15,6 +15,7 @@ output "requires" {
     s3         = "s3"
     saml       = "saml"
     oidc       = "oidc"
+    valkey     = "valkey_netbox"
   }
 }
 
