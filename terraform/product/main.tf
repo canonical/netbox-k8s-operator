@@ -17,18 +17,6 @@ module "netbox_k8s" {
   units       = var.netbox_k8s.units
 }
 
-module "redis_k8s" {
-  source      = "./modules/redis-k8s"
-  app_name    = var.redis_k8s.app_name
-  channel     = var.redis_k8s.channel
-  config      = var.redis_k8s.config
-  constraints = var.redis_k8s.constraints
-  model_uuid  = data.juju_model.netbox_k8s.uuid
-  revision    = var.redis_k8s.revision
-  base        = var.redis_k8s.base
-  units       = var.redis_k8s.units
-}
-
 module "valkey" {
   source     = "./modules/valkey"
   app_name   = var.valkey.app_name
@@ -62,20 +50,6 @@ module "oauth_external_idp_integrator" {
   revision    = var.oauth_external_idp_integrator.revision
   base        = var.oauth_external_idp_integrator.base
   units       = var.oauth_external_idp_integrator.units
-}
-
-resource "juju_integration" "netbox_redis" {
-  model_uuid = data.juju_model.netbox_k8s.uuid
-
-  application {
-    name     = module.netbox_k8s.app_name
-    endpoint = module.netbox_k8s.requires.redis
-  }
-
-  application {
-    name     = module.redis_k8s.app_name
-    endpoint = module.redis_k8s.provides.redis
-  }
 }
 
 resource "juju_integration" "netbox_valkey" {

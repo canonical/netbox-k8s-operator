@@ -18,19 +18,6 @@ variable "netbox_k8s" {
   })
 }
 
-variable "redis_k8s" {
-  type = object({
-    app_name    = optional(string, "redis-k8s")
-    channel     = optional(string, "latest/edge")
-    config      = optional(map(string), {})
-    constraints = optional(string, "arch=amd64")
-    revision    = optional(number, null)
-    base        = optional(string, "ubuntu@22.04")
-    units       = optional(number, 1)
-    storage     = optional(map(string), {})
-  })
-}
-
 variable "valkey" {
   type = object({
     app_name = optional(string, "valkey")
