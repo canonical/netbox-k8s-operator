@@ -20,8 +20,7 @@ Follow the section that matches how you manage your deployment.
 
 ### Refresh the charm and base
 
-Refresh in place and pass the new base. You don't need to deploy a second
-application next to the existing one.
+Refresh in place and pass the new base.
 
 ```bash
 juju refresh netbox-k8s --channel 4/edge --base ubuntu@26.04
@@ -37,8 +36,8 @@ juju refresh netbox-k8s --path ./netbox-k8s_amd64.charm --base ubuntu@26.04 \
 The unit is replaced and goes through `maintenance` while the pod restarts.
 
 ```{note}
-Juju keeps the old `django-app` container in the pod next to the new `app`
-container. The old container crash-loops with
+In testing with a locally built charm, Juju kept the old `django-app` container
+in the pod next to the new `app` container. The old container crash-loops with
 `cannot listen on ":38813": address already in use`, because both Pebble
 instances share the pod network, and the unit goes into `error`. Remove the old
 container from the StatefulSet:
