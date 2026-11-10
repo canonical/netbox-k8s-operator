@@ -1,6 +1,6 @@
-# How to migrate to the Ubuntu 26.04 charm and Valkey
+# How to migrate to the Ubuntu 26.04 LTS charm and Valkey
 
-The Ubuntu 26.04 release of the NetBox charm changes the charm base to
+The Ubuntu 26.04 LTS release of the NetBox charm changes the charm base to
 `ubuntu@26.04`, renames the OCI resource from `django-app-image` to `app-image`,
 and adds the `valkey_netbox` integration as the replacement for `redis`.
 NetBox needs exactly one cache integration, so you must switch from Redis to

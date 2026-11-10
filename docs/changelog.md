@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 * Pin NetBox to 4.6.10 to retain PostgreSQL 14 compatibility.
-* Move the charm and rock to Ubuntu 26.04 and migrate to paas-charm v2.
+* Move the charm and rock to Ubuntu 26.04 LTS and migrate to paas-charm v2.
 * Add a Valkey integration (`valkey_netbox` endpoint, `valkey_client`
   interface) alongside the `redis` integration. The charm is blocked unless
   exactly one of them is integrated.
