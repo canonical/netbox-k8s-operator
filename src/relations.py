@@ -228,6 +228,9 @@ class ValkeyRelation(CustomRelation):
             self._valkey.valkey_interface.on.authentication_updated, self._on_resource_changed
         )
         self.framework.observe(
+            self.charm.on[self.relation_name].relation_created, self._on_resource_changed
+        )
+        self.framework.observe(
             self.charm.on[self.relation_name].relation_broken, self._on_relation_broken
         )
 

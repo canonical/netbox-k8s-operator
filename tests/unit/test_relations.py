@@ -259,6 +259,17 @@ def test_valkey_readiness_through_framework(harness: Harness[NetboxCharm]) -> No
     assert list(harness.charm._missing_custom_relations()) == ["valkey_netbox"]
 
 
+def test_valkey_relation_created_reconciles_without_credentials(
+    harness: Harness[NetboxCharm],
+) -> None:
+    provide_redis(harness)
+    with patch.object(get_valkey(harness), "_on_change") as on_change:
+        harness.add_relation("valkey_netbox", "valkey-k8s")
+    on_change.assert_called()
+    with pytest.raises(RelationDataError, match="only one of"):
+        list(harness.charm._missing_custom_relations())
+
+
 def test_redis_environment_and_removal(harness: Harness[NetboxCharm]) -> None:
     relation_id = provide_redis(harness)
     redis = get_redis(harness)
