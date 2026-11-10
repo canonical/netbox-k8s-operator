@@ -13,7 +13,7 @@ variable "netbox_k8s" {
     config      = optional(map(string), {})
     constraints = optional(string, "arch=amd64")
     revision    = optional(number)
-    base        = optional(string, "ubuntu@24.04")
+    base        = optional(string, "ubuntu@26.04")
     units       = optional(number, 1)
   })
 }

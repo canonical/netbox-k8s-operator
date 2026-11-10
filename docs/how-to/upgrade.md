@@ -6,9 +6,10 @@ NetBox supports direct upgrades to any newer release with one exception: major v
 
 ## Upgrading to the Ubuntu 26.04 charm
 
-This release moves the charm and rock to Ubuntu 26.04. The charm base cannot change
-with `juju refresh`, so deploy the new charm alongside the existing one and migrate
-your data. Also note:
+This release moves the charm and rock to Ubuntu 26.04. Refresh in place with
+`juju refresh netbox-k8s --base ubuntu@26.04`. See
+[Migrate to the Ubuntu 26.04 charm and Valkey](migrate-to-26.04-and-valkey.md)
+for the full procedure, including Terraform. Also note:
 
 * The OCI resource is renamed from `django-app-image` to `app-image`.
 * The `redis` integration is still supported. The new `valkey_netbox` integration

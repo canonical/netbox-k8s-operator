@@ -27,7 +27,7 @@ deployment into multiple environments for testing of changes.
 | | |
 | --- | --- |
 | **Get started** | [Deploy NetBox with Juju](tutorial/getting-started.md) |
-| **Operations** | [Upgrade NetBox](how-to/upgrade.md) \| [Actions](reference/actions.md) \| [Relation endpoints](reference/integrations.md) |
+| **Operations** | [Upgrade NetBox](how-to/upgrade.md) \| [Migrate to 26.04 and Valkey](how-to/migrate-to-26.04-and-valkey.md) \| [Actions](reference/actions.md) \| [Relation endpoints](reference/integrations.md) |
 | **High availability** | [Configure scripts and reports](how-to/configure-scripts-reports.md) |
 | **Design** | [Charm architecture](reference/charm-architecture.md) |
 | **Security** | [Configure OIDC authentication](how-to/configure-oidc.md) |
@@ -94,6 +94,7 @@ missing, please [file a bug](https://github.com/canonical/netbox-k8s-operator/is
   2. [Configure OIDC](how-to/configure-oidc.md)
   3. [Configure Scripts and Reports for HA](how-to/configure-scripts-reports.md)
   4. [Upgrade](how-to/upgrade.md)
+  5. [Migrate to 26.04 and Valkey](how-to/migrate-to-26.04-and-valkey.md)
 1. [Reference](reference)
   1. [Actions](reference/actions.md)
   1. [Charm Architecture](reference/charm-architecture.md)
