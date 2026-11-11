@@ -38,15 +38,22 @@ unit = [
 integration = [
     "boto3",
     "jubilant>=1.8,<2",
-    "opcli @ git+https://github.com/canonical/charm-ci.git@v1.0.2",
+    "opcli",
     "pytest",
     "pytest-jubilant>=2.0.1,<3",
-    "pytest-playwright==0.10.0",
+    "pytest-playwright",
     "PyYAML",
-    "saml-test-helper @ git+https://github.com/canonical/saml-test-idp.git",
-    "tenacity==9.2.1",
+    "saml-test-helper",
+    "tenacity",
 ]
 
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+# opcli and saml-test-helper are published only from git repositories, not PyPI.
+opcli = { git = "https://github.com/canonical/charm-ci.git", tag = "v1.0.2" }
+saml-test-helper = { git = "https://github.com/canonical/saml-test-idp.git" }
 
 # Testing tools configuration
 [tool.coverage.run]
