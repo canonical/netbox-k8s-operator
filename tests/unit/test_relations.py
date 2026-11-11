@@ -3,17 +3,16 @@
 
 """Lifecycle tests for NetBox's custom relations."""
 
-import json
 from collections.abc import Iterator
 from pathlib import Path
 from types import SimpleNamespace
+from typing import TypeVar
 from unittest.mock import patch
 
 import pytest
 import yaml
-from ops.testing import Harness
-from paas_charm.relations import RelationDataError
-from paas_charm.valkey import ValkeyTLSNotSupportedError
+from ops import testing
+from paas_charm.relations import CustomRelation, RelationDataError
 
 from charm import NetboxCharm
 from relations import (
@@ -21,14 +20,15 @@ from relations import (
     SYSTEM_CA_CERT_PATH,
     CertificatesRelation,
     RedisRelation,
-    ValkeyRelation,
+    redis_environment,
 )
+
+T = TypeVar("T", bound=CustomRelation)
 
 
 @pytest.fixture
-def harness(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Harness[NetboxCharm]]:
-    """Instantiate the actual root charm with its extension-provided metadata."""
-    monkeypatch.setenv("JUJU_VERSION", "3.6.0")
+def context(tmp_path: Path) -> Iterator[testing.Context[NetboxCharm]]:
+    """Run the actual root charm with its extension-provided metadata."""
     manifest = yaml.safe_load(Path("charmcraft.yaml").read_text())
     manifest.update(
         containers={"app": {"resource": "app-image"}},
@@ -43,120 +43,75 @@ def harness(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Harness
         ingress={"interface": "ingress", "limit": 1},
         logging={"interface": "loki_push_api"},
     )
+    # The COS directory is built under the charm directory, which does not exist in a unit test.
     with patch.object(NetboxCharm, "build_cos_dir", return_value=tmp_path):
-        instance = Harness(
+        yield testing.Context(
             NetboxCharm,
-            meta=yaml.safe_dump(manifest),
-            config=yaml.safe_dump(manifest["config"]),
-            actions=yaml.safe_dump(
-                {
-                    "rotate-secret-key": {},
-                    "create-superuser": {
-                        "params": {"username": {"type": "string"}, "email": {"type": "string"}}
-                    },
-                }
-            ),
+            meta=manifest,
+            actions={
+                "rotate-secret-key": {},
+                "create-superuser": {
+                    "params": {"username": {"type": "string"}, "email": {"type": "string"}}
+                },
+            },
         )
-        try:
-            instance.begin()
-            instance.set_leader(True)
-            yield instance
-        finally:
-            instance.cleanup()
 
 
-def get_valkey(harness: Harness[NetboxCharm]) -> ValkeyRelation:
-    return next(
-        relation
-        for relation in harness.charm._custom_relations
-        if isinstance(relation, ValkeyRelation)
+def make_state(
+    relations: list[testing.Relation] | None = None,
+    containers: list[testing.Container] | None = None,
+) -> testing.State:
+    return testing.State(
+        leader=True,
+        relations=[testing.PeerRelation("peers"), *(relations or [])],
+        containers=containers or [testing.Container("app", can_connect=False)],
     )
 
 
-def get_redis(harness: Harness[NetboxCharm]) -> RedisRelation:
-    return next(
-        relation
-        for relation in harness.charm._custom_relations
-        if isinstance(relation, RedisRelation)
-    )
-
-
-def provide_redis(harness: Harness[NetboxCharm], hostname: str = "redis-host", port: str = "6379"):
-    relation_id = harness.add_relation("redis", "redis-k8s")
-    harness.add_relation_unit(relation_id, "redis-k8s/0")
-    harness.update_relation_data(relation_id, "redis-k8s/0", {"hostname": hostname, "port": port})
-    return relation_id
-
-
-def get_certificates(harness: Harness[NetboxCharm]) -> CertificatesRelation:
-    return next(
-        relation
-        for relation in harness.charm._custom_relations
-        if isinstance(relation, CertificatesRelation)
-    )
-
-
-def provide_valkey(
-    harness: Harness[NetboxCharm], relation_id: int, fields: dict[str, str | bool]
-) -> None:
-    request = json.loads(
-        harness.get_relation_data(relation_id, harness.model.app.name)["requests"]
-    )[0]
-    previous = harness.get_relation_data(relation_id, "valkey-k8s").get("requests")
-    response = json.loads(previous)[0] if previous else request.copy()
-    response.update(fields)
-    harness.update_relation_data(
-        relation_id,
-        "valkey-k8s",
-        {
-            "version": "v1",
-            "requests": json.dumps([response]),
-            "data": json.dumps({request["request-id"]: request}),
-        },
-    )
-
-
-def test_root_charm_registers_custom_relations(harness: Harness[NetboxCharm]) -> None:
-    assert {relation.relation_name for relation in harness.charm._custom_relations} == {
-        "certificates",
+def redis_relation(hostname: str = "redis-host", port: str = "6379") -> testing.Relation:
+    return testing.Relation(
         "redis",
-        "valkey_netbox",
-    }
-    assert harness.charm._valkey is None
-    assert get_valkey(harness).required
-    assert not get_redis(harness).required
+        interface="redis",
+        remote_app_name="redis-k8s",
+        remote_units_data={0: {"hostname": hostname, "port": port}},
+    )
 
 
-def test_valkey_reads_secrets_and_removal(harness: Harness[NetboxCharm]) -> None:
-    harness.set_leader(True)
-    relation_id = harness.add_relation("valkey_netbox", "valkey-k8s")
-    secret_id = harness.add_model_secret(
-        "valkey-k8s", {"username": "netbox", "password": "special:@/?#%"}
+def valkey_relation() -> testing.Relation:
+    return testing.Relation("valkey", interface="valkey_client", remote_app_name="valkey")
+
+
+def get_relation(charm: NetboxCharm, relation_type: type[T]) -> T:
+    return next(
+        relation for relation in charm._custom_relations if isinstance(relation, relation_type)
     )
-    harness.grant_secret(secret_id, "netbox-k8s")
-    provide_valkey(
-        harness,
-        relation_id,
-        {"endpoints": "valkey-primary:6379", "secret-user": secret_id},
-    )
-    valkey = get_valkey(harness)
-    valkey.ensure_ready()
-    assert valkey.gen_environment() == {
-        "REDIS_DB_HOSTNAME": "valkey-primary",
-        "REDIS_DB_PORT": "6379",
-        "REDIS_DB_USERNAME": "netbox",
-        "REDIS_DB_PASSWORD": "special:@/?#%",
-    }
-    with patch.object(valkey, "_on_change") as on_change:
-        harness.set_secret_content(secret_id, {"username": "netbox", "password": "rotated"})
-        on_change.assert_called()
-    assert valkey.gen_environment()["REDIS_DB_PASSWORD"] == "rotated"
-    with patch.object(valkey, "_on_change") as on_change:
-        provide_valkey(harness, relation_id, {"endpoints": "valkey-new-primary:6380"})
-        on_change.assert_called()
-    assert valkey.gen_environment()["REDIS_DB_HOSTNAME"] == "valkey-new-primary"
-    harness.remove_relation(relation_id)
-    assert valkey.gen_environment() == {}
+
+
+def missing_integrations(charm: NetboxCharm) -> list[str]:
+    return list(charm._missing_custom_relations())
+
+
+def test_root_charm_registers_custom_relations(context: testing.Context[NetboxCharm]) -> None:
+    state = make_state()
+
+    with context(context.on.update_status(), state) as manager:
+        assert {relation.relation_name for relation in manager.charm._custom_relations} == {
+            "certificates",
+            "redis",
+        }
+
+
+@pytest.mark.parametrize(
+    "endpoint, expected",
+    [
+        ("redis-host:6379", {"REDIS_DB_HOSTNAME": "redis-host", "REDIS_DB_PORT": "6379"}),
+        ("redis://host:6379", {"REDIS_DB_HOSTNAME": "host", "REDIS_DB_PORT": "6379"}),
+        ("valkey://host:6379", {"REDIS_DB_HOSTNAME": "host", "REDIS_DB_PORT": "6379"}),
+        ("[::1]:6380", {"REDIS_DB_HOSTNAME": "::1", "REDIS_DB_PORT": "6380"}),
+    ],
+)
+def test_redis_endpoint_formats(endpoint: str, expected: dict[str, str]) -> None:
+    assert redis_environment(endpoint) == expected
 
 
 @pytest.mark.parametrize(
@@ -169,171 +124,132 @@ def test_valkey_reads_secrets_and_removal(harness: Harness[NetboxCharm]) -> None
         "host:0",
         "host:65536",
         "redis://:6379",
+        "redis://user@host:6379",
         "rediss://host:6379",
     ],
 )
-def test_valkey_rejects_invalid_endpoints(harness: Harness[NetboxCharm], endpoint: str) -> None:
-    relation_id = harness.add_relation("valkey_netbox", "valkey-k8s")
-    provide_valkey(
-        harness, relation_id, {"endpoints": endpoint, "username": "user", "password": "pw"}
-    )
-    assert get_valkey(harness).gen_environment() == {}
-    with pytest.raises(RelationDataError):
-        get_valkey(harness).ensure_ready()
+def test_redis_rejects_invalid_endpoints(endpoint: str) -> None:
+    assert redis_environment(endpoint) == {}
 
 
-@pytest.mark.parametrize("endpoint", ["valkey://host:6379", "redis://host:6379", "[::1]:6380"])
-def test_valkey_endpoint_formats(harness: Harness[NetboxCharm], endpoint: str) -> None:
-    relation_id = harness.add_relation("valkey_netbox", "valkey-k8s")
-    provide_valkey(
-        harness, relation_id, {"endpoints": endpoint, "username": "user", "password": "pw"}
-    )
-    get_valkey(harness).ensure_ready()
-    environment = get_valkey(harness).gen_environment()
-    assert environment["REDIS_DB_HOSTNAME"] == ("::1" if endpoint.startswith("[") else "host")
+def test_redis_environment(context: testing.Context[NetboxCharm]) -> None:
+    state = make_state(relations=[redis_relation()])
 
-
-def test_valkey_tls_is_blocked(harness: Harness[NetboxCharm]) -> None:
-    relation_id = harness.add_relation("valkey_netbox", "valkey-k8s")
-    provide_valkey(
-        harness,
-        relation_id,
-        {"endpoints": "host:6379", "username": "user", "password": "pw", "tls": True},
-    )
-    with pytest.raises(ValkeyTLSNotSupportedError):
-        get_valkey(harness).ensure_ready()
-    assert get_valkey(harness).gen_environment() == {}
-
-
-def test_valkey_waits_for_provider(harness: Harness[NetboxCharm]) -> None:
-    valkey = get_valkey(harness)
-    assert valkey.gen_environment() == {}
-    with pytest.raises(RelationDataError):
-        valkey.ensure_ready()
-
-
-def test_certificates_install_and_remove_ca(harness: Harness[NetboxCharm]) -> None:
-    relation_id = harness.add_relation("certificates", "certificate-provider")
-    harness.set_can_connect("app", True)
-    container = harness.model.unit.get_container("app")
-    container.push(SYSTEM_CA_CERT_PATH, "SYSTEM CA\n", make_dirs=True)
-    certificates = get_certificates(harness)
-    with patch.object(
-        certificates._certificates,
-        "get_assigned_certificates",
-        return_value=([SimpleNamespace(ca="CUSTOM CA")], None),
-    ):
-        environment = certificates.gen_environment()
-        assert container.pull(CA_CERT_PATH).read() == "SYSTEM CA\n\nCUSTOM CA\n"
-        assert environment == {
-            "REQUESTS_CA_BUNDLE": CA_CERT_PATH,
-            "SSL_CERT_FILE": CA_CERT_PATH,
+    with context(context.on.update_status(), state) as manager:
+        redis = get_relation(manager.charm, RedisRelation)
+        redis.ensure_ready()
+        assert redis.gen_environment() == {
+            "REDIS_DB_HOSTNAME": "redis-host",
+            "REDIS_DB_PORT": "6379",
         }
-        with patch.object(certificates, "_on_change") as on_change:
-            harness.remove_relation(relation_id)
-            on_change.assert_called_once()
-        environment = certificates.gen_environment()
-        assert not container.exists(CA_CERT_PATH)
-        assert environment == {
-            "REQUESTS_CA_BUNDLE": SYSTEM_CA_CERT_PATH,
-            "SSL_CERT_FILE": SYSTEM_CA_CERT_PATH,
-        }
+        assert missing_integrations(manager.charm) == []
 
 
-def test_certificates_wait_for_container(harness: Harness[NetboxCharm]) -> None:
-    assert get_certificates(harness).gen_environment() == {}
+def test_redis_removal_requires_a_cache(context: testing.Context[NetboxCharm]) -> None:
+    relation = redis_relation()
+    state = make_state(relations=[relation])
+
+    with context(context.on.relation_broken(relation), state) as manager:
+        manager.run()
+        assert get_relation(manager.charm, RedisRelation).gen_environment() == {}
+        assert missing_integrations(manager.charm) == ["valkey"]
 
 
-def test_valkey_readiness_through_framework(harness: Harness[NetboxCharm]) -> None:
-    assert list(harness.charm._missing_custom_relations()) == ["valkey_netbox"]
-    relation_id = harness.add_relation("valkey_netbox", "valkey-k8s")
-    with pytest.raises(RelationDataError):
-        list(harness.charm._missing_custom_relations())
-    provide_valkey(
-        harness,
-        relation_id,
-        {"endpoints": "host:6379", "username": "user", "password": "pw"},
-    )
-    assert list(harness.charm._missing_custom_relations()) == []
-    harness.remove_relation(relation_id)
-    assert list(harness.charm._missing_custom_relations()) == ["valkey_netbox"]
+def test_redis_without_port_is_not_ready(context: testing.Context[NetboxCharm]) -> None:
+    state = make_state(relations=[redis_relation(port="None")])
+
+    with context(context.on.update_status(), state) as manager:
+        assert get_relation(manager.charm, RedisRelation).gen_environment() == {}
+        with pytest.raises(RelationDataError):
+            missing_integrations(manager.charm)
 
 
-def test_valkey_relation_created_reconciles_without_credentials(
-    harness: Harness[NetboxCharm],
+def test_no_cache_reports_valkey_as_missing(context: testing.Context[NetboxCharm]) -> None:
+    state = make_state()
+
+    with context(context.on.update_status(), state) as manager:
+        assert get_relation(manager.charm, RedisRelation).required
+        assert missing_integrations(manager.charm) == ["valkey"]
+
+
+def test_valkey_only_is_ready(context: testing.Context[NetboxCharm]) -> None:
+    state = make_state(relations=[valkey_relation()])
+
+    with context(context.on.update_status(), state) as manager:
+        assert not get_relation(manager.charm, RedisRelation).required
+        assert missing_integrations(manager.charm) == []
+
+
+def test_redis_and_valkey_together_are_rejected(context: testing.Context[NetboxCharm]) -> None:
+    state = make_state(relations=[redis_relation(), valkey_relation()])
+
+    with context(context.on.update_status(), state) as manager:
+        with pytest.raises(RelationDataError, match="only one of"):
+            missing_integrations(manager.charm)
+
+
+def test_adding_valkey_reconciles_without_credentials(
+    context: testing.Context[NetboxCharm],
 ) -> None:
-    provide_redis(harness)
-    with patch.object(get_valkey(harness), "_on_change") as on_change:
-        harness.add_relation("valkey_netbox", "valkey-k8s")
-    on_change.assert_called()
-    with pytest.raises(RelationDataError, match="only one of"):
-        list(harness.charm._missing_custom_relations())
+    valkey = valkey_relation()
+    state = make_state(relations=[redis_relation(), valkey])
+
+    with context(context.on.relation_created(valkey), state) as manager:
+        # Reconciling also runs the workload startup, which a unit test cannot provide.
+        with patch.object(get_relation(manager.charm, RedisRelation), "_on_change") as on_change:
+            manager.run()
+        on_change.assert_called()
+        with pytest.raises(RelationDataError, match="only one of"):
+            missing_integrations(manager.charm)
 
 
-def test_redis_environment_and_removal(harness: Harness[NetboxCharm]) -> None:
-    relation_id = provide_redis(harness)
-    redis = get_redis(harness)
-    redis.ensure_ready()
-    assert redis.gen_environment() == {"REDIS_DB_HOSTNAME": "redis-host", "REDIS_DB_PORT": "6379"}
-    assert list(harness.charm._missing_custom_relations()) == []
-    harness.remove_relation(relation_id)
-    assert redis.gen_environment() == {}
-    assert list(harness.charm._missing_custom_relations()) == ["valkey_netbox"]
-
-
-def test_redis_without_port_is_not_ready(harness: Harness[NetboxCharm]) -> None:
-    provide_redis(harness, port="None")
-    assert get_redis(harness).gen_environment() == {}
-    with pytest.raises(RelationDataError):
-        list(harness.charm._missing_custom_relations())
-
-
-def test_redis_and_valkey_together_are_rejected(harness: Harness[NetboxCharm]) -> None:
-    redis_id = provide_redis(harness)
-    valkey_id = harness.add_relation("valkey_netbox", "valkey-k8s")
-    provide_valkey(
-        harness, valkey_id, {"endpoints": "host:6379", "username": "user", "password": "pw"}
+def test_certificates_install_and_remove_ca(
+    context: testing.Context[NetboxCharm], tmp_path: Path
+) -> None:
+    certs_dir = tmp_path / "certs"
+    app_dir = tmp_path / "app"
+    certs_dir.mkdir()
+    app_dir.mkdir()
+    (certs_dir / "ca-certificates.crt").write_text("SYSTEM CA\n")
+    relation = testing.Relation("certificates", interface="tls-certificates")
+    container = testing.Container(
+        "app",
+        can_connect=True,
+        mounts={
+            "certs": testing.Mount(location="/etc/ssl/certs", source=certs_dir),
+            "app": testing.Mount(location="/app", source=app_dir),
+        },
     )
-    with pytest.raises(RelationDataError, match="only one of"):
-        list(harness.charm._missing_custom_relations())
+    state = make_state(relations=[relation], containers=[container])
 
-    harness.remove_relation(redis_id)
+    with context(context.on.update_status(), state) as manager:
+        certificates = get_relation(manager.charm, CertificatesRelation)
+        # The TLS library requires a certificate provider to assign certificates.
+        with patch.object(
+            certificates._certificates,
+            "get_assigned_certificates",
+            return_value=([SimpleNamespace(ca="CUSTOM CA")], None),
+        ):
+            environment = certificates.gen_environment()
 
-    assert list(harness.charm._missing_custom_relations()) == []
-    assert get_redis(harness).gen_environment() == {}
-    assert get_valkey(harness).gen_environment() == {
-        "REDIS_DB_HOSTNAME": "host",
-        "REDIS_DB_PORT": "6379",
-        "REDIS_DB_USERNAME": "user",
-        "REDIS_DB_PASSWORD": "pw",
+    assert (app_dir / "ca-certificates.crt").read_text() == "SYSTEM CA\n\nCUSTOM CA\n"
+    assert environment == {"REQUESTS_CA_BUNDLE": CA_CERT_PATH, "SSL_CERT_FILE": CA_CERT_PATH}
+
+    with context(context.on.relation_broken(relation), state) as manager:
+        manager.run()
+        environment = get_relation(manager.charm, CertificatesRelation).gen_environment()
+
+    assert not (app_dir / "ca-certificates.crt").exists()
+    assert environment == {
+        "REQUESTS_CA_BUNDLE": SYSTEM_CA_CERT_PATH,
+        "SSL_CERT_FILE": SYSTEM_CA_CERT_PATH,
     }
 
 
-def test_cache_state_neither_related_blocks_on_valkey(harness: Harness[NetboxCharm]) -> None:
-    assert get_valkey(harness).required
-    assert list(harness.charm._missing_custom_relations()) == ["valkey_netbox"]
-
-
-def test_cache_state_redis_only_is_ready(harness: Harness[NetboxCharm]) -> None:
-    provide_redis(harness)
-    assert not get_valkey(harness).required
-    assert list(harness.charm._missing_custom_relations()) == []
-
-
-def test_cache_state_valkey_only_is_ready(harness: Harness[NetboxCharm]) -> None:
-    valkey_id = harness.add_relation("valkey_netbox", "valkey-k8s")
-    provide_valkey(
-        harness, valkey_id, {"endpoints": "host:6379", "username": "user", "password": "pw"}
+def test_certificates_wait_for_container(context: testing.Context[NetboxCharm]) -> None:
+    state = make_state(
+        relations=[testing.Relation("certificates", interface="tls-certificates")],
     )
-    assert get_valkey(harness).required
-    assert list(harness.charm._missing_custom_relations()) == []
 
-
-def test_cache_state_both_related_is_rejected(harness: Harness[NetboxCharm]) -> None:
-    provide_redis(harness)
-    valkey_id = harness.add_relation("valkey_netbox", "valkey-k8s")
-    provide_valkey(
-        harness, valkey_id, {"endpoints": "host:6379", "username": "user", "password": "pw"}
-    )
-    with pytest.raises(RelationDataError, match="only one of"):
-        list(harness.charm._missing_custom_relations())
+    with context(context.on.update_status(), state) as manager:
+        assert get_relation(manager.charm, CertificatesRelation).gen_environment() == {}

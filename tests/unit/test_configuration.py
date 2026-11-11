@@ -41,6 +41,58 @@ def _load_configuration(env: dict[str, str]) -> dict:
     return vars(module)
 
 
+class TestCacheSettings:
+    """Tests for the Redis settings fed by the Valkey or Redis integrations."""
+
+    def test_valkey_variables(self):
+        """
+        arrange: The Valkey integration environment variables are set.
+        act: Load the configuration module.
+        assert: Both the tasks and the caching databases use the Valkey connection details.
+        """
+        config = _load_configuration(
+            {
+                "VALKEY_DB_HOSTNAME": "valkey-primary",
+                "VALKEY_DB_PORT": "6380",
+                "VALKEY_DB_USERNAME": "netbox",
+                "VALKEY_DB_PASSWORD": "secret",
+            }
+        )
+        for name, database in (("tasks", 0), ("caching", 1)):
+            assert config["REDIS"][name] == {
+                **config["REDIS"][name],
+                "HOST": "valkey-primary",
+                "PORT": "6380",
+                "USERNAME": "netbox",
+                "PASSWORD": "secret",
+                "DATABASE": database,
+            }
+
+    def test_redis_variables(self):
+        """
+        arrange: The legacy Redis integration environment variables are set.
+        act: Load the configuration module.
+        assert: Both databases use the Redis host and port without credentials.
+        """
+        config = _load_configuration({"REDIS_DB_HOSTNAME": "redis-host", "REDIS_DB_PORT": "6379"})
+        for name in ("tasks", "caching"):
+            assert config["REDIS"][name]["HOST"] == "redis-host"
+            assert config["REDIS"][name]["PORT"] == "6379"
+            assert config["REDIS"][name]["USERNAME"] == ""
+            assert config["REDIS"][name]["PASSWORD"] == ""
+
+    def test_valkey_takes_precedence(self):
+        """
+        arrange: Both the Valkey and Redis environment variables are set.
+        act: Load the configuration module.
+        assert: The Valkey host is used.
+        """
+        config = _load_configuration(
+            {"VALKEY_DB_HOSTNAME": "valkey-primary", "REDIS_DB_HOSTNAME": "redis-host"}
+        )
+        assert config["REDIS"]["tasks"]["HOST"] == "valkey-primary"
+
+
 class TestCsrfTrustedOrigins:
     """Tests for the CSRF_TRUSTED_ORIGINS setting."""
 

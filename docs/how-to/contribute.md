@@ -45,11 +45,10 @@ Kubernetes knows how to pull them from the MicroK8s repository. Note that the Mi
 registry needs to be enabled using `microk8s enable registry`. More details regarding 
 the OCI images below. The following commands can then be used to run the tests:
 
-Before running checks, install Charmcraft from `latest/edge` and fetch the charm libraries:
+Before running checks, install Charmcraft from `latest/edge`:
 
 ```shell
 sudo snap install charmcraft --classic --channel=latest/edge
-CHARMCRAFT_ENABLE_EXPERIMENTAL_EXTENSIONS=1 charmcraft fetch-libs
 ```
 
 * `tox`: Runs all of the basic checks (`lint`, `unit`, `static`, and `coverage-report`).
@@ -108,7 +107,7 @@ done with:
 
 ```bash
 juju deploy valkey --channel=9/edge --trust
-juju integrate valkey netbox-k8s:valkey_netbox
+juju integrate valkey netbox-k8s:valkey
 ```
 
 NetBox is built using Django. It is necessary to set the

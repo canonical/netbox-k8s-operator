@@ -1,7 +1,7 @@
 # Copyright 2026 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-"""Custom certificate trust and Redis-compatible cache relations."""
+"""Custom certificate trust and legacy Redis relations."""
 
 import logging
 from urllib.parse import urlsplit
@@ -14,7 +14,6 @@ from charms.tls_certificates_interface.v4.tls_certificates import (
     TLSCertificatesRequiresV4,
 )
 from paas_charm.relations import CustomRelation, OnChange, RelationDataError
-from paas_charm.valkey import ValkeyClientRequirer
 
 from ca_trust import build_ca_bundle
 
@@ -96,24 +95,6 @@ class CertificatesRelation(CustomRelation):
         return {"REQUESTS_CA_BUNDLE": path, "SSL_CERT_FILE": path}
 
 
-def ensure_single_cache(charm: ops.CharmBase, relation_name: str, other_name: str) -> None:
-    """Reject the cache integration if the other cache integration is also present.
-
-    Args:
-        charm: The charm owning the relations.
-        relation_name: The cache relation being validated.
-        other_name: The alternative cache relation.
-
-    Raises:
-        RelationDataError: If both cache integrations are present.
-    """
-    if any(relation.active for relation in charm.model.relations.get(other_name, [])):
-        raise RelationDataError(
-            f"only one of the {relation_name} and {other_name} integrations is supported",
-            relation_name,
-        )
-
-
 def redis_environment(endpoint: str) -> dict[str, str]:
     """Translate a Redis-compatible endpoint to the variables consumed by NetBox.
 
@@ -148,6 +129,13 @@ class RedisRelation(CustomRelation):
 
     relation_name = "redis"
 
+    @property
+    def required(self) -> bool:
+        """Required unless the Valkey integration provides the cache."""
+        return not any(
+            relation.active for relation in self.charm.model.relations.get("valkey", [])
+        )
+
     def setup(self, on_change: OnChange) -> None:
         """Wire the Redis requirer and refresh the workload after cache changes.
 
@@ -161,6 +149,9 @@ class RedisRelation(CustomRelation):
         self.framework.observe(
             self.charm.on[self.relation_name].relation_broken, self._on_relation_broken
         )
+        # Adding or removing the Valkey integration changes whether the cache is valid.
+        self.framework.observe(self.charm.on["valkey"].relation_created, self._on_relation_updated)
+        self.framework.observe(self.charm.on["valkey"].relation_broken, self._on_relation_updated)
 
     def _on_relation_updated(self, _event: ops.EventBase) -> None:
         """Restart with the latest endpoint."""
@@ -177,7 +168,10 @@ class RedisRelation(CustomRelation):
         Raises:
             RelationDataError: If the Redis data is absent or invalid, or Valkey is also related.
         """
-        ensure_single_cache(self.charm, self.relation_name, ValkeyRelation.relation_name)
+        if any(relation.active for relation in self.charm.model.relations.get("valkey", [])):
+            raise RelationDataError(
+                "only one of the redis and valkey integrations is supported", self.relation_name
+            )
         if self._broken or not self.gen_environment():
             raise RelationDataError("Redis relation data is not ready", self.relation_name)
 
@@ -194,88 +188,3 @@ class RedisRelation(CustomRelation):
         if not url or url.endswith(":None"):
             return {}
         return redis_environment(url)
-
-
-class ValkeyRelation(CustomRelation):
-    """Expose Valkey credentials using the Redis variables consumed by NetBox."""
-
-    relation_name = "valkey_netbox"
-
-    @property
-    def required(self) -> bool:
-        """Required unless the legacy Redis integration provides the cache."""
-        return not any(
-            relation.active
-            for relation in self.charm.model.relations.get(RedisRelation.relation_name, [])
-        )
-
-    def setup(self, on_change: OnChange) -> None:
-        """Wire the Valkey requirer and refresh the workload after cache changes.
-
-        Args:
-            on_change: Framework reconcile callback.
-        """
-        self._on_change = on_change
-        self._broken = False
-        self._valkey = ValkeyClientRequirer(self.charm, relation_name=self.relation_name)
-        self.framework.observe(
-            self._valkey.valkey_interface.on.resource_created, self._on_resource_changed
-        )
-        self.framework.observe(
-            self._valkey.valkey_interface.on.endpoints_changed, self._on_resource_changed
-        )
-        self.framework.observe(
-            self._valkey.valkey_interface.on.authentication_updated, self._on_resource_changed
-        )
-        self.framework.observe(
-            self.charm.on[self.relation_name].relation_created, self._on_resource_changed
-        )
-        self.framework.observe(
-            self.charm.on[self.relation_name].relation_broken, self._on_relation_broken
-        )
-
-    def _on_resource_changed(self, _event: ops.EventBase) -> None:
-        """Restart with the latest endpoint and credentials."""
-        self._on_change()
-
-    def _on_relation_broken(self, _event: ops.RelationBrokenEvent) -> None:
-        """Discard the departing relation's credentials and reconcile."""
-        self._broken = True
-        self._on_change()
-
-    def ensure_ready(self) -> None:
-        """Validate Valkey connection data, including unsupported TLS.
-
-        Raises:
-            RelationDataError: If the Valkey data is absent, invalid, unsupported, or Redis is
-                also related.
-        """
-        ensure_single_cache(self.charm, self.relation_name, RedisRelation.relation_name)
-        if self._broken or not self._valkey.to_relation_data():
-            raise RelationDataError("Valkey relation data is not ready", self.relation_name)
-        if not self.gen_environment():
-            raise RelationDataError("Valkey endpoint is invalid", self.relation_name)
-
-    def gen_environment(self) -> dict[str, str]:
-        """Translate the framework's Valkey environment to Redis-compatible names.
-
-        Returns:
-            Redis connection variables, or an empty mapping until credentials are ready.
-        """
-        if self._broken:
-            return {}
-        try:
-            data = self._valkey.to_relation_data()
-        except RelationDataError:
-            logger.warning("Valkey relation data is not ready", exc_info=True)
-            return {}
-        if not data or not data.endpoints:
-            return {}
-        environment = redis_environment(str(data.endpoints))
-        if not environment:
-            return {}
-        return {
-            **environment,
-            "REDIS_DB_USERNAME": data.username or "",
-            "REDIS_DB_PASSWORD": data.password or "",
-        }

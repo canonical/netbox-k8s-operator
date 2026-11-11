@@ -12,7 +12,7 @@ This release moves the charm and rock to Ubuntu 26.04 LTS. Refresh in place with
 for the full procedure, including Terraform. Also note:
 
 * The OCI resource is renamed from `django-app-image` to `app-image`.
-* The `redis` integration is still supported. The new `valkey_netbox` integration
+* The `redis` integration is still supported. The new `valkey` integration
   can be used instead, but exactly one of the two must be integrated.
 
 ## Minor version upgrade 
