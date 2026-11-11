@@ -2,7 +2,7 @@
 
 The Ubuntu 26.04 LTS release of the NetBox charm changes the charm base to
 `ubuntu@26.04`, renames the OCI resource from `django-app-image` to `app-image`,
-and adds the `valkey_netbox` integration as the replacement for `redis`.
+and adds the `valkey` integration as the replacement for `redis`.
 NetBox needs exactly one cache integration, so you must switch from Redis to
 Valkey, or keep Redis and only change the base.
 
@@ -62,7 +62,7 @@ The pod then restarts with two containers (`charm` and `app`).
 
    ```bash
    juju remove-relation netbox-k8s redis-k8s
-   juju integrate netbox-k8s:valkey_netbox valkey:valkey-client
+   juju integrate netbox-k8s:valkey valkey:valkey-client
    ```
 
 3. When NetBox is `active`, remove Redis:
@@ -72,13 +72,13 @@ The pod then restarts with two containers (`charm` and `app`).
    ```
 
 Between steps 2 and 3, and until Valkey has finished starting, NetBox is
-`blocked` (`missing integrations: valkey_netbox` or
+`blocked` (`missing integrations: valkey` or
 `Valkey relation data is not ready`). This is expected and clears by itself.
 Wait for Valkey to be `active` before you remove the Redis integration to keep
 the blocked period short.
 
-NetBox gets the new `REDIS_DB_HOSTNAME`, `REDIS_DB_PORT`, `REDIS_DB_USERNAME`
-and `REDIS_DB_PASSWORD` values from the Valkey relation. To check, run
+NetBox gets the new `VALKEY_DB_HOSTNAME`, `VALKEY_DB_PORT`, `VALKEY_DB_USERNAME`
+and `VALKEY_DB_PASSWORD` values from the Valkey relation. To check, run
 `pebble plan` in the `app` container.
 
 ## Migration with Terraform
@@ -86,11 +86,15 @@ and `REDIS_DB_PASSWORD` values from the Valkey relation. To check, run
 The `terraform/product` module changes as follows:
 
 * The `redis_k8s` variable and the `redis-k8s` module are removed.
-* A new `valkey` variable and `valkey` module are added. They default to the
-  `9/edge` channel, base `ubuntu@26.04`, with `trust` enabled. The
+* A new `valkey` variable is added. The product module uses the Terraform charm
+  module published in the
+  [Valkey operator repository](https://github.com/canonical/valkey-operator/tree/9/edge/terraform/charm)
+  with the `9/edge` channel, base `ubuntu@26.04` and `trust` enabled. The
   `netbox_k8s` and `valkey` variables can be left empty (`{}`) to use defaults.
+* All modules require the Juju Terraform provider 2.2.1 or later, as the
+  Valkey module does.
 * The `juju_integration.netbox_redis` resource is replaced with
-  `juju_integration.netbox_valkey`, which connects `valkey_netbox` with
+  `juju_integration.netbox_valkey`, which connects `valkey` with
   `valkey-client`.
 * The default base of `netbox_k8s` is `ubuntu@26.04`.
 

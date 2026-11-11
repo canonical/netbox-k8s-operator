@@ -11,9 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Pin NetBox to 4.6.10 to retain PostgreSQL 14 compatibility.
 * Move the charm and rock to Ubuntu 26.04 LTS and migrate to paas-charm v2.
-* Add a Valkey integration (`valkey_netbox` endpoint, `valkey_client`
+* Add a Valkey integration (`valkey` endpoint, `valkey_client`
   interface) alongside the `redis` integration. The charm is blocked unless
   exactly one of them is integrated.
+* Breaking: the `terraform/product` module deploys Valkey instead of Redis. The
+  `redis_k8s` variable is replaced by `valkey`, and the module requires the
+  Juju Terraform provider 2.2.1 or later.
 * Rename the OCI resource `django-app-image` to `app-image`.
 * Replace Ubuntu `cron` with Supercronic, running unprivileged.
 * Stop rock builds when source preparation fails and restore the additional

@@ -26,7 +26,6 @@ variable "valkey" {
     revision = optional(number, null)
     base     = optional(string, "ubuntu@26.04")
     units    = optional(number, 1)
-    storage  = optional(map(string), {})
   })
   default = {}
 }

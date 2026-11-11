@@ -18,7 +18,7 @@ module "netbox_k8s" {
 }
 
 module "valkey" {
-  source     = "./modules/valkey"
+  source     = "git::https://github.com/canonical/valkey-operator.git//terraform/charm?ref=9/edge"
   app_name   = var.valkey.app_name
   channel    = var.valkey.channel
   config     = var.valkey.config
@@ -26,6 +26,7 @@ module "valkey" {
   revision   = var.valkey.revision
   base       = var.valkey.base
   units      = var.valkey.units
+  trust      = true
 }
 
 module "s3" {
@@ -62,7 +63,7 @@ resource "juju_integration" "netbox_valkey" {
 
   application {
     name     = module.valkey.app_name
-    endpoint = module.valkey.provides.valkey_client
+    endpoint = module.valkey.provides.valkey_client.endpoint
   }
 }
 
