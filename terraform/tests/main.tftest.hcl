@@ -11,6 +11,7 @@ run "basic_deploy_charm" {
   variables {
     model_uuid = run.setup_tests.model_uuid
     channel    = "latest/edge"
+    base       = "ubuntu@22.04"
     # renovate: depName="netbox-k8s"
     revision = 3
   }
