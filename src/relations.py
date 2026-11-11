@@ -35,7 +35,6 @@ class CertificatesRelation(CustomRelation):
             on_change: Framework reconcile callback.
         """
         self._on_change = on_change
-        self._broken = False
         self._certificates = TLSCertificatesRequiresV4(
             charm=self.charm,
             relationship_name=self.relation_name,
@@ -46,16 +45,11 @@ class CertificatesRelation(CustomRelation):
             self._certificates.on.certificate_available, self._on_certificate_available
         )
         self.framework.observe(
-            self.charm.on[self.relation_name].relation_broken, self._on_relation_broken
+            self.charm.on[self.relation_name].relation_broken, self._on_certificate_available
         )
 
     def _on_certificate_available(self, _event: ops.EventBase) -> None:
-        """Reconcile the workload after receiving a certificate."""
-        self._on_change()
-
-    def _on_relation_broken(self, _event: ops.RelationBrokenEvent) -> None:
-        """Exclude certificates from the departing relation and reconcile."""
-        self._broken = True
+        """Reconcile the workload after the certificates change."""
         self._on_change()
 
     def gen_environment(self) -> dict[str, str]:
@@ -70,7 +64,7 @@ class CertificatesRelation(CustomRelation):
             return {}
 
         ca_certificates: set[str] = set()
-        if not self._broken:
+        if any(relation.active for relation in self.charm.model.relations[self.relation_name]):
             assigned, _ = self._certificates.get_assigned_certificates()
             ca_certificates = {
                 str(certificate.ca).strip()
@@ -143,11 +137,10 @@ class RedisRelation(CustomRelation):
             on_change: Framework reconcile callback.
         """
         self._on_change = on_change
-        self._broken = False
         self._redis = RedisRequires(self.charm, relation_name=self.relation_name)
         self.framework.observe(self.charm.on.redis_relation_updated, self._on_relation_updated)
         self.framework.observe(
-            self.charm.on[self.relation_name].relation_broken, self._on_relation_broken
+            self.charm.on[self.relation_name].relation_broken, self._on_relation_updated
         )
         # Adding or removing the Valkey integration changes whether the cache is valid.
         self.framework.observe(self.charm.on["valkey"].relation_created, self._on_relation_updated)
@@ -155,11 +148,6 @@ class RedisRelation(CustomRelation):
 
     def _on_relation_updated(self, _event: ops.EventBase) -> None:
         """Restart with the latest endpoint."""
-        self._on_change()
-
-    def _on_relation_broken(self, _event: ops.RelationBrokenEvent) -> None:
-        """Discard the departing relation's endpoint and reconcile."""
-        self._broken = True
         self._on_change()
 
     def ensure_ready(self) -> None:
@@ -172,7 +160,7 @@ class RedisRelation(CustomRelation):
             raise RelationDataError(
                 "only one of the redis and valkey integrations is supported", self.relation_name
             )
-        if self._broken or not self.gen_environment():
+        if not self.gen_environment():
             raise RelationDataError("Redis relation data is not ready", self.relation_name)
 
     def gen_environment(self) -> dict[str, str]:
@@ -181,7 +169,7 @@ class RedisRelation(CustomRelation):
         Returns:
             Redis connection variables, or an empty mapping until the endpoint is ready.
         """
-        if self._broken:
+        if not any(relation.active for relation in self.charm.model.relations[self.relation_name]):
             return {}
         url = self._redis.url
         # The Redis library temporarily publishes a None port while the relation is created.
