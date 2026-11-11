@@ -85,7 +85,8 @@ and `VALKEY_DB_PASSWORD` values from the Valkey relation. To check, run
 
 The `terraform/product` module changes as follows:
 
-* The `redis_k8s` variable and the `redis-k8s` module are removed.
+* The `redis_k8s` variable and the `redis-k8s` module are removed. Setting
+  `redis_k8s` now fails validation with a message that points to this guide.
 * A new `valkey` variable is added. The product module uses the Terraform charm
   module published in the
   [Valkey operator repository](https://github.com/canonical/valkey-operator/tree/9/edge/terraform/charm)

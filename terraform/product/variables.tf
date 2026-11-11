@@ -30,6 +30,17 @@ variable "valkey" {
   default = {}
 }
 
+variable "redis_k8s" {
+  description = "Removed. NetBox now uses Valkey, set the valkey variable instead."
+  type        = any
+  default     = null
+
+  validation {
+    condition     = var.redis_k8s == null
+    error_message = "The redis_k8s variable was removed because the product module deploys Valkey instead of Redis. Remove it and use the valkey variable instead. See docs/how-to/migrate-to-26.04-and-valkey.md."
+  }
+}
+
 variable "s3" {
   type = object({
     app_name    = optional(string, "s3-integrator")

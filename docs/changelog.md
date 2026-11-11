@@ -15,7 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   interface) alongside the `redis` integration. The charm is blocked unless
   exactly one of them is integrated.
 * Breaking: the `terraform/product` module deploys Valkey instead of Redis. The
-  `redis_k8s` variable is replaced by `valkey`, and the module requires the
+  `redis_k8s` variable is replaced by `valkey`, and setting `redis_k8s` fails
+  validation. The module requires the
   Juju Terraform provider 2.2.1 or later.
 * Rename the OCI resource `django-app-image` to `app-image`.
 * Replace Ubuntu `cron` with Supercronic, running unprivileged.
