@@ -337,8 +337,8 @@ def _assert_idp_login_success(app_url: str, endpoint: str, test_email: str, test
         return_path = urlparse(url=app_url).path
         response = page.goto(f"{app_url}/{endpoint}/?next={return_path}/")
         assert response is not None and response.ok
-        # NetBox starts SSO with a CSRF-protected POST, not a direct GET to social:begin.
-        page.locator('form[action$="/oauth/login/oidc/"]').get_by_role("button").click()
+        # NetBox 4.6.10 renders the SSO choice as a link to social:begin.
+        page.locator('a[href*="/oauth/login/oidc/"]').click()
         page.wait_for_load_state("networkidle")
         expect(page).not_to_have_title(re.compile("Sign in failed"))
         page.get_by_label("Email").fill(test_email)
