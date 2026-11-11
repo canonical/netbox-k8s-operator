@@ -45,5 +45,6 @@ def get_new_admin_token(juju: jubilant.Juju, netbox_app: App, netbox_base_url: s
         timeout=5,
         headers=headers,
     )
-    assert res.status_code == 201
-    return res.json()["token"]
+    assert res.status_code == 201, f"Token provisioning failed: HTTP {res.status_code}"
+    token = res.json()["token"]
+    return token
