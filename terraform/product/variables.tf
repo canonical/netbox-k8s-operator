@@ -30,6 +30,8 @@ variable "valkey" {
   default = {}
 }
 
+# The variable only exists to fail validation with a helpful message when it is still set.
+# tflint-ignore: terraform_unused_declarations
 variable "redis_k8s" {
   description = "Removed. NetBox now uses Valkey, set the valkey variable instead."
   type        = any
