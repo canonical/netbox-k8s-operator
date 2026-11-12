@@ -63,7 +63,7 @@ def test_netbox_rq_worker_running(juju: jubilant.Juju, netbox_app: App) -> None:
 
 
 @pytest.mark.usefixtures("netbox_app")
-def test_netbox_check_cronjobs(
+def test_netbox_scheduled_datasource_sync(
     juju: jubilant.Juju,
     netbox_app: App,
     s3_netbox_credentials: dict,
@@ -72,7 +72,7 @@ def test_netbox_check_cronjobs(
     """
     arrange: Build and deploy the NetBox charm. Create a superuser and get its token.
     act: Create a s3 data source.
-    assert: The cron task syncdatasource should update the status of the datasource
+    assert: The scheduled syncdatasource command should update the status of the datasource
         to completed.
     """
     unit_ip = juju.status().apps[netbox_app.name].units[netbox_app.name + "/0"].address
@@ -101,7 +101,7 @@ def test_netbox_check_cronjobs(
     assert res.status_code == 201
     data_source_id = res.json()["id"]
 
-    # The cron task for the syncdatasource should update the datasource status to completed.
+    # The scheduled command should update the datasource status to completed.
     @retry(
         stop=stop_after_delay(350),
         wait=wait_fixed(10),

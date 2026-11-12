@@ -17,6 +17,12 @@ jobs:
       actions: read
     with:
       pre-build-rock-script: ./download_netbox.sh
+      rockcraft-channel: latest/candidate
+      charmcraft-channel: latest/edge
+      rockcraft-environments: |
+        ROCKCRAFT_ENABLE_EXPERIMENTAL_EXTENSIONS=1
+      charmcraft-environments: |
+        CHARMCRAFT_ENABLE_EXPERIMENTAL_EXTENSIONS=1
       # The registry cache omits the preparation script, patches, and configuration.
       upload-image: artifact
   required_status_checks:

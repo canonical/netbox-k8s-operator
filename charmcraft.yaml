@@ -1,15 +1,19 @@
-# Copyright 2025 Canonical Ltd.
+# Copyright 2026 Canonical Ltd.
 # See LICENSE file for licensing details.
+
+# This file configures Charmcraft.
+# See https://documentation.ubuntu.com/charmcraft/stable/reference/files/charmcraft-yaml-file/ for guidance.
+# For questions or help, visit https://matrix.to/#/#12-factor-charms:ubuntu.com
 
 name: netbox-k8s
 
 type: charm
 
-base: ubuntu@24.04
+base: ubuntu@26.04
+charm-user: non-root
 
 platforms:
   amd64:
-
 
 summary: NetBox is a solution for modeling and documenting network infrastructure.
 description: |
@@ -29,7 +33,7 @@ extensions:
   - django-framework
 
 charm-libs:
-  - lib: hydra.oauth
+  - lib: redis_k8s.redis
     version: '0'
   - lib: tls_certificates_interface.tls_certificates
     version: '4'
@@ -44,6 +48,11 @@ requires:
   redis:
     interface: redis
     limit: 1
+    optional: true
+  valkey:
+    interface: valkey_client
+    limit: 1
+    optional: true
   saml:
     interface: saml
     limit: 1

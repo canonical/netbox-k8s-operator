@@ -13,22 +13,34 @@ variable "netbox_k8s" {
     config      = optional(map(string), {})
     constraints = optional(string, "arch=amd64")
     revision    = optional(number)
-    base        = optional(string, "ubuntu@24.04")
+    base        = optional(string, "ubuntu@26.04")
     units       = optional(number, 1)
   })
 }
 
-variable "redis_k8s" {
+variable "valkey" {
   type = object({
-    app_name    = optional(string, "redis-k8s")
-    channel     = optional(string, "latest/edge")
-    config      = optional(map(string), {})
-    constraints = optional(string, "arch=amd64")
-    revision    = optional(number, null)
-    base        = optional(string, "ubuntu@22.04")
-    units       = optional(number, 1)
-    storage     = optional(map(string), {})
+    app_name = optional(string, "valkey")
+    channel  = optional(string, "9/edge")
+    config   = optional(map(string), {})
+    revision = optional(number, null)
+    base     = optional(string, "ubuntu@26.04")
+    units    = optional(number, 1)
   })
+  default = {}
+}
+
+# The variable only exists to fail validation with a helpful message when it is still set.
+# tflint-ignore: terraform_unused_declarations
+variable "redis_k8s" {
+  description = "Removed. NetBox now uses Valkey, set the valkey variable instead."
+  type        = any
+  default     = null
+
+  validation {
+    condition     = var.redis_k8s == null
+    error_message = "The redis_k8s variable was removed because the product module deploys Valkey instead of Redis. Remove it and use the valkey variable instead. See docs/how-to/migrate-to-26.04-and-valkey.md."
+  }
 }
 
 variable "s3" {

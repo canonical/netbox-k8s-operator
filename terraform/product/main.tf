@@ -17,16 +17,16 @@ module "netbox_k8s" {
   units       = var.netbox_k8s.units
 }
 
-module "redis_k8s" {
-  source      = "./modules/redis-k8s"
-  app_name    = var.redis_k8s.app_name
-  channel     = var.redis_k8s.channel
-  config      = var.redis_k8s.config
-  constraints = var.redis_k8s.constraints
-  model_uuid  = data.juju_model.netbox_k8s.uuid
-  revision    = var.redis_k8s.revision
-  base        = var.redis_k8s.base
-  units       = var.redis_k8s.units
+module "valkey" {
+  source     = "git::https://github.com/canonical/valkey-operator.git//terraform/charm?ref=9/edge"
+  app_name   = var.valkey.app_name
+  channel    = var.valkey.channel
+  config     = var.valkey.config
+  model_uuid = data.juju_model.netbox_k8s.uuid
+  revision   = var.valkey.revision
+  base       = var.valkey.base
+  units      = var.valkey.units
+  trust      = true
 }
 
 module "s3" {
@@ -53,17 +53,17 @@ module "oauth_external_idp_integrator" {
   units       = var.oauth_external_idp_integrator.units
 }
 
-resource "juju_integration" "netbox_redis" {
+resource "juju_integration" "netbox_valkey" {
   model_uuid = data.juju_model.netbox_k8s.uuid
 
   application {
     name     = module.netbox_k8s.app_name
-    endpoint = module.netbox_k8s.requires.redis
+    endpoint = module.netbox_k8s.requires.valkey
   }
 
   application {
-    name     = module.redis_k8s.app_name
-    endpoint = module.redis_k8s.provides.redis
+    name     = module.valkey.app_name
+    endpoint = module.valkey.provides.valkey_client.endpoint
   }
 }
 

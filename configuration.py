@@ -52,15 +52,20 @@ DATABASE = {
 # configuration exists for each. Full connection details are required in both sections, and it is strongly recommended
 # to use two separate database IDs.
 
+# The Valkey integration provides VALKEY_DB_* variables and the legacy Redis integration provides REDIS_DB_*.
+def _cache_env(name, default=""):
+    return os.environ.get(f"VALKEY_DB_{name}") or os.environ.get(f"REDIS_DB_{name}") or default
+
+
 REDIS = {
     'tasks': {
-        'HOST': os.environ.get("REDIS_DB_HOSTNAME"),
-        'PORT': os.environ.get("REDIS_DB_PORT", "6379"),
+        'HOST': _cache_env("HOSTNAME", None),
+        'PORT': _cache_env("PORT", "6379"),
         # Comment out `HOST` and `PORT` lines and uncomment the following if using Redis Sentinel
         # 'SENTINELS': [('mysentinel.redis.example.com', 6379)],
         # 'SENTINEL_SERVICE': 'netbox',
-        'USERNAME': os.environ.get("REDIS_DB_USERNAME", ""),
-        'PASSWORD': os.environ.get("REDIS_DB_PASSWORD", ""),
+        'USERNAME': _cache_env("USERNAME"),
+        'PASSWORD': _cache_env("PASSWORD"),
         'DATABASE': 0,
         'SSL': False,
         # Set this to True to skip TLS certificate verification
@@ -70,13 +75,13 @@ REDIS = {
         # 'CA_CERT_PATH': '/etc/ssl/certs/ca.crt',
     },
     'caching': {
-        'HOST': os.environ.get("REDIS_DB_HOSTNAME"),
-        'PORT': os.environ.get("REDIS_DB_PORT", "6379"),
+        'HOST': _cache_env("HOSTNAME", None),
+        'PORT': _cache_env("PORT", "6379"),
         # Comment out `HOST` and `PORT` lines and uncomment the following if using Redis Sentinel
         # 'SENTINELS': [('mysentinel.redis.example.com', 6379)],
         # 'SENTINEL_SERVICE': 'netbox',
-        'USERNAME': os.environ.get("REDIS_DB_USERNAME", ""),
-        'PASSWORD': os.environ.get("REDIS_DB_PASSWORD", ""),
+        'USERNAME': _cache_env("USERNAME"),
+        'PASSWORD': _cache_env("PASSWORD"),
         'DATABASE': 1,
         'SSL': False,
         # Set this to True to skip TLS certificate verification
@@ -195,18 +200,18 @@ LOGGING = {
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'level': 'DEBUG',
+            'level': 'DEBUG' if DEBUG else 'INFO',
             'formatter': 'normal',
         },
     },
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'DEBUG' if DEBUG else 'INFO',
         },
         'netbox': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'DEBUG' if DEBUG else 'INFO',
         },
     },
 }

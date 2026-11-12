@@ -12,7 +12,7 @@ charms:
     charmcraft-yaml: charmcraft.yaml
     channel: 4/edge
     resources:
-      django-app-image:
+      app-image:
         type: oci-image
         rock: netbox
     platforms:

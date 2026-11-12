@@ -4,6 +4,8 @@
 """Unit tests for the NetBox Django configuration module."""
 
 import importlib.util
+import io
+import logging
 import os
 import pathlib
 import sys
@@ -37,6 +39,58 @@ def _load_configuration(env: dict[str, str]) -> dict:
         sys.modules[module_name] = module
         spec.loader.exec_module(module)
     return vars(module)
+
+
+class TestCacheSettings:
+    """Tests for the Redis settings fed by the Valkey or Redis integrations."""
+
+    def test_valkey_variables(self):
+        """
+        arrange: The Valkey integration environment variables are set.
+        act: Load the configuration module.
+        assert: Both the tasks and the caching databases use the Valkey connection details.
+        """
+        config = _load_configuration(
+            {
+                "VALKEY_DB_HOSTNAME": "valkey-primary",
+                "VALKEY_DB_PORT": "6380",
+                "VALKEY_DB_USERNAME": "netbox",
+                "VALKEY_DB_PASSWORD": "secret",
+            }
+        )
+        for name, database in (("tasks", 0), ("caching", 1)):
+            assert config["REDIS"][name] == {
+                **config["REDIS"][name],
+                "HOST": "valkey-primary",
+                "PORT": "6380",
+                "USERNAME": "netbox",
+                "PASSWORD": "secret",
+                "DATABASE": database,
+            }
+
+    def test_redis_variables(self):
+        """
+        arrange: The legacy Redis integration environment variables are set.
+        act: Load the configuration module.
+        assert: Both databases use the Redis host and port without credentials.
+        """
+        config = _load_configuration({"REDIS_DB_HOSTNAME": "redis-host", "REDIS_DB_PORT": "6379"})
+        for name in ("tasks", "caching"):
+            assert config["REDIS"][name]["HOST"] == "redis-host"
+            assert config["REDIS"][name]["PORT"] == "6379"
+            assert config["REDIS"][name]["USERNAME"] == ""
+            assert config["REDIS"][name]["PASSWORD"] == ""
+
+    def test_valkey_takes_precedence(self):
+        """
+        arrange: Both the Valkey and Redis environment variables are set.
+        act: Load the configuration module.
+        assert: The Valkey host is used.
+        """
+        config = _load_configuration(
+            {"VALKEY_DB_HOSTNAME": "valkey-primary", "REDIS_DB_HOSTNAME": "redis-host"}
+        )
+        assert config["REDIS"]["tasks"]["HOST"] == "valkey-primary"
 
 
 class TestCsrfTrustedOrigins:
@@ -95,6 +149,35 @@ class TestCsrfTrustedOrigins:
             "https://host2.example.com",
             "https://host3.example.com",
         ]
+
+
+@pytest.mark.parametrize("debug", [None, "false", "true"])
+def test_logging_respects_django_debug(debug: str | None):
+    config = _load_configuration({} if debug is None else {"DJANGO_DEBUG": debug})
+    level = "DEBUG" if debug == "true" else "INFO"
+    logging_config = config["LOGGING"]
+    assert logging_config["handlers"]["console"]["level"] == level
+
+    for name in ("django", "netbox"):
+        assert logging_config["loggers"][name]["level"] == level
+        output = io.StringIO()
+        handler = logging.StreamHandler(output)
+        handler.setLevel(logging_config["handlers"]["console"]["level"])
+        logger = logging.Logger(name, level=getattr(logging, level))
+        logger.addHandler(handler)
+
+        logger.debug("SQL " + "x" * 200_000)
+        logger.info("Migration completed")
+        logger.warning("Migration warning")
+        logger.error("Migration error")
+
+        messages = output.getvalue()
+        assert ("SQL " in messages) == (debug == "true")
+        assert "Migration completed" in messages
+        assert "Migration warning" in messages
+        assert "Migration error" in messages
+        if debug != "true":
+            assert len(messages.encode()) < 128 * 1024
 
 
 class TestOidcGroupMapping:
