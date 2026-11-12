@@ -26,5 +26,4 @@ integration-suites:
     backends:
     - integration-test
     prepare: |
-      bash tests/prepare.sh
       bash ${SPREAD_PATH}/s3-installation.sh
