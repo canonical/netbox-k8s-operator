@@ -64,27 +64,34 @@ On Juju 3.x and 4.0, remove the application and deploy it again on the new
 base. The PostgreSQL, S3 and other integrated applications stay in the model,
 so NetBox keeps its data when it is integrated again.
 
-1. Remove the NetBox application and wait until it is gone:
+1. Back up the current configuration and integrations, since removing the
+   application discards them:
+
+   ```bash
+   juju config netbox-k8s --format=yaml > netbox-k8s-config.yaml
+   juju status --relations --format=yaml > netbox-k8s-status.yaml
+   ```
+
+   `netbox-k8s-config.yaml` holds every option and its value, and the
+   `relations` section of `netbox-k8s-status.yaml` lists the endpoints and
+   applications NetBox is integrated with. Keep both files until the new
+   deployment is `active`.
+
+2. Remove the NetBox application and wait until it is gone:
 
    ```bash
    juju remove-application netbox-k8s
    juju status --watch 5s
    ```
 
-2. Deploy the new charm on `ubuntu@26.04`:
+3. Deploy the new charm on `ubuntu@26.04`:
 
    ```bash
    juju deploy netbox-k8s --channel 4/edge --base ubuntu@26.04
    ```
 
-   For a locally built charm, pass the new resource name:
-
-   ```bash
-   juju deploy ./netbox-k8s_amd64.charm --base ubuntu@26.04 \
-     --resource app-image=localhost:32000/netbox:latest
-   ```
-
-3. Add back every integration the application had. The required ones are
+4. Add back every integration the application had, as listed in
+   `netbox-k8s-status.yaml`. The required ones are
    `postgresql` and `s3`, plus one cache integration (`valkey` or `redis`):
 
    ```bash
@@ -101,10 +108,13 @@ so NetBox keeps its data when it is integrated again.
    juju integrate netbox-k8s:certificates self-signed-certificates
    ```
 
-4. Re-apply any configuration you had set with `juju config`, since removing
-   the application discards it.
+5. Re-apply the configuration from `netbox-k8s-config.yaml`:
 
-If you deploy with the `valkey` integration in step 3, you have already
+   ```bash
+   juju config netbox-k8s --file=netbox-k8s-config.yaml
+   ```
+
+If you deploy with the `valkey` integration in step 4, you have already
 completed the Redis to Valkey switch, and you only need step 3 of the next
 section to remove the old Redis application.
 
