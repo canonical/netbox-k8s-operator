@@ -15,7 +15,7 @@ for the full procedure, including Terraform. Also note:
 * The `redis` integration is still supported. The new `valkey` integration
   can be used instead, but exactly one of the two must be integrated.
 * The 26.04 charm changes the container name and juju 3.x and 4.0 have a bug that is related to not deleting old containers (See
-[LP#1991955](https://bugs.launchpad.net/juju/+bug/1991955).). For these juju versions please remove the Netbox-k8s application then re-deploy or run `terraform plan`.
+[LP#1991955](https://bugs.launchpad.net/juju/+bug/1991955).). For these Juju versions, remove the `netbox-k8s` application and redeploy it; with Terraform, run `terraform plan` to review the changes and then `terraform apply` to perform them.
 
 ## Minor version upgrade 
 
