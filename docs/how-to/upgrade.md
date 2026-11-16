@@ -14,6 +14,8 @@ for the full procedure, including Terraform. Also note:
 * The OCI resource is renamed from `django-app-image` to `app-image`.
 * The `redis` integration is still supported. The new `valkey` integration
   can be used instead, but exactly one of the two must be integrated.
+* The 26.04 charm changes the container name and juju 3.x and 4.0 have a bug that is related to not deleting old containers (See
+[LP#1991955](https://bugs.launchpad.net/juju/+bug/1991955).). For these juju versions please remove the Netbox-k8s application then re-deploy do terraform plan.
 
 ## Minor version upgrade 
 
@@ -32,24 +34,3 @@ juju refresh netbox-k8s --channel=5/stable
 ```
 
 **Note:** The charm handles the migration logic automatically by renaming the upstream `upgrade.sh` file to `migrate.sh`. This allows the 12-factor framework to execute the script during the charm refresh, ensuring the database is migrated before the service restarts.
-
-
-## Upgrading with Terraform
-
-When you upgrade the charm with Terraform, first remove only the NetBox
-application, then run `terraform init` and `terraform apply` to deploy the new
-charm:
-
-```
-terraform state rm <netbox application resource address>
-terraform init -upgrade
-terraform apply -var-file=your.tfvars
-```
-
-Replace the resource address with the one of the NetBox application in your
-Terraform state (see `terraform state list`). Removing it from the state lets Terraform
-deploy the new charm cleanly instead of trying to refresh the existing one.
-
-This is necessary on Juju 3.x and 4.0. It is fixed in Juju 4.1, where you can
-apply the new charm directly. See
-[LP#1991955](https://bugs.launchpad.net/juju/+bug/1991955).

@@ -9,6 +9,9 @@ Valkey, or keep Redis and only change the base.
 **Important:** Back up your PostgreSQL database before you start. See
 [the PostgreSQL charm documentation](https://canonical.com/data/postgresql/docs/14/how-to/back-up-and-restore/).
 
+**Important:** If you are on Juju 3.x or 4.0 please remove the Netbox-k8s application first. See
+[LP#1991955](https://bugs.launchpad.net/juju/+bug/1991955).
+
 The migration has two parts, which can be done together:
 
 1. Refresh `netbox-k8s` to the new charm and base.
