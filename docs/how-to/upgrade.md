@@ -1,8 +1,21 @@
 # How to upgrade
 
-**Important:** Before upgrading, make sure to back up your PostgreSQL database. You can check how to backup in [the PostgreSQL charm documentation](https://canonical.com/data/postgresql/docs/14/how-to/back-up-and-restore/).
+**Important:** Before upgrading, make sure to back up your PostgreSQL database. You can check how to backup in [the PostgreSQL charm documentation](https://canonical.com/data/postgresql/docs/16/how-to/back-up-and-restore/).
+
+```{important}
+NetBox 4.7 requires PostgreSQL 15 or later. If you run PostgreSQL 14, migrate to a newer
+PostgreSQL before refreshing the charm. See
+[Upgrade to NetBox 4.7](upgrade-to-netbox-4.7.md). The charm is blocked when the PostgreSQL
+integration reports a version lower than 15. If the PostgreSQL provider does not publish its
+version, the charm cannot check it, so check the version yourself before upgrading.
+```
 
 NetBox supports direct upgrades to any newer release with one exception: major version upgrades. You must be on the latest minor release of your current version before upgrading to the next major version.
+
+## Upgrading to NetBox 4.7
+
+NetBox 4.7 requires PostgreSQL 15 or later and Redis or Valkey 6.0 or later. See
+[Upgrade to NetBox 4.7](upgrade-to-netbox-4.7.md) for the procedure.
 
 ## Upgrading to the Ubuntu 26.04 LTS charm
 

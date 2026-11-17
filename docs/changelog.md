@@ -9,7 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-* Pin NetBox to 4.6.10 to retain PostgreSQL 14 compatibility.
+* Breaking: update NetBox to 4.7.5, which requires PostgreSQL 15 or later. PostgreSQL 14 is no
+  longer supported. If the PostgreSQL integration publishes its version and it is lower than 15,
+  the charm is blocked and does not start NetBox. Migrate your data to PostgreSQL 15 or later
+  before upgrading. See [Upgrade to NetBox 4.7](how-to/upgrade-to-netbox-4.7.md).
+* Remove the daily `housekeeping` command from the scheduler. NetBox 4.7 removed it and runs
+  housekeeping as a system job in the RQ worker.
 * Move the charm and rock to Ubuntu 26.04 LTS and migrate to paas-charm v2.
 * Add a Valkey integration (`valkey` endpoint, `valkey_client`
   interface) alongside the `redis` integration. The charm is blocked unless

@@ -253,3 +253,64 @@ def test_certificates_wait_for_container(context: testing.Context[NetboxCharm]) 
 
     with context(context.on.update_status(), state) as manager:
         assert get_relation(manager.charm, CertificatesRelation).gen_environment() == {}
+
+
+def postgresql_relation(version: str | None) -> testing.Relation:
+    remote_app_data = {"version": version} if version is not None else {}
+    return testing.Relation(
+        "postgresql",
+        interface="postgresql_client",
+        remote_app_name="postgresql-k8s",
+        remote_app_data=remote_app_data,
+    )
+
+
+@pytest.mark.parametrize("version", ["14.15", "14", "9.6.24"])
+def test_old_postgresql_blocks(context: testing.Context[NetboxCharm], version: str) -> None:
+    state = make_state(relations=[postgresql_relation(version)])
+
+    with context(context.on.update_status(), state) as manager:
+        with patch("paas_charm.django.Charm.is_ready", return_value=True):
+            assert not manager.charm.is_ready()
+        assert manager.charm.unit.status == testing.BlockedStatus(
+            f"NetBox requires PostgreSQL 15+, found {version}"
+        )
+
+
+@pytest.mark.parametrize("version", ["15.0", "16.6", "17"])
+def test_supported_postgresql_is_ready(
+    context: testing.Context[NetboxCharm], version: str
+) -> None:
+    state = make_state(relations=[postgresql_relation(version)])
+
+    with context(context.on.update_status(), state) as manager:
+        with patch("paas_charm.django.Charm.is_ready", return_value=True):
+            assert manager.charm.is_ready()
+        assert manager.charm.unit.status != testing.BlockedStatus(
+            f"NetBox requires PostgreSQL 15+, found {version}"
+        )
+
+
+@pytest.mark.parametrize("version", [None, "unknown"])
+def test_unknown_postgresql_version_is_not_blocked(
+    context: testing.Context[NetboxCharm], version: str | None
+) -> None:
+    state = make_state(relations=[postgresql_relation(version)])
+
+    with context(context.on.update_status(), state) as manager:
+        with patch("paas_charm.django.Charm.is_ready", return_value=True):
+            assert manager.charm.is_ready()
+
+
+def test_no_postgresql_relation_is_not_blocked(context: testing.Context[NetboxCharm]) -> None:
+    with context(context.on.update_status(), make_state()) as manager:
+        with patch("paas_charm.django.Charm.is_ready", return_value=True):
+            assert manager.charm.is_ready()
+
+
+def test_not_ready_parent_short_circuits(context: testing.Context[NetboxCharm]) -> None:
+    state = make_state(relations=[postgresql_relation("14.15")])
+
+    with context(context.on.update_status(), state) as manager:
+        with patch("paas_charm.django.Charm.is_ready", return_value=False):
+            assert not manager.charm.is_ready()

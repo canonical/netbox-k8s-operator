@@ -18,7 +18,7 @@ networked.
 Like any Juju charm, this charm supports one-line deployment, configuration, integration, scaling, and more. For Charmed NetBox, this includes:
 - S3 integration
 - Redis integration
-- PostgreSQL integration
+- PostgreSQL integration (PostgreSQL 15 or later)
 - SAML integration
 
 It allows for deployment on many
