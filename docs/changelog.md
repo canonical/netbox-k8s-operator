@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   longer supported. If the PostgreSQL integration publishes its version and it is lower than 15,
   the charm is blocked and does not start NetBox. Migrate your data to PostgreSQL 15 or later
   before upgrading. See [Upgrade to NetBox 4.7](how-to/upgrade-to-netbox-4.7.md).
+* Publish NetBox 4.7 to the new `4.7` track. The `4` track stays on NetBox 4.6. The Terraform
+  modules default to `4.7/edge`.
 * Remove the daily `housekeeping` command from the scheduler. NetBox 4.7 removed it and runs
   housekeeping as a system job in the RQ worker.
 * Move the charm and rock to Ubuntu 26.04 LTS and migrate to paas-charm v2.

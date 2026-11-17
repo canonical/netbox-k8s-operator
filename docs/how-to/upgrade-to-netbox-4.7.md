@@ -101,12 +101,14 @@ application names with yours.
 
 ## Refresh the charm
 
-Refresh to the charm revision that ships NetBox 4.7 and check the result:
+NetBox 4.7 is published to the `4.7` track, so switch the charm channel and check the result:
 
 ```
-juju refresh netbox-k8s
+juju refresh netbox-k8s --channel 4.7/edge
 juju status netbox-k8s
 ```
+
+Use `4.7/stable` once it is promoted. The `4` track stays on NetBox 4.6.
 
 The charm runs the NetBox migrations during the refresh. Don't remove the old PostgreSQL
 until NetBox 4.7 is active.

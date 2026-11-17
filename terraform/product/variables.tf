@@ -9,7 +9,7 @@ variable "model_uuid" {
 variable "netbox_k8s" {
   type = object({
     app_name    = optional(string, "netbox-k8s")
-    channel     = optional(string, "4/edge")
+    channel     = optional(string, "4.7/edge")
     config      = optional(map(string), {})
     constraints = optional(string, "arch=amd64")
     revision    = optional(number)
