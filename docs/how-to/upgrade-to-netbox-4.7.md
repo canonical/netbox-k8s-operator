@@ -22,10 +22,8 @@ If your deployment already uses PostgreSQL 15 or later, skip to
 To check the version, run `juju status postgresql-k8s`. The version is shown in the
 `Version` column.
 
-When the PostgreSQL integration publishes its version and it is lower than 15, the NetBox
-charm is blocked with `NetBox requires PostgreSQL 15+, found <version>` and does not start
-NetBox 4.7. If the PostgreSQL provider doesn't publish a version, the charm can't do this
-check, so make sure that the version is at least 15 before you refresh.
+The charm doesn't check the PostgreSQL version. Make sure that the version is at least 15
+before you refresh.
 
 ## Upgrade requirements
 

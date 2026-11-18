@@ -5,10 +5,8 @@ See [Integrations](https://charmhub.io/netbox-k8s/integrations).
 ## PostgreSQL
 
 NetBox 4.7 and later requires PostgreSQL 15 or later. The database user must be able to
-create the `ltree` extension, which ships with PostgreSQL. When the `postgresql` integration
-publishes a `version` field lower than 15, the charm is blocked with the message
-`NetBox requires PostgreSQL 15+, found <version>` and does not start NetBox. If the provider
-does not publish a version, the charm skips the check.
+create the `ltree` extension, which ships with PostgreSQL. The charm doesn't check the
+PostgreSQL version.
 
 ## Cache
 

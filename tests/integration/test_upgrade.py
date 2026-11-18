@@ -201,29 +201,3 @@ def test_refresh_to_netbox_4_7(
         assert b"<title>Home | NetBox</title>" in res.content
 
         assert site_exists(base_url, token, site_name)
-
-
-def test_postgresql_14_blocks_netbox_4_7(
-    juju: jubilant.Juju,
-    netbox_4_6: App,
-    old_postgresql: App,
-    new_postgresql: App,
-) -> None:
-    """
-    arrange: Run NetBox 4.7 on PostgreSQL 16.
-    act: Integrate NetBox with PostgreSQL 14 instead.
-    assert: The charm is blocked because NetBox 4.7 requires PostgreSQL 15 or later.
-    """
-    juju.remove_relation(f"{netbox_4_6.name}:postgresql", new_postgresql.name)
-    juju.integrate(f"{netbox_4_6.name}:postgresql", old_postgresql.name)
-
-    status = juju.wait(
-        lambda status: (
-            status.apps[netbox_4_6.name].is_blocked
-            and "PostgreSQL 15+" in status.apps[netbox_4_6.name].app_status.message
-        ),
-        timeout=10 * 60,
-    )
-
-    message = status.apps[netbox_4_6.name].app_status.message
-    assert message.startswith("NetBox requires PostgreSQL 15+, found 14."), message
