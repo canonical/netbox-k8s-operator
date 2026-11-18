@@ -4,9 +4,15 @@
 """Unit tests for the NetBox Django configuration module."""
 
 import importlib.util
+import io
+import logging
 import os
 import pathlib
 import sys
+from types import ModuleType
+from unittest.mock import Mock, patch
+
+import pytest
 
 CONFIG_PATH = pathlib.Path(os.path.dirname(__file__)).parent.parent / "configuration.py"
 
@@ -21,16 +27,70 @@ def _load_configuration(env: dict[str, str]) -> dict:
         The module's namespace as a dictionary.
     """
     module_name = f"_test_config_{abs(hash(frozenset(env.items())))}"
-    for key, value in env.items():
-        os.environ[key] = value
-    os.environ["DJANGO_SECRET_KEY"] = "test-secret-key-12345"
-    spec = importlib.util.spec_from_file_location(module_name, CONFIG_PATH)
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[module_name] = module
-    spec.loader.exec_module(module)
+    with patch.dict(
+        os.environ,
+        {"DJANGO_SECRET_KEY": "test-secret-key-12345", **env},
+        clear=True,
+    ):
+        spec = importlib.util.spec_from_file_location(module_name, CONFIG_PATH)
+        assert spec is not None
+        assert spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = module
+        spec.loader.exec_module(module)
     return vars(module)
+
+
+class TestCacheSettings:
+    """Tests for the Redis settings fed by the Valkey or Redis integrations."""
+
+    def test_valkey_variables(self):
+        """
+        arrange: The Valkey integration environment variables are set.
+        act: Load the configuration module.
+        assert: Both the tasks and the caching databases use the Valkey connection details.
+        """
+        config = _load_configuration(
+            {
+                "VALKEY_DB_HOSTNAME": "valkey-primary",
+                "VALKEY_DB_PORT": "6380",
+                "VALKEY_DB_USERNAME": "netbox",
+                "VALKEY_DB_PASSWORD": "secret",
+            }
+        )
+        for name, database in (("tasks", 0), ("caching", 1)):
+            assert config["REDIS"][name] == {
+                **config["REDIS"][name],
+                "HOST": "valkey-primary",
+                "PORT": "6380",
+                "USERNAME": "netbox",
+                "PASSWORD": "secret",
+                "DATABASE": database,
+            }
+
+    def test_redis_variables(self):
+        """
+        arrange: The legacy Redis integration environment variables are set.
+        act: Load the configuration module.
+        assert: Both databases use the Redis host and port without credentials.
+        """
+        config = _load_configuration({"REDIS_DB_HOSTNAME": "redis-host", "REDIS_DB_PORT": "6379"})
+        for name in ("tasks", "caching"):
+            assert config["REDIS"][name]["HOST"] == "redis-host"
+            assert config["REDIS"][name]["PORT"] == "6379"
+            assert config["REDIS"][name]["USERNAME"] == ""
+            assert config["REDIS"][name]["PASSWORD"] == ""
+
+    def test_valkey_takes_precedence(self):
+        """
+        arrange: Both the Valkey and Redis environment variables are set.
+        act: Load the configuration module.
+        assert: The Valkey host is used.
+        """
+        config = _load_configuration(
+            {"VALKEY_DB_HOSTNAME": "valkey-primary", "REDIS_DB_HOSTNAME": "redis-host"}
+        )
+        assert config["REDIS"]["tasks"]["HOST"] == "valkey-primary"
 
 
 class TestCsrfTrustedOrigins:
@@ -88,4 +148,145 @@ class TestCsrfTrustedOrigins:
             "https://host1.example.com",
             "https://host2.example.com",
             "https://host3.example.com",
+        ]
+
+
+@pytest.mark.parametrize("debug", [None, "false", "true"])
+def test_logging_respects_django_debug(debug: str | None):
+    config = _load_configuration({} if debug is None else {"DJANGO_DEBUG": debug})
+    level = "DEBUG" if debug == "true" else "INFO"
+    logging_config = config["LOGGING"]
+    assert logging_config["handlers"]["console"]["level"] == level
+
+    for name in ("django", "netbox"):
+        assert logging_config["loggers"][name]["level"] == level
+        output = io.StringIO()
+        handler = logging.StreamHandler(output)
+        handler.setLevel(logging_config["handlers"]["console"]["level"])
+        logger = logging.Logger(name, level=getattr(logging, level))
+        logger.addHandler(handler)
+
+        logger.debug("SQL " + "x" * 200_000)
+        logger.info("Migration completed")
+        logger.warning("Migration warning")
+        logger.error("Migration error")
+
+        messages = output.getvalue()
+        assert ("SQL " in messages) == (debug == "true")
+        assert "Migration completed" in messages
+        assert "Migration warning" in messages
+        assert "Migration error" in messages
+        if debug != "true":
+            assert len(messages.encode()) < 128 * 1024
+
+
+class TestOidcGroupMapping:
+    """Tests for OIDC group mapping settings and pipeline handler."""
+
+    def test_group_sync_disabled_by_default(self):
+        """
+        arrange: Do not configure an OIDC groups claim.
+        act: Load the NetBox configuration.
+        assert: Group synchronization and automatic group creation are disabled.
+        """
+        config = _load_configuration({})
+
+        assert config["SOCIAL_AUTH_OIDC_GROUPS_CLAIM"] == ""
+        assert config["REMOTE_AUTH_AUTO_CREATE_GROUPS"] is False
+        assert config["REMOTE_AUTH_GROUP_SYNC_ENABLED"] is False
+
+    def test_group_sync_settings(self):
+        """
+        arrange: Configure an OIDC claim and privileged groups.
+        act: Load the NetBox configuration.
+        assert: Group sync is enabled and comma-separated group lists are normalized.
+        """
+        config = _load_configuration(
+            {
+                "DJANGO_OIDC_GROUPS_CLAIM": "groups",
+                "DJANGO_OIDC_SUPERUSER_GROUPS": "netbox-admins, platform-admins ",
+                "DJANGO_OIDC_STAFF_GROUPS": "netbox-admins,netbox-operators",
+            }
+        )
+
+        assert config["REMOTE_AUTH_AUTO_CREATE_GROUPS"] is True
+        assert config["REMOTE_AUTH_GROUP_SYNC_ENABLED"] is True
+        assert config["REMOTE_AUTH_SUPERUSER_GROUPS"] == [
+            "netbox-admins",
+            "platform-admins",
+        ]
+        assert config["REMOTE_AUTH_STAFF_GROUPS"] == [
+            "netbox-admins",
+            "netbox-operators",
+        ]
+        assert "netbox.configuration.oidc_groups_handler" in config["SOCIAL_AUTH_PIPELINE"]
+
+    def test_group_handler_synchronizes_claim(self, monkeypatch):
+        """
+        arrange: Enable group synchronization and provide a fake NetBox authentication backend.
+        act: Run the OIDC groups pipeline handler with two groups.
+        assert: The backend synchronizes both groups for the authenticated user.
+        """
+        config = _load_configuration({"DJANGO_OIDC_GROUPS_CLAIM": "groups"})
+        backend = Mock()
+
+        authentication = type(
+            "AuthenticationModule",
+            (),
+            {"RemoteUserBackend": Mock(return_value=backend)},
+        )
+        monkeypatch.setitem(sys.modules, "netbox.authentication", authentication)
+
+        user = object()
+        config["oidc_groups_handler"](user, {"groups": ["team-a", "team-b"]})
+
+        backend.configure_groups.assert_called_once_with(user, ["team-a", "team-b"])
+
+    @pytest.mark.parametrize(
+        "response",
+        [
+            {},
+            {"groups": "team-a"},
+            {"groups": ["team-a", ""]},
+            {"groups": ["team-a", 123]},
+        ],
+    )
+    def test_group_handler_rejects_invalid_claim(self, response, monkeypatch):
+        """
+        arrange: Enable OIDC group sync with a malformed or missing groups claim.
+        act: Run the OIDC groups pipeline handler.
+        assert: The handler rejects the claim instead of changing access.
+        """
+        config = _load_configuration({"DJANGO_OIDC_GROUPS_CLAIM": "groups"})
+
+        class PermissionDeniedError(Exception):
+            """Stand in for Django's handled authentication exception."""
+
+        exceptions = ModuleType("django.core.exceptions")
+        setattr(exceptions, "PermissionDenied", PermissionDeniedError)
+        monkeypatch.setitem(sys.modules, "django", ModuleType("django"))
+        monkeypatch.setitem(sys.modules, "django.core", ModuleType("django.core"))
+        monkeypatch.setitem(sys.modules, "django.core.exceptions", exceptions)
+
+        with pytest.raises(PermissionDeniedError, match="OIDC groups claim|OIDC response"):
+            config["oidc_groups_handler"](object(), response)
+
+    def test_oidc_scopes_are_space_separated(self):
+        """
+        arrange: Configure the charm's documented space-separated OIDC scopes.
+        act: Load the NetBox configuration.
+        assert: The scopes are exposed to python-social-auth as a list.
+        """
+        config = _load_configuration(
+            {
+                "DJANGO_OIDC_CLIENT_ID": "client-id",
+                "DJANGO_OIDC_SCOPES": "openid profile email groups",
+            }
+        )
+
+        assert config["SOCIAL_AUTH_OIDC_SCOPE"] == [
+            "openid",
+            "profile",
+            "email",
+            "groups",
         ]

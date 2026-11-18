@@ -11,7 +11,7 @@ variable "app_name" {
 variable "base" {
   description = "The operating system on which to deploy"
   type        = string
-  default     = null
+  default     = "ubuntu@26.04"
 }
 
 variable "channel" {

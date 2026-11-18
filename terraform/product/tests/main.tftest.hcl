@@ -7,7 +7,7 @@ variables {
   model_uuid                    = "11111111-2222-4333-8444-555555555555"
   netbox_k8s                    = {}
   oauth_external_idp_integrator = {}
-  redis_k8s                     = {}
+  valkey                        = {}
   s3                            = {}
 }
 
@@ -20,8 +20,8 @@ run "basic_plan" {
   }
 
   assert {
-    condition     = output.models.netbox.components.redis_k8s.name == "redis-k8s"
-    error_message = "redis-k8s component name did not match expected"
+    condition     = output.models.netbox.components.valkey.name == "valkey"
+    error_message = "valkey component name did not match expected"
   }
 
   assert {

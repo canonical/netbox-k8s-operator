@@ -25,6 +25,5 @@ integration-suites:
     working-dir: ./
     backends:
     - integration-test
-    pytest-arguments-template: |
-      --model testing
-      --keep-models
+    prepare: |
+      bash ${SPREAD_PATH}/s3-installation.sh

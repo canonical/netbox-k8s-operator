@@ -18,7 +18,7 @@ output "models" {
       components = {
         netbox_k8s                    = module.netbox_k8s.application
         oauth_external_idp_integrator = module.oauth_external_idp_integrator.application
-        redis_k8s                     = module.redis_k8s.application
+        valkey                        = { name = module.valkey.app_name }
         s3                            = module.s3.application
       }
     }

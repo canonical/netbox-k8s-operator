@@ -1,6 +1,10 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
+host:
+  packages:
+    - skopeo
+
 juju:
   channel: 3/stable
   model-defaults:

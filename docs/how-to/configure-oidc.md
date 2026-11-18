@@ -15,8 +15,18 @@ juju integrate hydra netbox-k8s
 For NetBox to work, you may need to customise some of the following configuration options:
  - `oidc-scopes`: OIDC scopes are used by an application during authentication to authorize access to a user's details, like name and picture. It must include `openid` to be a valid OIDC.
  - `oidc-redirect-path`: The redirect URL used by the OIDC provider to redirect back to NetBox application after the authorization is done.
+ - `oidc-groups-claim`: The OIDC claim containing the user's groups. Setting this option enables group synchronization. Groups from the claim are created in NetBox as needed, and the user's NetBox group memberships are replaced on every login. The claim must contain a list of group names.
+ - `oidc-superuser-groups`: A comma-separated list of OIDC groups whose members receive NetBox superuser access. This access is revoked on the next login if the user no longer belongs to one of these groups.
+ - `oidc-staff-groups`: A comma-separated list of OIDC groups whose members receive NetBox staff access. This access is revoked on the next login if the user no longer belongs to one of these groups.
 
 NetBox configuration options for OIDC can be configured like:
 ```
-juju config netbox-k8s oidc-scopes="openid profile email" oidc-redirect-path="/oauth/complete/oidc/"
+juju config netbox-k8s \
+  oidc-scopes="openid profile email groups" \
+  oidc-redirect-path="/oauth/complete/oidc/" \
+  oidc-groups-claim="groups" \
+  oidc-superuser-groups="netbox-admins" \
+  oidc-staff-groups="netbox-admins,netbox-operators"
 ```
+
+Leave `oidc-groups-claim` empty to keep managing NetBox groups and privileges manually.
