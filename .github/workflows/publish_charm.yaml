@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - track/4
 
 jobs:
   publish-to-edge:
