@@ -4,7 +4,6 @@
 
 """NetBox charm entrypoint."""
 
-import logging
 from collections.abc import Generator
 
 import ops
@@ -12,8 +11,6 @@ import paas_charm.django
 from charms.redis_k8s.v0.redis import RedisRelationCharmEvents
 
 from relations import CertificatesRelation, RedisRelation
-
-logger = logging.getLogger(__name__)
 
 
 class NetboxCharm(paas_charm.django.Charm):
