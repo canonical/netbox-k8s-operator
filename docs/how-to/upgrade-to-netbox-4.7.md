@@ -73,4 +73,4 @@ before you upgrade. These changes can affect your scripts, plugins and integrati
 * Single sign-on uses `social-auth-app-django` 6.0. Test authentication on a non-production
   deployment first.
 * Wait for the background queues to drain before you refresh, because webhook jobs that were
-  enqueued before the upgrade fail after it.
+  queued before the upgrade fail after it.
