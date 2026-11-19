@@ -337,10 +337,22 @@ def _assert_idp_login_success(app_url: str, endpoint: str, test_email: str, test
         return_path = urlparse(url=app_url).path
         response = page.goto(f"{app_url}/{endpoint}/?next={return_path}/")
         assert response is not None and response.ok
-        # NetBox 4.6.10 renders the SSO choice as a link to social:begin.
-        page.locator('a[href*="/oauth/login/oidc/"]').click()
+        # NetBox < 4.7 renders the SSO choice as a link to social:begin, while NetBox >= 4.7
+        # renders it as a POST form (CSRF-protected) with a submit button.
+        sso_button = page.locator(
+            'a[href*="/oauth/login/oidc/"], '
+            'form[action*="/oauth/login/oidc/"] button[type="submit"]'
+        )
+        try:
+            expect(sso_button).to_have_count(1, timeout=30_000)
+        except AssertionError:
+            logger.error("OIDC SSO entry not found on the login page")
+            logger.error("Page content:\n%s", page.content())
+            raise
+        sso_button.click()
         page.wait_for_load_state("networkidle")
         expect(page).not_to_have_title(re.compile("Sign in failed"))
+        expect(page.locator("#sso-error")).to_be_hidden()
         page.get_by_label("Email").fill(test_email)
         page.get_by_label("Password").fill(test_password)
         page.get_by_role("button", name="Sign in").click()
