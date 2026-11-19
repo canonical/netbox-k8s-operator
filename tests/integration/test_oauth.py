@@ -6,7 +6,10 @@
 import json
 import logging
 import re
+import subprocess
+import sys
 import time
+from unittest.mock import call
 from urllib.parse import urlparse
 
 import jubilant
@@ -14,6 +17,7 @@ import pytest
 import requests
 from playwright.sync_api import expect, sync_playwright
 
+from tests.integration.conftest import browser_context_manager
 from tests.integration.types import App
 
 logger = logging.getLogger(__name__)
@@ -21,6 +25,46 @@ logger = logging.getLogger(__name__)
 
 # Pylint thinks there are too many local variables, but that's not true.
 # pylint: disable=too-many-locals, unused-argument
+
+
+def test_browser_setup_installs_chromium_dependencies(monkeypatch):
+    """Verify browser setup only installs the dependencies needed by Chromium."""
+    calls = []
+
+    def run(command, **kwargs):
+        calls.append(call(command, **kwargs))
+
+    monkeypatch.setattr(subprocess, "run", run)
+    browser_context_manager.__wrapped__()
+
+    assert calls == [
+        call(
+            [sys.executable, "-m", "playwright", "install", "chromium"],
+            check=True,
+            capture_output=True,
+            text=True,
+        ),
+        call(
+            [sys.executable, "-m", "playwright", "install-deps", "chromium"],
+            check=True,
+            capture_output=True,
+            text=True,
+        ),
+    ]
+
+
+def test_browser_setup_reports_dependency_install_failure(monkeypatch):
+    """Verify a failed dependency installation stops setup with its diagnostics."""
+
+    def run(command, **kwargs):
+        if "install-deps" in command:
+            raise subprocess.CalledProcessError(
+                1, command, output="apt output", stderr="apt error"
+            )
+
+    monkeypatch.setattr(subprocess, "run", run)
+    with pytest.raises(pytest.fail.Exception, match="(?s)apt output.*apt error"):
+        browser_context_manager.__wrapped__()
 
 
 @pytest.mark.usefixtures("identity_bundle")
