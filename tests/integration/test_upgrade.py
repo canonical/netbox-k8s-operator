@@ -35,8 +35,8 @@ NETBOX_APP_NAME = "netbox-upgrade"
 # Revision of the NetBox 4.6 charm in 4/edge.
 NETBOX_4_6_CHANNEL = "4/edge"
 NETBOX_4_6_REVISION = 63
-OLD_POSTGRESQL_APP_NAME = "postgresql-14"
-NEW_POSTGRESQL_APP_NAME = "postgresql-16"
+OLD_POSTGRESQL_APP_NAME = "postgresql-old"
+NEW_POSTGRESQL_APP_NAME = "postgresql-new"
 
 
 @pytest.fixture(scope="module", name="site_name")
