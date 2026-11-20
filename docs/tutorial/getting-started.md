@@ -64,9 +64,9 @@ juju integrate valkey netbox-k8s:valkey
 
 ### Deploy PostgreSQL
 
-NetBox K8s requires PostgreSQL to work. Deploy and integrate with:
+NetBox K8s requires PostgreSQL 15 or later to work. Deploy and integrate with:
 ```
-juju deploy postgresql-k8s --channel 14/stable --trust
+juju deploy postgresql-k8s --channel 16/stable --trust
 juju integrate postgresql-k8s netbox-k8s
 ```
 

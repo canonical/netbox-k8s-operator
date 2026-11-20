@@ -2,6 +2,12 @@
 
 See [Integrations](https://charmhub.io/netbox-k8s/integrations).
 
+## PostgreSQL
+
+NetBox 4.7 and later requires PostgreSQL 15 or later. The database user must be able to
+create the `ltree` extension, which ships with PostgreSQL. The charm doesn't check the
+PostgreSQL version.
+
 ## Cache
 
 NetBox needs exactly one cache integration: `redis` (`redis` interface) or

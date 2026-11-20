@@ -10,7 +10,7 @@ rocks:
 charms:
   - name: netbox-k8s
     charmcraft-yaml: charmcraft.yaml
-    channel: 4/edge
+    channel: 4.7/edge
     resources:
       app-image:
         type: oci-image

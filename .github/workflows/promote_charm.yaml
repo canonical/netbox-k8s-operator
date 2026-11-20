@@ -5,14 +5,16 @@ on:
     inputs:
       origin-channel:
         type: choice
-        description: 'Origin Channel'
+        description: "Origin Channel"
         options:
-        - 4/edge
+          - 4/edge
+          - 4.7/edge
       destination-channel:
         type: choice
-        description: 'Destination Channel'
+        description: "Destination Channel"
         options:
-        - 4/stable
+          - 4/stable
+          - 4.7/stable
     secrets:
       CHARMHUB_TOKEN:
         required: true
