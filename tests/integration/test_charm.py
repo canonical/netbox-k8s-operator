@@ -22,7 +22,8 @@ def test_netbox_health(netbox_app: App, juju: jubilant.Juju) -> None:
     """
     arrange: Build and deploy the NetBox charm.
     act: Do a get request to the main page and to an asset.
-    assert: Both return 200 and the page contains the correct title.
+    assert: Both return 200, the page contains the correct title and static
+        URLs in the page are not malformed.
     """
     status = juju.status()
     assert status.apps[netbox_app.name].units[netbox_app.name + "/0"].is_active
@@ -34,6 +35,10 @@ def test_netbox_health(netbox_app: App, juju: jubilant.Juju) -> None:
         )
         assert res.status_code == 200
         assert b"<title>Home | NetBox</title>" in res.content
+        # Static URLs must not start with "//" or "///" (issue #128): browsers
+        # treat "//static/..." as a host named "static".
+        assert b'"//static/' not in res.content
+        assert b'"///static/' not in res.content
 
         # Also some random thing from the static dir.
         url = f"http://{unit.address}:8000/static/netbox.ico"
