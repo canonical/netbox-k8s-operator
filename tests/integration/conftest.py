@@ -6,6 +6,7 @@
 import logging
 import socket
 import subprocess
+import sys
 from collections.abc import Generator
 from typing import cast
 
@@ -517,7 +518,7 @@ def browser_context_manager() -> None:
     """
     try:
         subprocess.run(
-            ["python", "-m", "playwright", "install", "chromium"],
+            [sys.executable, "-m", "playwright", "install", "chromium"],
             check=True,
             capture_output=True,
             text=True,
@@ -526,13 +527,13 @@ def browser_context_manager() -> None:
         pytest.fail(f"Failed to install Playwright browser: {e.stderr}")
     try:
         subprocess.run(
-            ["python", "-m", "playwright", "install-deps"],
+            [sys.executable, "-m", "playwright", "install-deps", "chromium"],
             check=True,
             capture_output=True,
             text=True,
         )
-    except subprocess.CalledProcessError:
-        logger.warning("Could not install Playwright system deps (may require sudo)")
+    except subprocess.CalledProcessError as e:
+        pytest.fail(f"Failed to install Chromium system dependencies:\n{e.stdout}\n{e.stderr}")
 
 
 @pytest.fixture(scope="function", name="http")
