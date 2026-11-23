@@ -17,7 +17,7 @@
      'django_htmx.middleware.HtmxMiddleware',
      'netbox.middleware.RemoteUserMiddleware',
      'netbox.middleware.CoreMiddleware',
-@@ -909,3 +910,16 @@
+@@ -909,3 +910,19 @@
      _UNSUPPORTED_SETTINGS = True
  except ImportError:
      pass
@@ -27,10 +27,13 @@
 +# http://url/path, the url called by the ingress is really
 +# http://service/, without the path.  See also
 +# https://github.com/evansd/whitenoise/issues/271
-+base_url = os.environ.get('DJANGO_BASE_URL', '/')
-+parsed_base_url = urlparse(base_url)
++#
++# The trailing slash is stripped from the ingress path because STATIC_URL
++# already starts with "/". Without this, a root ingress path ("/") gives
++# "///static/", which Python >= 3.14 urljoin no longer collapses (#128).
++_base_path = urlparse(os.environ.get('DJANGO_BASE_URL', '/')).path.rstrip('/')
 +
 +WHITENOISE_STATIC_PREFIX = STATIC_URL
-+STATIC_URL = f"{parsed_base_url.path}/{STATIC_URL}"
-+FORCE_SCRIPT_NAME = f"{parsed_base_url.path}"
-+MEDIA_URL = f"{parsed_base_url.path}/{MEDIA_URL}"
++STATIC_URL = f"{_base_path}{STATIC_URL}"   # "/static/" or "/prefix/static/"
++FORCE_SCRIPT_NAME = _base_path
++MEDIA_URL = f"{_base_path}{MEDIA_URL}"
