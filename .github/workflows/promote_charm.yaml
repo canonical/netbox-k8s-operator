@@ -26,5 +26,4 @@ jobs:
       origin-channel: ${{ github.event.inputs.origin-channel }}
       destination-channel: ${{ github.event.inputs.destination-channel }}
       doc-automation-disabled: false
-      base-channel: 24.04
     secrets: inherit
