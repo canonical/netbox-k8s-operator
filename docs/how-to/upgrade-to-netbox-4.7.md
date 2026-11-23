@@ -45,7 +45,11 @@ PostgreSQL application until you are sure that you don't need it.
 
 ## Refresh the charm
 
-NetBox 4.7 is published to the `4.7` track, so switch the charm channel and check the result:
+NetBox 4.7 is published to the `4.7` track and requires the Ubuntu 26.04 LTS charm base.
+If your NetBox 4.6 application still uses an older base, first follow
+[Migrate to the Ubuntu 26.04 LTS charm and Valkey](migrate-to-26.04-and-valkey.md)
+while staying on the `4` track, including the Juju-version-specific refresh or redeploy
+procedure. Once NetBox 4.6 is active on `ubuntu@26.04`, switch the charm channel and check the result:
 
 ```
 juju refresh netbox-k8s --channel 4.7/edge
