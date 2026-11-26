@@ -346,8 +346,9 @@ def postgresql_app_fixture(
         base = "ubuntu@24.04"
         force = True
     else:
-        channel = "14/stable"
-        base = "ubuntu@22.04"
+        # NetBox 4.7 requires PostgreSQL 15 or later.
+        channel = "16/stable"
+        base = "ubuntu@24.04"
         force = False
 
     juju.deploy(

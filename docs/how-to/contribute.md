@@ -123,10 +123,11 @@ Application logs use the INFO level by default. Set `django-debug=true` only whe
 debugging: it also enables verbose SQL logs, which can exceed Juju log limits
 during database migrations on a fresh deployment.
 
-The NetBox charm requires a `postgresql_client` interface to work.
+The NetBox charm requires a `postgresql_client` interface to work. NetBox 4.7 requires
+PostgreSQL 15 or later.
 Thanks to Juju, this can be easily configured with:
 ```bash
-juju deploy postgresql-k8s --channel 14/stable --trust
+juju deploy postgresql-k8s --channel 16/stable --trust
 juju wait-for application postgresql-k8s
 juju integrate postgresql-k8s netbox-k8s
 ```
