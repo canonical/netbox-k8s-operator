@@ -20,7 +20,20 @@ on:
         required: true
 
 jobs:
+  validate-tracks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check that both channels are in the same track
+        env:
+          ORIGIN: ${{ github.event.inputs.origin-channel }}
+          DESTINATION: ${{ github.event.inputs.destination-channel }}
+        run: |
+          if [ "${ORIGIN%%/*}" != "${DESTINATION%%/*}" ]; then
+            echo "Cannot promote from ${ORIGIN} to ${DESTINATION}: the tracks differ."
+            exit 1
+          fi
   promote-charm:
+    needs: validate-tracks
     uses: canonical/operator-workflows/.github/workflows/promote_charm.yaml@main
     with:
       origin-channel: ${{ github.event.inputs.origin-channel }}

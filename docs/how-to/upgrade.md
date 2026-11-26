@@ -1,6 +1,9 @@
 # How to upgrade
 
-**Important:** Before upgrading, make sure to back up your PostgreSQL database. You can check how to backup in [the PostgreSQL charm documentation](https://canonical.com/data/postgresql/docs/16/how-to/back-up-and-restore/).
+```{important}
+Before upgrading, make sure to back up your PostgreSQL database. You can check how to backup in
+[the PostgreSQL charm documentation](https://canonical.com/data/postgresql/docs/16/how-to/back-up-and-restore/).
+```
 
 ```{important}
 NetBox 4.7 requires PostgreSQL 15 or later. If you run PostgreSQL 14, migrate to a newer
