@@ -6,7 +6,7 @@ set -euo pipefail
 
 # This script downloads and extracts the NetBox source code.
 # renovate: depName=netbox-community/netbox
-NETBOX_VERSION="4.7.5"
+NETBOX_VERSION="4.7.6"
 wget https://github.com/netbox-community/netbox/archive/refs/tags/v${NETBOX_VERSION}.tar.gz
 
 # Clean up any previous download and keep the rockcraft.yaml file
